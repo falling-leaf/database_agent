@@ -42,9 +42,8 @@ AS 'MODULE_PATHNAME', 'api_predict'
 LANGUAGE C STRICT;
 
 CREATE OR REPLACE FUNCTION api_agent(  
-    IN model_name cstring, 
-    IN type cstring, 
-    VARIADIC vec "any"
+    table_name cstring, 
+    limit_length integer
 )  
 RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_agent'  

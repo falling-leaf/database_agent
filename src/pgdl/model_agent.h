@@ -55,8 +55,16 @@ typedef struct Task {
     char* cuda;
     char* table_name;
     int64_t input_start_index;
-    int64_t input_length;
+    int64_t input_end_index;
+    int64_t output_start_index;
+    int64_t output_end_index;
 } Task;
+
+typedef struct TaskInfo {
+    char* table_name;
+    int window_size;
+    int limit_length;
+} TaskInfo;
 
 typedef struct VecAggState {
     MemoryContext ctx;
@@ -76,7 +84,11 @@ typedef struct VecAggState {
 typedef struct AgentState {
     VecAggState current_state;
     AgentAction last_action;
-    std::vector<Task> task_list;
+    int current_start_index;
+    int current_end_index;
+    int current_task_id;    // task_id即为task_list的下标
+    List* task_list;
+    std::vector<TaskInfo> task_info;
     
     // to be done
 }AgentState;

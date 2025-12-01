@@ -42,6 +42,13 @@ api_agent(PG_FUNCTION_ARGS) {
     ScheduleAgent        schedule_agent_;
 
     auto state_ = std::make_shared<AgentState>();
+    TaskInfo task_info;
+    char* table_name = PG_GETARG_CSTRING(0);
+    int limit_length = PG_GETARG_INT32(2);
+    task_info.table_name = table_name;
+    task_info.limit_length = limit_length;
+    state_->task_info.emplace_back(task_info);
+
     std::map<AgentAction, std::function<AgentAction(std::shared_ptr<AgentState>)>> func_map_;
     func_map_[AgentAction::PERCEPTION] = [&perception_agent_](std::shared_ptr<AgentState> s) {return perception_agent_.Execute(s);};
     func_map_[AgentAction::ORCHESTRATION] = [&orchestration_agent_](std::shared_ptr<AgentState> s) {return orchestration_agent_.Execute(s);};
