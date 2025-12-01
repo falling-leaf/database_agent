@@ -211,7 +211,7 @@ split_results(torch::jit::IValue output) {
 }
 
 
-static void
+void
 infer_batch_internal(VecAggState *state, bool ret_float8)
 {
     std::string model_path;

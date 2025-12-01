@@ -1,22 +1,22 @@
 db_config = {
     "dbname": "postgres",
     "host": "localhost",
-    "port": "5488",
-    "user": "postgres",
+    "port": "5432",
+    "user": "why",
     "password": "123456"
 }
 
 evadb_db_config = """{
     "database": "postgres",
     "host": "localhost",
-    "port": "5488",
-    "user": "postgres",
+    "port": "5432",
+    "user": "why",
     "password": "123456"
 }"""
 
 
-model_prefix = "/home/pgdl/model/"
-select_model_prefix = "/home/pgdl/model/select_model/"
+model_prefix = "/home/why/pgdl/test/morphingdb_test/models/"
+select_model_prefix = "/home/why/pgdl/test/morphingdb_test/models/select_model/"
 
 # series
 slice_model_path = model_prefix + "slice.pt"
@@ -35,7 +35,7 @@ imdb_model_path = model_prefix + "traced_albert_vec.pt"
 sst2_model_path = model_prefix + "traced_albert_vec.pt"
 
 
-dataset_prefix = "/home/lhh/morphingdb/MorphingDB/test/morphingdb_test/data/"
+dataset_prefix = "/home/why/pgdl/test/morphingdb_test/data/"
 
 # series
 slice_dataset_path = dataset_prefix + "series/slice/slice_localization_data.csv"

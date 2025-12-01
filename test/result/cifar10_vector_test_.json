@@ -1,0 +1,112 @@
+[
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 100;",
+        "count": 100,
+        "total_time": 2.651430130004883,
+        "scan_time": 0.14973913000488281,
+        "load_model_time": 0.537626,
+        "pre_time": 0.032563,
+        "infer_time": 1.921206,
+        "post_time": 0.010296
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;",
+        "count": 1000,
+        "total_time": 13.586112260818481,
+        "scan_time": 0.6182202608184815,
+        "load_model_time": 0.526624,
+        "pre_time": 0.129199,
+        "infer_time": 12.225342,
+        "post_time": 0.086727
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 2000;",
+        "count": 2000,
+        "total_time": 25.95939064025879,
+        "scan_time": 1.2675466402587892,
+        "load_model_time": 0.528906,
+        "pre_time": 0.212739,
+        "infer_time": 23.78717,
+        "post_time": 0.163029
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 3000;",
+        "count": 3000,
+        "total_time": 37.17149066925049,
+        "scan_time": 2.0146846692504883,
+        "load_model_time": 0.552647,
+        "pre_time": 0.319651,
+        "infer_time": 34.046473,
+        "post_time": 0.238035
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 4000;",
+        "count": 4000,
+        "total_time": 49.391700744628906,
+        "scan_time": 2.7255617446289064,
+        "load_model_time": 0.555372,
+        "pre_time": 0.36499,
+        "infer_time": 45.425348,
+        "post_time": 0.320429
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 5000;",
+        "count": 5000,
+        "total_time": 60.65051460266113,
+        "scan_time": 3.085822602661133,
+        "load_model_time": 0.560181,
+        "pre_time": 0.511837,
+        "infer_time": 56.089553,
+        "post_time": 0.403121
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 6000;",
+        "count": 6000,
+        "total_time": 71.19226479530334,
+        "scan_time": 3.5766147953033447,
+        "load_model_time": 0.560739,
+        "pre_time": 0.570667,
+        "infer_time": 66.006542,
+        "post_time": 0.477702
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 7000;",
+        "count": 7000,
+        "total_time": 82.76005721092224,
+        "scan_time": 4.178999210922242,
+        "load_model_time": 0.536964,
+        "pre_time": 0.668683,
+        "infer_time": 76.820793,
+        "post_time": 0.554618
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 8000;",
+        "count": 8000,
+        "total_time": 94.00210404396057,
+        "scan_time": 4.478695043960571,
+        "load_model_time": 0.541573,
+        "pre_time": 0.737504,
+        "infer_time": 87.608103,
+        "post_time": 0.636229
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 9000;",
+        "count": 9000,
+        "total_time": 105.48150897026062,
+        "scan_time": 5.31426397026062,
+        "load_model_time": 0.534902,
+        "pre_time": 0.903822,
+        "infer_time": 98.015072,
+        "post_time": 0.713449
+    },
+    {
+        "sql": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 10000;",
+        "count": 10000,
+        "total_time": 117.5034716129303,
+        "scan_time": 5.786647612930298,
+        "load_model_time": 0.544658,
+        "pre_time": 1.001313,
+        "infer_time": 109.374319,
+        "post_time": 0.796534
+    }
+]

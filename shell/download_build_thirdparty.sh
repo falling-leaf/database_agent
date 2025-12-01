@@ -1,164 +1,97 @@
 #!/bin/bash
-###
- # @Author: laihuihang laihuihang@foxmail.com
- # @Date: 2023-07-25 17:14:56
- # @LastEditors: laihuihang laihuihang@foxmail.com
- # @LastEditTime: 2023-07-27 17:29:49
- # @FilePath: /pgdl/shell/download_build_thirdparty.sh
- # @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
-### 
 
+# 本地部署版第三方依赖下载与编译脚本
 
-function log()
-{
+LOG_FILE="$HOME/pgdl/log.txt"
+SCRIPT_PATH=$(cd "$(dirname "$0")" && pwd)
+THIRD_PARTY_DIR="$HOME/pgdl/third_party"
+
+function log() {
     local level=$1
     shift
     local message=$*
     local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-    local log_file="/home/pgdl/log.txt"
-
-    # 打印执行结果、时间戳和日志等级
     echo "[${timestamp}] [${level}] ${message}"
-
-    # 保存日志到文件
-    echo "[${timestamp}] [${level}] ${message}" >> "${log_file}"
+    echo "[${timestamp}] [${level}] ${message}" >> "${LOG_FILE}"
 }
 
-function loginfo()
-{
-    log "INFO" $*
-}
+function loginfo() { log "INFO" "$*"; }
+function logerror() { log "ERROR" "$*"; }
 
-function logerror()
-{
-    log "ERROR" $*
-}
+mkdir -p "$THIRD_PARTY_DIR"
 
-cd "$(dirname "$0")"
-script_path=$(pwd)
+# -------- 下载并编译 sentencepiece --------
+loginfo "Cloning sentencepiece..."
+git clone https://gitee.com/mirrors/sentencepiece "$THIRD_PARTY_DIR/sentencepiece"
+if [[ $? -ne 0 ]]; then logerror "git clone sentencepiece error!"; exit 1; fi
+loginfo "Clone sentencepiece success."
 
-# download sentencepiece
-git clone https://github.com/google/sentencepiece.git /home/pgdl/third_party/sentencepiece
-if [[ $? -ne 0 ]]; then
-    logerror "git clone sentencepiece error!"
-    exit 1
-else
-    loginfo "git clone sentencepiece success!"
-fi
+echo "add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)" >> "$THIRD_PARTY_DIR/sentencepiece/src/CMakeLists.txt"
 
-echo "add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)" >> ${script_path}/../third_party/sentencepiece/src/CMakeLists.txt
-cd ${script_path}/../third_party/sentencepiece
-mkdir build && cd build
+cd "$THIRD_PARTY_DIR/sentencepiece"
+mkdir -p build && cd build
 cmake -DSPM_ENABLE_TCMALLOC=OFF ..
-if [[ $? -ne 0 ]]; then
-    logerror "generate sentencepiece makefile error!"
-    exit 1
-else
-    loginfo "generate sentencepiece makefile success!"
-fi
+if [[ $? -ne 0 ]]; then logerror "generate sentencepiece makefile error!"; exit 1; fi
+loginfo "Generate sentencepiece makefile success."
 
 make -j$(nproc)
-if [[ $? -ne 0 ]]; then
-    logerror "build sentencepiece error!"
-    exit 1
-else
-    loginfo "build sentencepiece success!"
-fi
+if [[ $? -ne 0 ]]; then logerror "build sentencepiece error!"; exit 1; fi
+loginfo "Build sentencepiece success."
 
-make install
-if [[ $? -ne 0 ]]; then
-    logerror "install sentencepiece error!"
-    exit 1
-else
-    loginfo "install sentencepiece success!"
-fi
+sudo make install
+if [[ $? -ne 0 ]]; then logerror "install sentencepiece error!"; exit 1; fi
+loginfo "Install sentencepiece success."
 
-mkdir -p /usr/local/share/SentencePiece
-mv ${script_path}/../shell/config/SentencePieceConfig.cmake /usr/local/share/SentencePiece/
+sudo mkdir -p /usr/local/share/SentencePiece
+sudo mv "$SCRIPT_PATH/config/SentencePieceConfig.cmake" /usr/local/share/SentencePiece/
 
-cd -
+# -------- 下载并解压 libtorch --------
+loginfo "Downloading libtorch..."
+wget -P "$THIRD_PARTY_DIR" https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.0.0%2Bcpu.zip --no-check-certificate
+if [[ $? -ne 0 ]]; then logerror "download libtorch error!"; exit 1; fi
+loginfo "Download libtorch success."
 
-# download libtorch
-wget -P ${script_path}/../third_party https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-2.0.0%2Bcpu.zip --no-check-certificate
-if [[ $? -ne 0 ]]; then
-    logerror "download libtorch error!"
-    exit 1
-else
-    loginfo "download libtorch success!"
-fi
-# unzip libtorch
-unzip -d ${script_path}/../third_party ${script_path}/../third_party/*.zip
-if [[ $? -ne 0 ]]; then
-    logerror "unzip libtorch error!"
-    exit 1
-else
-    loginfo "unzip libtorch success!"
-fi
+unzip -d "$THIRD_PARTY_DIR" "$THIRD_PARTY_DIR"/*.zip
+if [[ $? -ne 0 ]]; then logerror "unzip libtorch error!"; exit 1; fi
+loginfo "Unzip libtorch success."
+rm -f "$THIRD_PARTY_DIR"/*.zip
 
-rm -f ${script_path}/../third_party/*.zip
+# -------- 下载并编译 OpenCV --------
+loginfo "Downloading OpenCV..."
+wget -P "$THIRD_PARTY_DIR" https://codeload.github.com/opencv/opencv/zip/refs/tags/3.4.16 --no-check-certificate
+if [[ $? -ne 0 ]]; then logerror "download opencv error!"; exit 1; fi
+loginfo "Download OpenCV success."
 
-# download opencv
-wget -P ${script_path}/../third_party/ https://codeload.github.com/opencv/opencv/zip/refs/tags/3.4.16 --no-check-certificate
-if [[ $? -ne 0 ]]; then
-    logerror "download opencv error!"
-    exit 1
-else
-    loginfo "download opencv success!"
-fi
-# unzip opencv
-unzip -d ${script_path}/../third_party/ ${script_path}/../third_party/3.4.16
-if [[ $? -ne 0 ]]; then
-    logerror "unzip opencv error!"
-    exit 1
-else
-    loginfo "unzip opencv success!"
-fi
+unzip -d "$THIRD_PARTY_DIR" "$THIRD_PARTY_DIR"/3.4.16
+if [[ $? -ne 0 ]]; then logerror "unzip opencv error!"; exit 1; fi
+loginfo "Unzip OpenCV success."
+rm -f "$THIRD_PARTY_DIR"/3.4.16
 
-rm -f ${script_path}/../third_party/3.4.16
-# build opencv
-cd ${script_path}/../third_party/opencv-3.4.16
-mkdir build && cd build
+cd "$THIRD_PARTY_DIR/opencv-3.4.16"
+mkdir -p build && cd build
 cmake ..
-if [[ $? -ne 0 ]]; then
-    logerror "generate opencv makefile error!"
-    exit 1
-else
-    loginfo "generate opencv makefile success!"
-fi
+if [[ $? -ne 0 ]]; then logerror "generate opencv makefile error!"; exit 1; fi
+loginfo "Generate OpenCV makefile success."
 
 make -j$(nproc)
-if [[ $? -ne 0 ]]; then
-    logerror "build opencv error!"
-    exit 1
-else
-    loginfo "build opencv success!"
-fi
+if [[ $? -ne 0 ]]; then logerror "build opencv error!"; exit 1; fi
+loginfo "Build OpenCV success."
 
-make install
-if [[ $? -ne 0 ]]; then
-    logerror "install opencv error!"
-    exit 1
-else
-    loginfo "install opencv success!"
-fi
+sudo make install
+if [[ $? -ne 0 ]]; then logerror "install opencv error!"; exit 1; fi
+loginfo "Install OpenCV success."
 
-# download onnxruntime
-wget -P ${script_path}/../third_party https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-linux-x64-1.18.1.tgz --no-check-certificate
-if [[ $? -ne 0 ]]; then
-    logerror "download onnxruntime error!"
-    exit 1
-else
-    loginfo "download onnxruntime success!"
-fi
-# unzip onnxruntime
-tar -xvzf ${script_path}/../third_party/onnxruntime-linux-x64-1.18.1.tgz -C ${script_path}/../third_party
-if [[ $? -ne 0 ]]; then
-    logerror "unzip onnxruntime error!"
-    exit 1
-else
-    loginfo "unzip onnxruntime success!"
-fi
-mv ${script_path}/../shell/config/onnxruntimeConfig.cmake ${script_path}/../third_party/onnxruntime-linux-x64-1.18.1/
+# -------- 下载并解压 onnxruntime --------
+loginfo "Downloading onnxruntime..."
+wget -P "$THIRD_PARTY_DIR" https://github.com/microsoft/onnxruntime/releases/download/v1.18.1/onnxruntime-linux-x64-1.18.1.tgz --no-check-certificate
+if [[ $? -ne 0 ]]; then logerror "download onnxruntime error!"; exit 1; fi
+loginfo "Download onnxruntime success."
 
+tar -xvzf "$THIRD_PARTY_DIR/onnxruntime-linux-x64-1.18.1.tgz" -C "$THIRD_PARTY_DIR"
+if [[ $? -ne 0 ]]; then logerror "unzip onnxruntime error!"; exit 1; fi
+loginfo "Unzip onnxruntime success."
 
-cd ${script_path}/../
+sudo mv "$SCRIPT_PATH/config/onnxruntimeConfig.cmake" "$THIRD_PARTY_DIR/onnxruntime-linux-x64-1.18.1/"
+
+cd "$SCRIPT_PATH"
+loginfo "All dependencies installed successfully."

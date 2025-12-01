@@ -1,0 +1,112 @@
+[
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 100;",
+        "count": 100,
+        "total_time": 0.12470889091491699,
+        "scan_time": 0.013706890914916992,
+        "load_model_time": 0.035063,
+        "pre_time": 0.016433,
+        "infer_time": 0.058866,
+        "post_time": 0.00064
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 1000;",
+        "count": 1000,
+        "total_time": 0.2059621810913086,
+        "scan_time": 0.0838681810913086,
+        "load_model_time": 0.034741,
+        "pre_time": 0.012448,
+        "infer_time": 0.070344,
+        "post_time": 0.004561
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 2000;",
+        "count": 2000,
+        "total_time": 0.29805707931518555,
+        "scan_time": 0.15010707931518555,
+        "load_model_time": 0.035924,
+        "pre_time": 0.02093,
+        "infer_time": 0.082621,
+        "post_time": 0.008475
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 3000;",
+        "count": 3000,
+        "total_time": 0.3817603588104248,
+        "scan_time": 0.21406135881042482,
+        "load_model_time": 0.033294,
+        "pre_time": 0.029307,
+        "infer_time": 0.092157,
+        "post_time": 0.012941
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 4000;",
+        "count": 4000,
+        "total_time": 0.5056843757629395,
+        "scan_time": 0.30108837576293945,
+        "load_model_time": 0.036366,
+        "pre_time": 0.0413,
+        "infer_time": 0.106778,
+        "post_time": 0.020152
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 5000;",
+        "count": 5000,
+        "total_time": 0.5747230052947998,
+        "scan_time": 0.3519090052947998,
+        "load_model_time": 0.036243,
+        "pre_time": 0.047716,
+        "infer_time": 0.116653,
+        "post_time": 0.022202
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 6000;",
+        "count": 6000,
+        "total_time": 0.6577122211456299,
+        "scan_time": 0.4137062211456299,
+        "load_model_time": 0.033665,
+        "pre_time": 0.055341,
+        "infer_time": 0.12869,
+        "post_time": 0.02631
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 7000;",
+        "count": 7000,
+        "total_time": 0.7787184715270996,
+        "scan_time": 0.4874814715270996,
+        "load_model_time": 0.036422,
+        "pre_time": 0.079044,
+        "infer_time": 0.143905,
+        "post_time": 0.031866
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 8000;",
+        "count": 8000,
+        "total_time": 0.8358755111694336,
+        "scan_time": 0.5339735111694336,
+        "load_model_time": 0.034329,
+        "pre_time": 0.083798,
+        "infer_time": 0.150593,
+        "post_time": 0.033182
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 9000;",
+        "count": 9000,
+        "total_time": 0.9400935173034668,
+        "scan_time": 0.6068265173034668,
+        "load_model_time": 0.037002,
+        "pre_time": 0.092909,
+        "infer_time": 0.164956,
+        "post_time": 0.0384
+    },
+    {
+        "sql": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 64 following) from swarm_test limit 10000;",
+        "count": 10000,
+        "total_time": 1.0411043167114258,
+        "scan_time": 0.6784543167114258,
+        "load_model_time": 0.037611,
+        "pre_time": 0.102842,
+        "infer_time": 0.179307,
+        "post_time": 0.04289
+    }
+]

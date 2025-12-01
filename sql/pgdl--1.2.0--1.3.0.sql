@@ -41,6 +41,15 @@ RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_predict'  
 LANGUAGE C STRICT;
 
+CREATE OR REPLACE FUNCTION api_agent(  
+    IN model_name cstring, 
+    IN type cstring, 
+    VARIADIC vec "any"
+)  
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'api_agent'  
+LANGUAGE C STRICT;
+
 -- insert into base_model_info values('resnet18', 'd17e88193d63653e785ccd1e8314caee', '/home/lhh/models/resnet18_resnet18_imagenet.pt');
 -- insert into base_model_info values('alexnet', '722de753346c94d79e7397a28c6f5674', '/home/lhh/models/alexnet_alexnet_imagenet.pt');
 -- insert into base_model_info values('googlenet', '6206b310ee0c21ecdb07516645b5c686', '/home/lhh/models/googlenet_googlenet_imagenet.pt');

@@ -1,0 +1,112 @@
+[
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 100;",
+        "count": 100,
+        "total_time": 1.9675993919372559,
+        "scan_time": 0.12981539193725586,
+        "load_model_time": 0.429609,
+        "pre_time": 0.034479,
+        "infer_time": 1.361568,
+        "post_time": 0.012128
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;",
+        "count": 1000,
+        "total_time": 11.376793622970581,
+        "scan_time": 1.194430622970581,
+        "load_model_time": 0.418675,
+        "pre_time": 0.143721,
+        "infer_time": 9.522456,
+        "post_time": 0.097511
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 2000;",
+        "count": 2000,
+        "total_time": 20.997434377670288,
+        "scan_time": 2.5186143776702883,
+        "load_model_time": 0.423987,
+        "pre_time": 0.271644,
+        "infer_time": 17.590944,
+        "post_time": 0.192245
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 3000;",
+        "count": 3000,
+        "total_time": 30.617297410964966,
+        "scan_time": 3.7968824109649657,
+        "load_model_time": 0.426093,
+        "pre_time": 0.407843,
+        "infer_time": 25.682964,
+        "post_time": 0.303515
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 4000;",
+        "count": 4000,
+        "total_time": 41.21758770942688,
+        "scan_time": 5.22565970942688,
+        "load_model_time": 0.427398,
+        "pre_time": 0.521508,
+        "infer_time": 34.641356,
+        "post_time": 0.401666
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 5000;",
+        "count": 5000,
+        "total_time": 49.67816138267517,
+        "scan_time": 6.3622523826751705,
+        "load_model_time": 0.426745,
+        "pre_time": 0.670124,
+        "infer_time": 41.740761,
+        "post_time": 0.478279
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 6000;",
+        "count": 6000,
+        "total_time": 61.48339772224426,
+        "scan_time": 7.928034722244263,
+        "load_model_time": 0.435149,
+        "pre_time": 0.803286,
+        "infer_time": 51.743872,
+        "post_time": 0.573056
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 7000;",
+        "count": 7000,
+        "total_time": 73.0662796497345,
+        "scan_time": 8.476706649734497,
+        "load_model_time": 0.431032,
+        "pre_time": 0.948327,
+        "infer_time": 62.540849,
+        "post_time": 0.669365
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 8000;",
+        "count": 8000,
+        "total_time": 79.57029867172241,
+        "scan_time": 10.394924671722412,
+        "load_model_time": 0.411348,
+        "pre_time": 1.106149,
+        "infer_time": 66.900292,
+        "post_time": 0.757585
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 9000;",
+        "count": 9000,
+        "total_time": 90.84635829925537,
+        "scan_time": 11.437457299255371,
+        "load_model_time": 0.41411,
+        "pre_time": 1.250045,
+        "infer_time": 76.885971,
+        "post_time": 0.858775
+    },
+    {
+        "sql": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 10000;",
+        "count": 10000,
+        "total_time": 99.65166926383972,
+        "scan_time": 12.637939263839721,
+        "load_model_time": 0.413487,
+        "pre_time": 1.392447,
+        "infer_time": 84.257203,
+        "post_time": 0.950593
+    }
+]

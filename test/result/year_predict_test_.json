@@ -1,0 +1,112 @@
+[
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 100;",
+        "count": 100,
+        "total_time": 0.0920250415802002,
+        "scan_time": 0.008446041580200195,
+        "load_model_time": 0.01783,
+        "pre_time": 0.015528,
+        "infer_time": 0.04984,
+        "post_time": 0.000381
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 1000;",
+        "count": 1000,
+        "total_time": 0.12084078788757324,
+        "scan_time": 0.041073787887573245,
+        "load_model_time": 0.017867,
+        "pre_time": 0.007792,
+        "infer_time": 0.051581,
+        "post_time": 0.002527
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 2000;",
+        "count": 2000,
+        "total_time": 0.1711559295654297,
+        "scan_time": 0.07793692956542969,
+        "load_model_time": 0.020308,
+        "pre_time": 0.014316,
+        "infer_time": 0.053423,
+        "post_time": 0.005172
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 3000;",
+        "count": 3000,
+        "total_time": 0.20984101295471191,
+        "scan_time": 0.10833801295471192,
+        "load_model_time": 0.020287,
+        "pre_time": 0.019519,
+        "infer_time": 0.054634,
+        "post_time": 0.007063
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 4000;",
+        "count": 4000,
+        "total_time": 0.26419687271118164,
+        "scan_time": 0.15136087271118165,
+        "load_model_time": 0.020734,
+        "pre_time": 0.026618,
+        "infer_time": 0.055359,
+        "post_time": 0.010125
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 5000;",
+        "count": 5000,
+        "total_time": 0.3099019527435303,
+        "scan_time": 0.18736395274353027,
+        "load_model_time": 0.021587,
+        "pre_time": 0.032042,
+        "infer_time": 0.056701,
+        "post_time": 0.012208
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 6000;",
+        "count": 6000,
+        "total_time": 0.35321712493896484,
+        "scan_time": 0.22325712493896485,
+        "load_model_time": 0.020434,
+        "pre_time": 0.038128,
+        "infer_time": 0.05676,
+        "post_time": 0.014638
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 7000;",
+        "count": 7000,
+        "total_time": 0.40106725692749023,
+        "scan_time": 0.2613102569274902,
+        "load_model_time": 0.021125,
+        "pre_time": 0.044383,
+        "infer_time": 0.057076,
+        "post_time": 0.017173
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 8000;",
+        "count": 8000,
+        "total_time": 0.4428243637084961,
+        "scan_time": 0.2950353637084961,
+        "load_model_time": 0.020348,
+        "pre_time": 0.049762,
+        "infer_time": 0.058224,
+        "post_time": 0.019455
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 9000;",
+        "count": 9000,
+        "total_time": 0.4696977138519287,
+        "scan_time": 0.3147917138519287,
+        "load_model_time": 0.021487,
+        "pre_time": 0.052787,
+        "infer_time": 0.060608,
+        "post_time": 0.020024
+    },
+    {
+        "sql": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 128 following) from year_predict_test limit 10000;",
+        "count": 10000,
+        "total_time": 0.5274066925048828,
+        "scan_time": 0.36578869250488283,
+        "load_model_time": 0.018532,
+        "pre_time": 0.061431,
+        "infer_time": 0.057751,
+        "post_time": 0.023904
+    }
+]
