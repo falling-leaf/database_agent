@@ -108,5 +108,335 @@
         "pre_time": 0.093697,
         "infer_time": 0.139058,
         "post_time": 0.052785
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 100;",
+        "count": 100,
+        "total_time": 0.10243940353393555,
+        "scan_time": 0.007335403533935547,
+        "load_model_time": 0.022512,
+        "pre_time": 0.016445,
+        "infer_time": 0.055286,
+        "post_time": 0.000861
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;",
+        "count": 1000,
+        "total_time": 0.15566253662109375,
+        "scan_time": 0.05394153662109375,
+        "load_model_time": 0.022816,
+        "pre_time": 0.010292,
+        "infer_time": 0.062948,
+        "post_time": 0.005665
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 2000;",
+        "count": 2000,
+        "total_time": 0.22784852981567383,
+        "scan_time": 0.10490052981567383,
+        "load_model_time": 0.02317,
+        "pre_time": 0.017959,
+        "infer_time": 0.070854,
+        "post_time": 0.010965
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 3000;",
+        "count": 3000,
+        "total_time": 0.30535149574279785,
+        "scan_time": 0.15953949574279785,
+        "load_model_time": 0.023863,
+        "pre_time": 0.025759,
+        "infer_time": 0.080246,
+        "post_time": 0.015944
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 4000;",
+        "count": 4000,
+        "total_time": 0.35604262351989746,
+        "scan_time": 0.19655562351989747,
+        "load_model_time": 0.023815,
+        "pre_time": 0.030597,
+        "infer_time": 0.08651,
+        "post_time": 0.018565
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 5000;",
+        "count": 5000,
+        "total_time": 0.41972923278808594,
+        "scan_time": 0.24139723278808595,
+        "load_model_time": 0.02446,
+        "pre_time": 0.036141,
+        "infer_time": 0.095888,
+        "post_time": 0.021843
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 6000;",
+        "count": 6000,
+        "total_time": 0.49890995025634766,
+        "scan_time": 0.29657495025634767,
+        "load_model_time": 0.024779,
+        "pre_time": 0.045059,
+        "infer_time": 0.103902,
+        "post_time": 0.028595
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 7000;",
+        "count": 7000,
+        "total_time": 0.5579917430877686,
+        "scan_time": 0.33965974308776853,
+        "load_model_time": 0.025144,
+        "pre_time": 0.050876,
+        "infer_time": 0.110766,
+        "post_time": 0.031546
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 8000;",
+        "count": 8000,
+        "total_time": 0.6284241676330566,
+        "scan_time": 0.38882316763305663,
+        "load_model_time": 0.025588,
+        "pre_time": 0.058033,
+        "infer_time": 0.119638,
+        "post_time": 0.036342
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 9000;",
+        "count": 9000,
+        "total_time": 0.6889126300811768,
+        "scan_time": 0.43267563008117677,
+        "load_model_time": 0.026244,
+        "pre_time": 0.063248,
+        "infer_time": 0.127451,
+        "post_time": 0.039294
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 10000;",
+        "count": 10000,
+        "total_time": 0.756263017654419,
+        "scan_time": 0.48169601765441894,
+        "load_model_time": 0.026328,
+        "pre_time": 0.070294,
+        "infer_time": 0.134202,
+        "post_time": 0.043743
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 100;",
+        "count": 100,
+        "total_time": 0.10133194923400879,
+        "scan_time": 0.007191949234008789,
+        "load_model_time": 0.022094,
+        "pre_time": 0.016024,
+        "infer_time": 0.055239,
+        "post_time": 0.000783
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;",
+        "count": 1000,
+        "total_time": 0.15517258644104004,
+        "scan_time": 0.05382558644104004,
+        "load_model_time": 0.022508,
+        "pre_time": 0.010308,
+        "infer_time": 0.063034,
+        "post_time": 0.005497
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 2000;",
+        "count": 2000,
+        "total_time": 0.23430562019348145,
+        "scan_time": 0.10581862019348144,
+        "load_model_time": 0.023708,
+        "pre_time": 0.018231,
+        "infer_time": 0.075687,
+        "post_time": 0.010861
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 3000;",
+        "count": 3000,
+        "total_time": 0.28185510635375977,
+        "scan_time": 0.14538210635375975,
+        "load_model_time": 0.023872,
+        "pre_time": 0.022628,
+        "infer_time": 0.077841,
+        "post_time": 0.012132
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 4000;",
+        "count": 4000,
+        "total_time": 0.37679171562194824,
+        "scan_time": 0.20998471562194823,
+        "load_model_time": 0.023812,
+        "pre_time": 0.033527,
+        "infer_time": 0.088197,
+        "post_time": 0.021271
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 5000;",
+        "count": 5000,
+        "total_time": 0.4346632957458496,
+        "scan_time": 0.2500512957458496,
+        "load_model_time": 0.024602,
+        "pre_time": 0.03891,
+        "infer_time": 0.097325,
+        "post_time": 0.023775
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 6000;",
+        "count": 6000,
+        "total_time": 0.4476299285888672,
+        "scan_time": 0.2634199285888672,
+        "load_model_time": 0.024477,
+        "pre_time": 0.03969,
+        "infer_time": 0.09948,
+        "post_time": 0.020563
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 7000;",
+        "count": 7000,
+        "total_time": 0.6015627384185791,
+        "scan_time": 0.3667717384185791,
+        "load_model_time": 0.025089,
+        "pre_time": 0.057891,
+        "infer_time": 0.114608,
+        "post_time": 0.037203
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 8000;",
+        "count": 8000,
+        "total_time": 0.6552655696868896,
+        "scan_time": 0.40681156968688964,
+        "load_model_time": 0.025669,
+        "pre_time": 0.061968,
+        "infer_time": 0.121723,
+        "post_time": 0.039094
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 9000;",
+        "count": 9000,
+        "total_time": 0.7133421897888184,
+        "scan_time": 0.45012218978881835,
+        "load_model_time": 0.025975,
+        "pre_time": 0.066813,
+        "infer_time": 0.128822,
+        "post_time": 0.04161
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 10000;",
+        "count": 10000,
+        "total_time": 0.8213541507720947,
+        "scan_time": 0.5098491507720947,
+        "load_model_time": 0.026387,
+        "pre_time": 0.09496,
+        "infer_time": 0.142689,
+        "post_time": 0.047469
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 100;",
+        "count": 100,
+        "total_time": 0.10338497161865234,
+        "scan_time": 0.007517971618652344,
+        "load_model_time": 0.022599,
+        "pre_time": 0.016323,
+        "infer_time": 0.056099,
+        "post_time": 0.000846
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;",
+        "count": 1000,
+        "total_time": 0.1561877727508545,
+        "scan_time": 0.05427677275085449,
+        "load_model_time": 0.023064,
+        "pre_time": 0.009621,
+        "infer_time": 0.063666,
+        "post_time": 0.00556
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 2000;",
+        "count": 2000,
+        "total_time": 0.23056244850158691,
+        "scan_time": 0.10658444850158691,
+        "load_model_time": 0.023474,
+        "pre_time": 0.017918,
+        "infer_time": 0.07178,
+        "post_time": 0.010806
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 3000;",
+        "count": 3000,
+        "total_time": 0.30571842193603516,
+        "scan_time": 0.15887642193603516,
+        "load_model_time": 0.024703,
+        "pre_time": 0.025552,
+        "infer_time": 0.080561,
+        "post_time": 0.016026
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 4000;",
+        "count": 4000,
+        "total_time": 0.3788154125213623,
+        "scan_time": 0.21161341252136232,
+        "load_model_time": 0.024179,
+        "pre_time": 0.032735,
+        "infer_time": 0.088971,
+        "post_time": 0.021317
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 5000;",
+        "count": 5000,
+        "total_time": 0.4533398151397705,
+        "scan_time": 0.2636808151397705,
+        "load_model_time": 0.024674,
+        "pre_time": 0.04112,
+        "infer_time": 0.097144,
+        "post_time": 0.026721
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 6000;",
+        "count": 6000,
+        "total_time": 0.5012180805206299,
+        "scan_time": 0.2996390805206299,
+        "load_model_time": 0.025076,
+        "pre_time": 0.044323,
+        "infer_time": 0.104059,
+        "post_time": 0.028121
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 7000;",
+        "count": 7000,
+        "total_time": 0.5116889476776123,
+        "scan_time": 0.3088789476776123,
+        "load_model_time": 0.025431,
+        "pre_time": 0.045101,
+        "infer_time": 0.108151,
+        "post_time": 0.024127
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 8000;",
+        "count": 8000,
+        "total_time": 0.6429250240325928,
+        "scan_time": 0.40072202403259277,
+        "load_model_time": 0.025834,
+        "pre_time": 0.058764,
+        "infer_time": 0.119781,
+        "post_time": 0.037824
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 9000;",
+        "count": 9000,
+        "total_time": 0.7331011295318604,
+        "scan_time": 0.4627241295318604,
+        "load_model_time": 0.026137,
+        "pre_time": 0.069902,
+        "infer_time": 0.131133,
+        "post_time": 0.043205
+    },
+    {
+        "sql": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 10000;",
+        "count": 10000,
+        "total_time": 0.7094635963439941,
+        "scan_time": 0.4419865963439941,
+        "load_model_time": 0.026527,
+        "pre_time": 0.07732,
+        "infer_time": 0.128777,
+        "post_time": 0.034853
     }
 ]

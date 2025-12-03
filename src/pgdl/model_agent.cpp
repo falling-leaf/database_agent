@@ -181,31 +181,92 @@ AgentAction initialize_state(std::shared_ptr<AgentState> state) {
 
 // perception agent: NL =====> embedding vector
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
-    // to be done
+    List* inputs = get_inputs_();
+    TaskInfo task_info;
+    // task_type text,
+    // table_name text,
+    // sample_size text,
+    // col_name text,
+    // dataset_name text,
+    // select_model_path text,
+    // regression_model_path text
+    char* task_type = (char*)list_nth(inputs, 0);
+    TaskType task_type_enum;
+    if (strcmp(task_type, "image_classification") == 0) {
+        task_type_enum = TaskType::IMAGE_CLASSIFICATION;
+    } else if (strcmp(task_type, "predict") == 0) {
+        task_type_enum = TaskType::PREDICT;
+    } else {
+        ereport(ERROR, (errmsg("unknown task type %s", task_type)));
+        return AgentAction::FAILURE;
+    }
+    task_info.task_type = task_type_enum;
+    task_info.table_name = (char*)list_nth(inputs, 1);
+    task_info.limit_length = atoi((char*)list_nth(inputs, 2));
+    if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
+        task_info.select_table_name = (char*)list_nth(inputs, 3);
+        task_info.sample_size = atoi((char*)list_nth(inputs, 4));
+        task_info.col_name = (char*)list_nth(inputs, 5);
+        task_info.dataset_name = (char*)list_nth(inputs, 6);
+        task_info.select_model_path = (char*)list_nth(inputs, 7);
+        task_info.regression_model_path = (char*)list_nth(inputs, 8);
+    }
+    state->task_info.emplace_back(task_info);
     state->last_action = AgentAction::PERCEPTION;
     return AgentAction::SCHEDULE;
 }
 
 // orchestration agent: model selection, resource management
 AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
-    state->current_state.model = const_cast<char*>("slice");
-    state->current_state.cuda = const_cast<char*>("cpu");
+    TaskInit(state);
+    SPIRegisterProcess();
+    // to be done
+    state->last_action = AgentAction::ORCHESTRATION;
+    return AgentAction::SCHEDULE;
+}
+
+void OrchestrationAgent::SPIRegisterProcess() {
+    register_callback();
+    return;
+}
+
+void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     state->current_start_index = 0;
     state->current_end_index = 0;
     for (auto& task_unit : state->task_info) {
-        elog(INFO, "task_info: %s, %d", task_unit.table_name, task_unit.limit_length);
-        int window_size = 0;
-        if (strcmp(task_unit.table_name, "slice_test") == 0) {
-            window_size = 32;
+        // 先默认窗口为10
+        int window_size = 10;
+        char* task_model;
+        char* task_cuda;
+        switch (task_unit.task_type) {
+            case TaskType::IMAGE_CLASSIFICATION:
+                {
+                    std::string selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.sample_size, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
+                    task_model = const_cast<char*>(selected_model.c_str());
+                    task_cuda = const_cast<char*>("gpu");
+                }
+                break;
+            case TaskType::PREDICT:
+                {
+                    if (strcmp(task_unit.table_name, "slice_test") == 0) {
+                        window_size = 32;
+                        task_model = const_cast<char*>("slice");
+                        task_cuda = const_cast<char*>("cpu");
+                    }
+                }
+                break;
+            default:
+                elog(ERROR, "unknown task type %d", task_unit.task_type);
+                break;
         }
-        for (int i = 0; i < task_unit.limit_length / window_size + 1; i++) {
+        for (int i = 0; i < (task_unit.limit_length - 1) / window_size + 1; i++) {
             Task* task = (Task*)palloc0(sizeof(Task));
             if (task == NULL) {
                 elog(ERROR, "Failed to allocate memory for Task");
                 throw std::bad_alloc();
             }
-            task->model = state->current_state.model;
-            task->cuda = state->current_state.cuda;
+            task->model = const_cast<char*>(task_model);
+            task->cuda = const_cast<char*>(task_cuda);
             task->table_name = task_unit.table_name;
             // task->input_start_index = (i < window_size) ? 0 : (i - window_size);
             // task->input_end_index = i + 1; // 包含start，不包含end
@@ -219,24 +280,26 @@ AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
     elog(INFO, "task_list length: %d", list_length(state->task_list));
     for (int i = 0; i < list_length(state->task_list); i++) {
         Task* task = (Task*)list_nth(state->task_list, i);
-        elog(INFO, "task: %s, %s, %s, %ld, %ld", task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index);
+        elog(INFO, "task %d: model: %s, cuda: %s, table_name: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
     }
-    SPIRegisterProcess();
-    // to be done
-    state->last_action = AgentAction::ORCHESTRATION;
-    return AgentAction::SCHEDULE;
 }
 
-void OrchestrationAgent::SPIRegisterProcess() {
-    // SPIConnector spi_connector;
-    // std::string prepare_str = "select register_process()";
-    // SPISqlWrapper sql(spi_connector, prepare_str, 0);
-    // if (!sql.Execute())
-    // {
-    //     elog(WARNING, "Register Process failed...");
-    // }
-    register_callback();
-    return;
+std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path) {
+    ModelSelection image_classification(select_model_path, regression_model_path);
+    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, dataset_name);
+    size_t pos = temp_result.find('%');
+    if (pos == std::string::npos) {
+        // 没找到 %, 根据需求处理
+        throw std::runtime_error("SelectModel: invalid result string");
+    }
+    if (select_table_name.size() < 12) {
+        throw std::runtime_error("SelectModel: invalid select_table_name");
+    }
+    std::string arch = temp_result.substr(0, pos);
+    std::string pretrain_ds = temp_result.substr(pos + 1);
+    std::string finetune_ds = dataset_name;
+    std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
+    return result_str;
 }
 
 // optimization agent: planning tree optimization
@@ -251,7 +314,14 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
     elog(INFO, "Execution task: %s, %s, %s, %ld, %ld", task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index);
+    if (task->input_start_index >= task->input_end_index) {
+        ereport(ERROR, (errmsg("task input range error")));
+        return AgentAction::FAILURE;
+    }
+    state->current_state.model = task->model;
+    state->current_state.cuda = task->cuda;
     // 准备上下文
+    // TODO: 缓冲区仅支持一种任务，可通过设置多类型缓冲区扩展
     while (state->current_start_index < task->input_start_index) {
         state->current_state.ins = list_delete_first(state->current_state.ins);
         // 内部逻辑似乎是覆盖而非清理
@@ -273,6 +343,7 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
 
 // evaluation agent: evaluate the execution result
 AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
+    // TODO: 目前逻辑Execution和Evaluation强相关（current_state），考虑将其解耦
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
     for (int i = task->output_start_index; i < task->output_end_index; i++) {
         Args* ret = (Args*)list_nth(state->current_state.outs, i);
@@ -293,7 +364,11 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
         } else if (state->last_action == AgentAction::ORCHESTRATION) {
             return AgentAction::OPTIMIZATION;
         } else if (state->last_action == AgentAction::OPTIMIZATION) {
-            // to be done: 决策执行什么任务
+            // to be done: 决策执行什么任务，若无任务可执行应当直接调到结束状态
+            if (list_length(state->task_list) == 0) {
+                elog(INFO, "ScheduleAgent: no task left, exit");
+                return AgentAction::SUCCESS;
+            }
             state->current_task_id = 0;
             return AgentAction::EXECUTION;
         } else if (state->last_action == AgentAction::EXECUTION) {

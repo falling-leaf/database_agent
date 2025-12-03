@@ -41,11 +41,16 @@ RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_predict'  
 LANGUAGE C STRICT;
 
+    -- // task_type text,
+    -- // table_name text,
+    -- // sample_size text,
+    -- // col_name text,
+    -- // dataset_name text,
+    -- // select_model_path text,
+    -- // regression_model_path text
 CREATE OR REPLACE FUNCTION api_agent(  
-    table_name cstring, 
-    limit_length integer
+IN task_type cstring, VARIADIC vec "any", OUT boolean
 )  
-RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_agent'  
 LANGUAGE C STRICT;
 

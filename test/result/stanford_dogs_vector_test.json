@@ -108,5 +108,115 @@
         "pre_time": 1.074945,
         "infer_time": 29.44197,
         "post_time": 0.942069
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 100;",
+        "count": 100,
+        "total_time": 2.7012574672698975,
+        "scan_time": 0.12514546726989745,
+        "load_model_time": 1.933545,
+        "pre_time": 0.034408,
+        "infer_time": 0.594393,
+        "post_time": 0.013766
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;",
+        "count": 1000,
+        "total_time": 5.550764322280884,
+        "scan_time": 0.6689193222808838,
+        "load_model_time": 1.852852,
+        "pre_time": 0.116551,
+        "infer_time": 2.814794,
+        "post_time": 0.097648
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 2000;",
+        "count": 2000,
+        "total_time": 9.91641116142273,
+        "scan_time": 1.3746441614227294,
+        "load_model_time": 1.836414,
+        "pre_time": 0.215034,
+        "infer_time": 6.297263,
+        "post_time": 0.193056
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 3000;",
+        "count": 3000,
+        "total_time": 13.738834381103516,
+        "scan_time": 1.9881493811035156,
+        "load_model_time": 1.842354,
+        "pre_time": 0.337199,
+        "infer_time": 9.283842,
+        "post_time": 0.28729
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 4000;",
+        "count": 4000,
+        "total_time": 18.03956389427185,
+        "scan_time": 2.6852628942718506,
+        "load_model_time": 1.980549,
+        "pre_time": 0.447912,
+        "infer_time": 12.542355,
+        "post_time": 0.383485
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 5000;",
+        "count": 5000,
+        "total_time": 25.760929584503174,
+        "scan_time": 3.300603584503174,
+        "load_model_time": 1.992032,
+        "pre_time": 0.54308,
+        "infer_time": 19.444475,
+        "post_time": 0.480739
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 6000;",
+        "count": 6000,
+        "total_time": 24.171467781066895,
+        "scan_time": 4.2226827810668945,
+        "load_model_time": 1.991236,
+        "pre_time": 0.682538,
+        "infer_time": 16.704552,
+        "post_time": 0.570459
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 7000;",
+        "count": 7000,
+        "total_time": 30.350447416305542,
+        "scan_time": 4.592730416305542,
+        "load_model_time": 1.848391,
+        "pre_time": 0.7536,
+        "infer_time": 22.483986,
+        "post_time": 0.67174
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 8000;",
+        "count": 8000,
+        "total_time": 30.55252718925476,
+        "scan_time": 5.196846189254761,
+        "load_model_time": 1.837004,
+        "pre_time": 0.843273,
+        "infer_time": 21.91314,
+        "post_time": 0.762264
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 9000;",
+        "count": 9000,
+        "total_time": 34.29833436012268,
+        "scan_time": 5.924105360122681,
+        "load_model_time": 1.858678,
+        "pre_time": 0.903227,
+        "infer_time": 24.757245,
+        "post_time": 0.855079
+    },
+    {
+        "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 10000;",
+        "count": 10000,
+        "total_time": 39.04591751098633,
+        "scan_time": 8.428666510986329,
+        "load_model_time": 1.851909,
+        "pre_time": 1.056889,
+        "infer_time": 26.755402,
+        "post_time": 0.953051
     }
 ]

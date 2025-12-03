@@ -4,6 +4,7 @@
 
 #include "env.h"
 #include "model_manager.h"
+#include "model_selection.h"
 #include "batch_interface.h"
 #include "myfunc.h"
 
@@ -50,20 +51,39 @@ enum class AgentAction {
     SCHEDULE
 };
 
+enum class TaskType {
+    IMAGE_CLASSIFICATION,
+    PREDICT
+
+    // to be done
+};
+
 typedef struct Task {
+    TaskType task_type;
     char* model;
     char* cuda;
     char* table_name;
+
+    // =========================
+
+
     int64_t input_start_index;
     int64_t input_end_index;
     int64_t output_start_index;
     int64_t output_end_index;
 } Task;
 
+// TODO: 可以考虑根据不同任务类型进行继承类划分
 typedef struct TaskInfo {
+    TaskType task_type;
     char* table_name;
-    int window_size;
     int limit_length;
+    char* select_table_name;
+    int sample_size;
+    char* col_name;
+    char* dataset_name;
+    char* select_model_path;
+    char* regression_model_path;
 } TaskInfo;
 
 typedef struct VecAggState {
@@ -111,10 +131,14 @@ public:
 class PerceptionAgent : public BaseAgentNode {
 public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
+    List* get_inputs_() {return inputs_;};
+    void set_inputs_(List* inputs) {inputs_ = inputs; return;}
 
     std::string Name() const override {
         return "PerceptionAgent";
     }
+private:
+    List* inputs_{NIL};
 };
 
 // orchestration agent: model selection, resource management
@@ -122,6 +146,8 @@ class OrchestrationAgent : public BaseAgentNode {
 public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
     void SPIRegisterProcess();
+    void TaskInit(std::shared_ptr<AgentState> state);
+    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path);
 
     std::string Name() const override {
         return "OrchestrationAgent";

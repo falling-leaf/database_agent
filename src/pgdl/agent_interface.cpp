@@ -32,22 +32,23 @@ PG_FUNCTION_INFO_V1(api_agent);
 
 Datum
 api_agent(PG_FUNCTION_ARGS) {
-    // test for debug
-    // SELECT api_agent('my_model', 'infer', 1, 2, 3, 'hello', true);
-    PerceptionAgent      perception_agent_;
-    OrchestrationAgent   orchestration_agent_;
+    PerceptionAgent      perception_agent_;     // perception: 将大任务拆分为多个TaskType
+    OrchestrationAgent   orchestration_agent_;  // orchestration: 配置元信息，将TaskInfo转化为Task
     OptimizationAgent    optimization_agent_;
     ExecutionAgent       execution_agent_;
     EvaluationAgent      evaluation_agent_;
     ScheduleAgent        schedule_agent_;
-
     auto state_ = std::make_shared<AgentState>();
-    TaskInfo task_info;
-    char* table_name = PG_GETARG_CSTRING(0);
-    int limit_length = PG_GETARG_INT32(2);
-    task_info.table_name = table_name;
-    task_info.limit_length = limit_length;
-    state_->task_info.emplace_back(task_info);
+    elog(INFO, "param_num: %d", PG_NARGS());
+
+    for (int i = 0; i < PG_NARGS(); i++) {
+        if (PG_ARGISNULL(i)) {
+            elog(INFO, "param %d is null", i);
+            continue;
+        }
+        List* inputs = lappend(perception_agent_.get_inputs_(), (char*)PG_GETARG_CSTRING(i));
+        perception_agent_.set_inputs_(inputs);
+    }
 
     std::map<AgentAction, std::function<AgentAction(std::shared_ptr<AgentState>)>> func_map_;
     func_map_[AgentAction::PERCEPTION] = [&perception_agent_](std::shared_ptr<AgentState> s) {return perception_agent_.Execute(s);};

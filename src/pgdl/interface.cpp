@@ -1024,15 +1024,20 @@ image_classification(PG_FUNCTION_ARGS)
     char* col_name = NULL;
     char* dataset_name = NULL;
     int   sample_size = 0;
+    char* select_model_path = NULL;
+    char* regression_model_path = NULL;
     text* result = nullptr;
 
     table_name = TextDatumGetCString(PG_GETARG_DATUM(0));
     col_name = TextDatumGetCString(PG_GETARG_DATUM(1));
     dataset_name = TextDatumGetCString(PG_GETARG_DATUM(2));
     sample_size = PG_GETARG_INT32(3);
+    select_model_path = TextDatumGetCString(PG_GETARG_DATUM(4));
+    regression_model_path = TextDatumGetCString(PG_GETARG_DATUM(5));
 
-    ModelSelection image_classification("/home/pgdl/model/select_model/ViT-L-14_visual_traced.pt", 
-                                "/home/pgdl/model/select_model/regression_model.onnx");
+    // ModelSelection image_classification("/home/pgdl/model/select_model/ViT-L-14_visual_traced.pt", 
+    //                             "/home/pgdl/model/select_model/regression_model.onnx");
+    ModelSelection image_classification(select_model_path, regression_model_path);
 
     std::string result_str = image_classification.SelectModel(table_name, 
                                                       col_name,           
