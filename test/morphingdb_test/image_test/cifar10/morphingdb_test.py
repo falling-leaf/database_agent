@@ -104,10 +104,10 @@ def cifar10_test(limit_flag:str, symbol:str = 'cpu'):
 
 
 def cifar10_all_test():
-    cifar10_import_mvec_dataset()
-    print("import cifar10 mvec table done")
-    cifar10_import_url_dataset()
-    print("import cifar10 url table done")
+    # cifar10_import_mvec_dataset()
+    # print("import cifar10 mvec table done")
+    # cifar10_import_url_dataset()
+    # print("import cifar10 url table done")
     create_model()
     print("create model done")
     cifar10_test('', 'gpu')

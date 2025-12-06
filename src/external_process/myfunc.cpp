@@ -22,7 +22,6 @@ bool MyProcessImage(std::vector<torch::jit::IValue>& img_tensor, Args* args)
         cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
         image.convertTo(image_float, CV_32FC3, 1.0/255.0, 0);
         cv::resize(image_float, image_float, cv::Size(224, 224));
-
         auto tensor = torch::from_blob(image_float.data, {1, 224, 224, 3});
         tensor = tensor.permute({0,3,1,2});
         tensor[0][0] = tensor[0][0].sub_(0.485).div_(0.225);

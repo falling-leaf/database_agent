@@ -148,6 +148,7 @@ public:
     void SPIRegisterProcess();
     void TaskInit(std::shared_ptr<AgentState> state);
     std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path);
+    bool InitModel(const char* model_name);
 
     std::string Name() const override {
         return "OrchestrationAgent";

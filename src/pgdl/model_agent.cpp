@@ -20,6 +20,7 @@ extern "C" {
 extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 }
 extern void register_callback();
+extern ModelManager model_manager;
 
 Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim)
 {
@@ -28,13 +29,6 @@ Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, in
     if (!get_mvec_oid(mvec_oid))
     {
         ereport(ERROR, (errmsg("get mvec oid error!")));
-        return nullptr;
-    }
-    // slice中仅处理一列数据（mvec）
-    if (tupdesc->natts != dim)
-    {
-        ereport(ERROR, (errmsg("tuple dimension %d does not match expected dimension %d!",
-                               tupdesc->natts, dim)));
         return nullptr;
     }
     Args* vec = (Args*) palloc0(sizeof(Args) * dim);  // 仍然用 PG 的 palloc
@@ -95,8 +89,9 @@ Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, in
             // MVec 通常是引用类型，使用 DatumGetPointer
             // 如果你有自定义的 DatumGetMVec 宏也可以使用，本质通常是一样的
             // elog(INFO, "found mvec column at %d", i + 1);
-            MVec* cur_mvec = (MVec*)DatumGetPointer(datum);
+            MVec* cur_mvec = DatumGetMVec(datum);
             vec[i - start].ptr = cur_mvec;
+            // elog(INFO, "found mvec; ref is: %d, dim is: %d, shape_size is: %d", cur_mvec->ref_d.is_ref_tag, cur_mvec->vec_d.dim, cur_mvec->vec_d.shape_size);
         }
         else {
             ereport(ERROR, (errmsg("type %u not supported at column %d!", argtype, i + 1)));
@@ -163,9 +158,14 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
     TupleDesc   tupdesc;
     SPILoadOneRow(tuple, tupdesc, table_name, row_index);
     int         ncols   = tupdesc->natts;
+    Args* vec = NULL;
     // elog(INFO, "start converting row to vector, ncols=%d", ncols);
-
-    Args* vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 0, ncols);
+    if (table_name == "cifar_image_vector_table") {
+        vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 1, 1);
+    }
+    else {
+        vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 0, 1);
+    }
 
     // elog(INFO, "finished converting row to vector");
     return vec;
@@ -218,8 +218,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
 
 // orchestration agent: model selection, resource management
 AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
-    TaskInit(state);
     SPIRegisterProcess();
+    TaskInit(state);
     // to be done
     state->last_action = AgentAction::ORCHESTRATION;
     return AgentAction::SCHEDULE;
@@ -234,24 +234,32 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     state->current_start_index = 0;
     state->current_end_index = 0;
     for (auto& task_unit : state->task_info) {
-        // 先默认窗口为10
-        int window_size = 10;
-        char* task_model;
+        // 先默认窗口为32
+        int window_size = 32;
+        std::string selected_model;
+        const char* task_model;
         char* task_cuda;
         switch (task_unit.task_type) {
             case TaskType::IMAGE_CLASSIFICATION:
                 {
-                    std::string selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.sample_size, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
-                    task_model = const_cast<char*>(selected_model.c_str());
-                    task_cuda = const_cast<char*>("gpu");
+                    selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.sample_size, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
+                    // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
+                    task_model = pstrdup(selected_model.c_str());
+                    if (InitModel(task_model)) {
+                        elog(INFO, "InitModel success");
+                    }
+                    else {
+                        elog(ERROR, "InitModel failed");
+                    }
+                    task_cuda = pstrdup("gpu");   
                 }
                 break;
             case TaskType::PREDICT:
                 {
                     if (strcmp(task_unit.table_name, "slice_test") == 0) {
                         window_size = 32;
-                        task_model = const_cast<char*>("slice");
-                        task_cuda = const_cast<char*>("cpu");
+                        task_model = pstrdup("slice");
+                        task_cuda = pstrdup("cpu");
                     }
                 }
                 break;
@@ -265,8 +273,9 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                 elog(ERROR, "Failed to allocate memory for Task");
                 throw std::bad_alloc();
             }
-            task->model = const_cast<char*>(task_model);
-            task->cuda = const_cast<char*>(task_cuda);
+            // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
+            task->model = pstrdup(task_model);
+            task->cuda = pstrdup(task_cuda);
             task->table_name = task_unit.table_name;
             // task->input_start_index = (i < window_size) ? 0 : (i - window_size);
             // task->input_end_index = i + 1; // 包含start，不包含end
@@ -302,6 +311,81 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, c
     return result_str;
 }
 
+bool OrchestrationAgent::InitModel(const char* model_name) {
+    std::string full_path = "/home/why/models_all/";
+    full_path += model_name;
+    full_path += ".pt";
+    const char* model_path = full_path.c_str();
+    const char* base_model_name = "";
+    const char* discription = "";
+    std::string base_model_path;
+    int layer_size = 0;
+    int mvec_oid = 0;
+    ModelLayer* parameter_list = NULL;
+    if(strlen(model_name) == 0){
+        ereport(ERROR, (errmsg("model_name is empty!")));
+    }
+    
+    if(access(model_path, F_OK) != 0){
+        ereport(ERROR, (errmsg("model is not exist!")));
+    }
+
+    if(strlen(base_model_name) == 0){
+        if(model_manager.CreateModel(model_name, model_path, base_model_name, discription)){
+            return true;
+        }else {
+            ereport(ERROR, (errmsg("create model error!")));
+        }
+    }else{
+        if(!model_manager.IsBaseModelExist(base_model_name)){
+            ereport(ERROR, (errmsg("base_model:%s not exist!", base_model_name)));
+        }
+        if(!model_manager.GetBaseModelPathFromBaseModel(base_model_name, base_model_path)){
+            ereport(ERROR, (errmsg("base_model:%s not exist!", base_model_name)));
+        }
+        int ret = compare_model_struct(model_path, base_model_path.c_str());
+        if(ret != 0){
+            ereport(ERROR, (errmsg("model struct is not equal, errcode:%d", ret)));
+        }
+        ereport(INFO, (errmsg("model struct equals")));
+
+        model_parameter_extraction(model_path, base_model_path.c_str(), &parameter_list, layer_size);
+        // if(parameter_list == NULL){
+        //     ereport(ERROR, (errmsg("model_parameter_extraction error!")));
+        // }
+
+        ereport(INFO, (errmsg("model extraction success")));
+
+        if(!get_mvec_oid(mvec_oid)){
+            ereport(ERROR, (errmsg("get_mvec_oid error!")));
+        }
+
+        for(int i = 0; i<layer_size; i++){
+            if(!insert_model_layer_parameter(model_name, parameter_list[i].layer_name, i+1, mvec_oid, parameter_list[i].layer_parameter)){
+                ereport(ERROR, (errmsg("insert_model_layer_parameter error!")));
+            }
+        }
+
+        ereport(INFO, (errmsg("insert parameter success")));
+
+        for (int i = 0; i < layer_size; i++) {
+            pfree(parameter_list[i].layer_name);
+            pfree(parameter_list[i].layer_parameter);
+        }
+        if(parameter_list != NULL){
+            pfree(parameter_list);
+        }
+
+        if(model_manager.CreateModel(model_name, model_path, base_model_name, discription)){
+            return true;
+        }else {
+            ereport(ERROR, (errmsg("create model error!")));
+        }
+    }
+
+    return false;
+}
+
 // optimization agent: planning tree optimization
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
     // to be done 
@@ -329,10 +413,14 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
         state->current_start_index++;
     }
     while (state->current_end_index < task->input_end_index) {
+        // elog(INFO, "here");
         Args* vec = MemoryManager::LoadOneRow(task->table_name, state->current_end_index);
         state->current_state.ins = lappend(state->current_state.ins, vec);
         state->current_end_index++;
     }
+    elog(INFO, "list length: %d", list_length(state->current_state.ins));
+    // MVec* cur_mvec  = (MVec*)(((Args*)list_nth(state->current_state.ins, 0))[0].ptr);
+    // elog(INFO, "found mvec; ref is: %d, dim is: %d, shape_size is: %d", cur_mvec->ref_d.is_ref_tag, cur_mvec->vec_d.dim, cur_mvec->vec_d.shape_size);
     infer_batch_internal(&state->current_state, true);
     // Args* res = MemoryManager::LoadOneRow("slice_test", 0);
     // state->current_state.ins = lappend(state->current_state.ins, res);

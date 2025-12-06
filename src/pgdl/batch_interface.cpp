@@ -252,7 +252,6 @@ infer_batch_internal(VecAggState *state, bool ret_float8)
     std::vector<torch::jit::IValue> input_batch_tensor; // batch of tensors
     torch::jit::IValue output;
     std::vector<torch::jit::IValue> outputs; // batch of tuples<tensor|list|tuple> or tensors
-
     // 3. 输入预处理
     {
         CLOCK_START();
@@ -269,7 +268,6 @@ infer_batch_internal(VecAggState *state, bool ret_float8)
         }
         CLOCK_END(pre);
     }
-
     // 4. 预测
     {
         CLOCK_START();

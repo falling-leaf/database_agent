@@ -366,7 +366,7 @@ bool ModelManager::PreProcess(const std::string model_path,
                               Args* args)
 {
     if(module_preprocess_functions_.find(model_path) != module_preprocess_functions_.end()){
-        //ereport(INFO, (errmsg("user preprocess function")));
+        // ereport(INFO, (errmsg("user preprocess function")));
         return module_preprocess_functions_[model_path](img_tensor, args);
     }else{
         if(module_preprocess_functions_.find("common") != module_preprocess_functions_.end()){
@@ -636,7 +636,20 @@ bool ModelManager::Predict(const std::string& model_path,
                 tensor = tensor.toTensor().to(at::kCUDA);
             }
         }
-        output = module_handle_[model_path].first.forward(input);
+        torch::jit::IValue raw_output = module_handle_[model_path].first.forward(input);
+        // 3. 处理 GoogLeNetOutputs tuple，取主输出
+        if(raw_output.isTuple()){
+            auto tuple = raw_output.toTuple();
+            if(tuple->elements().size() > 0){
+                // 只取第一个输出，封装回 IValue
+                output = torch::jit::IValue(tuple->elements()[0].toTensor());
+            } else {
+                // tuple 为空，直接返回整个输出
+                output = raw_output;
+            }
+        } else {
+            output = raw_output;
+        }
         return true;
     }
     catch (const std::exception& e) {
