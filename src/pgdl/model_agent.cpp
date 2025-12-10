@@ -185,7 +185,9 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     TaskInfo task_info;
     // task_type text,
     // table_name text,
-    // sample_size text,
+    // limit_length int,
+    // select_table_name text,
+    // sample_size text, inner
     // col_name text,
     // dataset_name text,
     // select_model_path text,
@@ -329,6 +331,8 @@ bool OrchestrationAgent::InitModel(const char* model_name) {
     if(access(model_path, F_OK) != 0){
         ereport(ERROR, (errmsg("model is not exist!")));
     }
+
+    model_manager.DropModel(model_name);
 
     if(strlen(base_model_name) == 0){
         if(model_manager.CreateModel(model_name, model_path, base_model_name, discription)){
