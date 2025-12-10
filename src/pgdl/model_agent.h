@@ -79,7 +79,7 @@ typedef struct TaskInfo {
     char* table_name;
     int limit_length;
     char* select_table_name;
-    int sample_size;
+    int sample_size{10};
     char* col_name;
     char* dataset_name;
     char* select_model_path;

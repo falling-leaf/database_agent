@@ -207,11 +207,10 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     task_info.limit_length = atoi((char*)list_nth(inputs, 2));
     if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
         task_info.select_table_name = (char*)list_nth(inputs, 3);
-        task_info.sample_size = atoi((char*)list_nth(inputs, 4));
-        task_info.col_name = (char*)list_nth(inputs, 5);
-        task_info.dataset_name = (char*)list_nth(inputs, 6);
-        task_info.select_model_path = (char*)list_nth(inputs, 7);
-        task_info.regression_model_path = (char*)list_nth(inputs, 8);
+        task_info.col_name = (char*)list_nth(inputs, 4);
+        task_info.dataset_name = (char*)list_nth(inputs, 5);
+        task_info.select_model_path = (char*)list_nth(inputs, 6);
+        task_info.regression_model_path = (char*)list_nth(inputs, 7);
     }
     state->task_info.emplace_back(task_info);
     state->last_action = AgentAction::PERCEPTION;
