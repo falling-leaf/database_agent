@@ -21,6 +21,7 @@ extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 }
 extern void register_callback();
 extern ModelManager model_manager;
+extern MemoryManager memory_manager;
 
 Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim)
 {
@@ -191,6 +192,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     }
     TaskInfo task_info;
     // task_type text,
+    // count int
     // table_name text,
     // limit_length int,
     // select_table_name text,
@@ -199,7 +201,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     // dataset_name text,
     // select_model_path text,
     // regression_model_path text
-    char* task_type = (char*)PG_GETARG_CSTRING(0);
+    int load_index = 0;
+    char* task_type = (char*)PG_GETARG_CSTRING(load_index++);
     TaskType task_type_enum;
     if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
@@ -210,14 +213,28 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         return AgentAction::FAILURE;
     }
     task_info.task_type = task_type_enum;
-    task_info.table_name = (char*)PG_GETARG_CSTRING(1);
-    task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(2));
+    if (memory_manager.total_func_call == 0) {
+        memory_manager.total_func_call = PG_GETARG_INT32(load_index++);
+        memory_manager.current_func_call = 0;
+    } else load_index++;
+    memory_manager.current_func_call++;
+    if (memory_manager.current_func_call > memory_manager.total_func_call) {
+        throw std::runtime_error("variable fatal error in call times, restart the system.");
+    }
+    if (memory_manager.total_func_call == memory_manager.current_func_call) {
+        memory_manager.total_func_call = 0;
+        memory_manager.current_func_call = 0;
+    }
+    elog(INFO, "test for total: %d, current: %d", memory_manager.total_func_call, memory_manager.current_func_call);
+        
+    task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
+    task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
     if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-        task_info.select_table_name = (char*)PG_GETARG_CSTRING(3);
-        task_info.col_name = (char*)PG_GETARG_CSTRING(4);
-        task_info.dataset_name = (char*)PG_GETARG_CSTRING(5);
-        task_info.select_model_path = (char*)PG_GETARG_CSTRING(6);
-        task_info.regression_model_path = (char*)PG_GETARG_CSTRING(7);
+        task_info.select_table_name = (char*)PG_GETARG_CSTRING(load_index++);
+        task_info.col_name = (char*)PG_GETARG_CSTRING(load_index++);
+        task_info.dataset_name = (char*)PG_GETARG_CSTRING(load_index++);
+        task_info.select_model_path = (char*)PG_GETARG_CSTRING(load_index++);
+        task_info.regression_model_path = (char*)PG_GETARG_CSTRING(load_index++);
     }
     state->task_info.emplace_back(task_info);
     state->last_action = AgentAction::PERCEPTION;

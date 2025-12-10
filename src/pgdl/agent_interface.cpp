@@ -29,6 +29,7 @@ extern "C" {
 #include "utils/syscache.h"
 
 PG_FUNCTION_INFO_V1(api_agent);
+MemoryManager memory_manager;
 
 Datum
 api_agent(PG_FUNCTION_ARGS) {

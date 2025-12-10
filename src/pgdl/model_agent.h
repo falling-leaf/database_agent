@@ -36,6 +36,8 @@ public:
     static Args* Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim);
 
     // to be done
+    int total_func_call{0};
+    int current_func_call{0};
 };
 
 // agent result: the result of the agent execution
