@@ -181,7 +181,14 @@ AgentAction initialize_state(std::shared_ptr<AgentState> state) {
 
 // perception agent: NL =====> embedding vector
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
-    List* inputs = get_inputs_();
+    FunctionCallInfo fcinfo = state->fcinfo;
+    elog(INFO, "the number of param: %d", PG_NARGS());
+    for (int i = 0; i < PG_NARGS(); i++) {
+        if (PG_ARGISNULL(i)) {
+            elog(INFO, "param %d is null", i);
+            throw std::runtime_error("NULL param accepted.");
+        }
+    }
     TaskInfo task_info;
     // task_type text,
     // table_name text,
@@ -192,7 +199,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     // dataset_name text,
     // select_model_path text,
     // regression_model_path text
-    char* task_type = (char*)list_nth(inputs, 0);
+    char* task_type = (char*)PG_GETARG_CSTRING(0);
     TaskType task_type_enum;
     if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
@@ -203,14 +210,14 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         return AgentAction::FAILURE;
     }
     task_info.task_type = task_type_enum;
-    task_info.table_name = (char*)list_nth(inputs, 1);
-    task_info.limit_length = atoi((char*)list_nth(inputs, 2));
+    task_info.table_name = (char*)PG_GETARG_CSTRING(1);
+    task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(2));
     if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-        task_info.select_table_name = (char*)list_nth(inputs, 3);
-        task_info.col_name = (char*)list_nth(inputs, 4);
-        task_info.dataset_name = (char*)list_nth(inputs, 5);
-        task_info.select_model_path = (char*)list_nth(inputs, 6);
-        task_info.regression_model_path = (char*)list_nth(inputs, 7);
+        task_info.select_table_name = (char*)PG_GETARG_CSTRING(3);
+        task_info.col_name = (char*)PG_GETARG_CSTRING(4);
+        task_info.dataset_name = (char*)PG_GETARG_CSTRING(5);
+        task_info.select_model_path = (char*)PG_GETARG_CSTRING(6);
+        task_info.regression_model_path = (char*)PG_GETARG_CSTRING(7);
     }
     state->task_info.emplace_back(task_info);
     state->last_action = AgentAction::PERCEPTION;

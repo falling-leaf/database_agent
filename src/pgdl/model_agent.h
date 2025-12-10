@@ -102,6 +102,7 @@ typedef struct VecAggState {
 
 // agent state: present the current state of the agent
 typedef struct AgentState {
+    FunctionCallInfo fcinfo;
     VecAggState current_state;
     AgentAction last_action;
     int current_start_index;
@@ -131,14 +132,10 @@ public:
 class PerceptionAgent : public BaseAgentNode {
 public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
-    List* get_inputs_() {return inputs_;};
-    void set_inputs_(List* inputs) {inputs_ = inputs; return;}
 
     std::string Name() const override {
         return "PerceptionAgent";
     }
-private:
-    List* inputs_{NIL};
 };
 
 // orchestration agent: model selection, resource management

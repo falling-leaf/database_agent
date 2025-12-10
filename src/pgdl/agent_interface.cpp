@@ -39,17 +39,7 @@ api_agent(PG_FUNCTION_ARGS) {
     EvaluationAgent      evaluation_agent_;
     ScheduleAgent        schedule_agent_;
     auto state_ = std::make_shared<AgentState>();
-    elog(INFO, "param_num: %d", PG_NARGS());
-
-    for (int i = 0; i < PG_NARGS(); i++) {
-        if (PG_ARGISNULL(i)) {
-            elog(INFO, "param %d is null", i);
-            continue;
-        }
-        List* inputs = lappend(perception_agent_.get_inputs_(), (char*)PG_GETARG_CSTRING(i));
-        perception_agent_.set_inputs_(inputs);
-    }
-
+    state_->fcinfo = fcinfo;
     std::map<AgentAction, std::function<AgentAction(std::shared_ptr<AgentState>)>> func_map_;
     func_map_[AgentAction::PERCEPTION] = [&perception_agent_](std::shared_ptr<AgentState> s) {return perception_agent_.Execute(s);};
     func_map_[AgentAction::ORCHESTRATION] = [&orchestration_agent_](std::shared_ptr<AgentState> s) {return orchestration_agent_.Execute(s);};
