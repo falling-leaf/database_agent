@@ -7,6 +7,7 @@
 #include "model_selection.h"
 #include "batch_interface.h"
 #include "myfunc.h"
+#include "vector.h"
 
 #include <stdbool.h>
 #include <string>
@@ -38,6 +39,8 @@ public:
     // to be done
     int total_func_call{0};
     int current_func_call{0};
+    float** ins_cache_data;
+    MVec** ins_cache;
 };
 
 // agent result: the result of the agent execution
@@ -134,6 +137,7 @@ public:
 class PerceptionAgent : public BaseAgentNode {
 public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
+    void LoadMVecData(MVec* input);
 
     std::string Name() const override {
         return "PerceptionAgent";
