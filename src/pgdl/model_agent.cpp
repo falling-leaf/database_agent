@@ -325,42 +325,46 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     for (auto& task_unit : state->task_info) {
         // 先默认窗口为32
         int window_size = 32;
+        std::string selected_model;
+        if (memory_manager.current_func_call == 0) {
+            switch (task_unit.task_type) {
+                case TaskType::IMAGE_CLASSIFICATION:
+                    {
+                        selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
+                        // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("gpu");   
+                        MemoryContextSwitchTo(old_ctx);
+                        if (InitModel(selected_model.c_str())) {
+                            elog(INFO, "InitModel success");
+                        }
+                        else {
+                            elog(ERROR, "InitModel failed");
+                        }
+                    }
+                    break;
+                case TaskType::PREDICT:
+                    {
+                        if (strcmp(task_unit.table_name, "slice_test") == 0) {
+                            window_size = 32;
+                            MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                            task_unit.model_name = pstrdup("slice");
+                            task_unit.cuda_name = pstrdup("cpu");
+                            MemoryContextSwitchTo(old_ctx);
+                        }
+                    }
+                    break;
+                default:
+                    elog(ERROR, "unknown task type %d", task_unit.task_type);
+                    break;
+            }
+        }
         bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
                               (memory_manager.current_func_call + 1 == memory_manager.total_func_call);
-        std::string selected_model;
-        const char* task_model;
-        char* task_cuda;
-        switch (task_unit.task_type) {
-            case TaskType::IMAGE_CLASSIFICATION:
-                {
-                    selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.sample_size, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
-                    // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
-                    task_model = pstrdup(selected_model.c_str());
-                    if (InitModel(task_model)) {
-                        elog(INFO, "InitModel success");
-                    }
-                    else {
-                        elog(ERROR, "InitModel failed");
-                    }
-                    task_cuda = pstrdup("gpu");   
-                }
-                break;
-            case TaskType::PREDICT:
-                {
-                    if (strcmp(task_unit.table_name, "slice_test") == 0) {
-                        window_size = 32;
-                        task_model = pstrdup("slice");
-                        task_cuda = pstrdup("cpu");
-                    }
-                }
-                break;
-            default:
-                elog(ERROR, "unknown task type %d", task_unit.task_type);
-                break;
-        }
-        if (!ready_for_task) {
+        if (!ready_for_task)
             continue;
-        }
+
         int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
         int64_t window_end = window_start + window_size;
         if (window_end > memory_manager.total_func_call) {
@@ -372,8 +376,8 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
             throw std::bad_alloc();
         }
         // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
-        task->model = pstrdup(task_model);
-        task->cuda = pstrdup(task_cuda);
+        task->model = pstrdup(task_unit.model_name);
+        task->cuda = pstrdup(task_unit.cuda_name);
         task->table_name = task_unit.table_name;
         task->input_start_index = window_start;
         task->input_end_index = window_end; // 包含start，不包含end
@@ -388,8 +392,9 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     }
 }
 
-std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path) {
+std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path) {
     ModelSelection image_classification(select_model_path, regression_model_path);
+    int sample_size = 10;
     std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, dataset_name);
     size_t pos = temp_result.find('%');
     if (pos == std::string::npos) {
