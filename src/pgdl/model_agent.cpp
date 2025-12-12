@@ -279,7 +279,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     if (memory_manager.current_func_call == 0) {
         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
         task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
-        task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
+        // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
             task_info.select_table_name = (char*)PG_GETARG_CSTRING(load_index++);
             task_info.col_name = (char*)PG_GETARG_CSTRING(load_index++);
@@ -291,8 +291,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         MemoryContextSwitchTo(old_ctx);
     } else {
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION)
-            load_index += 7;
-        else load_index += 2;
+            load_index += 6;
+        else load_index += 1;
     }
     // 下面代码每次调用均会执行
     MVec* current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
