@@ -235,14 +235,14 @@ void PerceptionAgent::LoadMVecData(MVec* current_data) {
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     FunctionCallInfo fcinfo = state->fcinfo;
     // elog(INFO, "the number of param: %d", PG_NARGS());
-    for (int i = 0; i < PG_NARGS(); i++) {
+    for (int i = 1; i < PG_NARGS(); i++) {
         if (PG_ARGISNULL(i)) {
             elog(INFO, "param %d is null", i);
             throw std::runtime_error("NULL param accepted.");
         }
     }
     TaskInfo task_info;
-    int load_index = 0;
+    int load_index = 1;
     char* task_type = (char*)PG_GETARG_CSTRING(load_index++);
     TaskType task_type_enum;
     if (strcmp(task_type, "image_classification") == 0) {
@@ -323,39 +323,44 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         // 先默认窗口为32
         int window_size = 32;
         std::string selected_model;
+        bool from_select_model = false;
         if (memory_manager.current_func_call == 0) {
             elog(INFO, "start setting model and cuda");
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
                     {
                         selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name);
+                        from_select_model = true;
                         // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                         task_unit.model_name = pstrdup(selected_model.c_str());
                         task_unit.cuda_name = pstrdup("gpu");   
                         MemoryContextSwitchTo(old_ctx);
-                        if (InitModel(selected_model.c_str())) {
-                            elog(INFO, "InitModel success");
-                        }
-                        else {
-                            elog(ERROR, "InitModel failed");
-                        }
                     }
                     break;
                 case TaskType::PREDICT:
                     {
                         if (strcmp(task_unit.table_name, "slice_test") == 0) {
                             window_size = 32;
+                            selected_model = "slice";
                             MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                             task_unit.model_name = pstrdup("slice");
                             task_unit.cuda_name = pstrdup("cpu");
                             MemoryContextSwitchTo(old_ctx);
+                        } else {
+                            elog(ERROR, "predict_table not implemented.");
                         }
                     }
                     break;
                 default:
                     elog(ERROR, "unknown task type %d", task_unit.task_type);
                     break;
+            }
+            if (InitModel(selected_model.c_str(), from_select_model)) {
+                elog(INFO, "InitModel success");
+            }
+            else {
+                elog(ERROR, "InitModel failed");
             }
         }
         bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
@@ -422,8 +427,13 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, c
     return result_str;
 }
 
-bool OrchestrationAgent::InitModel(const char* model_name) {
-    std::string full_path = "/home/why/models_all/";
+bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_model) {
+    std::string full_path;
+    if (from_select_model) {
+        full_path = "/home/why/models_all/";
+    } else {
+        full_path = "/home/why/pgdl/model/models/";
+    }
     full_path += model_name;
     full_path += ".pt";
     const char* model_path = full_path.c_str();

@@ -41,11 +41,22 @@ RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_predict'  
 LANGUAGE C STRICT;
 
-CREATE OR REPLACE FUNCTION api_agent(  
-IN task_type cstring, VARIADIC vec "any", OUT boolean
-)  
-AS 'MODULE_PATHNAME', 'api_agent'  
-LANGUAGE C STRICT;
+
+CREATE OR REPLACE FUNCTION db_agent_sfunc(internal, cstring, VARIADIC "any")
+RETURNS internal
+AS 'MODULE_PATHNAME', 'db_agent_sfunc' -- 对应 C 代码中的新入口名
+LANGUAGE C;
+
+CREATE OR REPLACE FUNCTION db_agent_final(internal)
+RETURNS boolean
+AS 'MODULE_PATHNAME', 'db_agent_final'
+LANGUAGE C;
+
+CREATE AGGREGATE db_agent(cstring, VARIADIC "any") (
+    SFUNC = db_agent_sfunc,
+    STYPE = internal,
+    FINALFUNC = db_agent_final
+);
 
 -- insert into base_model_info values('resnet18', 'd17e88193d63653e785ccd1e8314caee', '/home/lhh/models/resnet18_resnet18_imagenet.pt');
 -- insert into base_model_info values('alexnet', '722de753346c94d79e7397a28c6f5674', '/home/lhh/models/alexnet_alexnet_imagenet.pt');

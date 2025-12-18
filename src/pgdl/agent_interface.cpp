@@ -28,7 +28,8 @@ extern "C" {
 #include "libpq/pqformat.h"
 #include "utils/syscache.h"
 
-PG_FUNCTION_INFO_V1(api_agent);
+PG_FUNCTION_INFO_V1(db_agent_final);
+PG_FUNCTION_INFO_V1(db_agent_sfunc);
 MemoryManager memory_manager;
 auto state_ = std::make_shared<AgentState>();
 
@@ -85,7 +86,7 @@ void reset_global_memory_state() {
 }
 
 Datum
-api_agent(PG_FUNCTION_ARGS) {
+db_agent_sfunc(PG_FUNCTION_ARGS) {
     state_->fcinfo = fcinfo;
     
     // ... func_map initialization ...
@@ -132,6 +133,10 @@ api_agent(PG_FUNCTION_ARGS) {
         reset_global_memory_state();
         PG_RETURN_BOOL(false);
     }
+}
+
+Datum db_agent_final(PG_FUNCTION_ARGS) {
+    PG_RETURN_BOOL(true);
 }
 
 #ifdef __cplusplus
