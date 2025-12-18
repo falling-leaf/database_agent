@@ -7,6 +7,7 @@
 #include "model_selection.h"
 #include "batch_interface.h"
 #include "myfunc.h"
+#include "vector.h"
 
 #include <stdbool.h>
 #include <string>
@@ -36,6 +37,10 @@ public:
     static Args* Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim);
 
     // to be done
+    int total_func_call{0};
+    int current_func_call{0};
+    float** ins_cache_data;
+    MVec** ins_cache;
 };
 
 // agent result: the result of the agent execution
@@ -77,13 +82,10 @@ typedef struct Task {
 typedef struct TaskInfo {
     TaskType task_type;
     char* table_name;
-    int limit_length;
     char* select_table_name;
-    int sample_size{10};
+    char* model_name;
+    char* cuda_name;
     char* col_name;
-    char* dataset_name;
-    char* select_model_path;
-    char* regression_model_path;
 } TaskInfo;
 
 typedef struct VecAggState {
@@ -132,6 +134,7 @@ public:
 class PerceptionAgent : public BaseAgentNode {
 public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
+    void LoadMVecData(MVec* input);
 
     std::string Name() const override {
         return "PerceptionAgent";
@@ -144,7 +147,7 @@ public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
     void SPIRegisterProcess();
     void TaskInit(std::shared_ptr<AgentState> state);
-    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path);
+    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name, const std::string& col_name);
     bool InitModel(const char* model_name);
 
     std::string Name() const override {

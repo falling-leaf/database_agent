@@ -1,6 +1,7 @@
 #include "model_agent.h"
 #include "model_manager.h"
 #include "model_utils.h"
+#include "vector.h"
 #include "spi_connection.h"
 #include "md5.h"
 #include <cstddef>
@@ -15,12 +16,14 @@ extern "C" {
 #include "access/htup.h"
 #include "access/tupdesc.h"
 #include "utils/builtins.h"
+#include "utils/memutils.h"
 #include "miscadmin.h"
 
 extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 }
 extern void register_callback();
 extern ModelManager model_manager;
+extern MemoryManager memory_manager;
 
 Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim)
 {
@@ -179,10 +182,59 @@ AgentAction initialize_state(std::shared_ptr<AgentState> state) {
     return AgentAction::SCHEDULE;
 }
 
+void PerceptionAgent::LoadMVecData(MVec* current_data) {
+    if (IS_MVEC_REF(current_data)) {
+        ereport(ERROR, (errmsg("Input vector is a Reference (RowId: %ld), but api_agent requires materialized data. "
+                               "Please use de-referencing functions or ensure input is a concrete vector.", 
+                               (long)GET_MVEC_ROWID(current_data))));
+    }
+
+    // 2. 安全地获取维度
+    int dim = current_data->vec_d.dim;
+
+    // 【关键检查 2】维度合法性校验 (MAX_VECTOR_DIM 定义在 vector.h 中，通常为 1亿左右)
+    if (dim <= 0 || dim > MAX_VECTOR_DIM) {
+        ereport(ERROR, (errmsg("Invalid vector dimension: %d. Expected between 1 and %d.", 
+                               dim, MAX_VECTOR_DIM)));
+    }
+
+    // 3. 准备内存上下文
+    int cache_idx = memory_manager.current_func_call;
+    MemoryContext old_context = MemoryContextSwitchTo(TopMemoryContext);
+
+    // 4. 计算大小并分配 (Header + Data)
+    // 此时 dim 已经被校验过，不会导致 6GB 的请求
+    size_t total_size = MVEC_HEADER_SIZE + ((size_t)dim * sizeof(float));
+    
+    // 确保 ins_cache 已初始化 (防御性编程)
+    if (memory_manager.ins_cache == NULL) {
+         // 这里可以补救或者报错，视你的初始化逻辑而定
+         ereport(ERROR, (errmsg("Global memory ins_cache is not initialized.")));
+    }
+
+    memory_manager.ins_cache[cache_idx] = (MVec*)palloc0(total_size);
+
+    // 5. 拷贝 Header
+    std::memcpy(memory_manager.ins_cache[cache_idx], current_data, MVEC_HEADER_SIZE);
+
+    // 6. 获取数据区指针并拷贝数据
+    // 注意：目标地址紧跟在 Header 之后
+    float* data_dst = (float*)((char*)memory_manager.ins_cache[cache_idx] + MVEC_HEADER_SIZE);
+    
+    // 从源数据的 data 数组起始处拷贝
+    // 注意：current_data->vec_d.data 是柔性数组，直接指向 Header 后的内存
+    std::memcpy(data_dst, current_data->vec_d.data, sizeof(float) * dim);
+
+    // 7. 设置辅助指针
+    memory_manager.ins_cache_data[cache_idx] = data_dst;
+
+    MemoryContextSwitchTo(old_context);
+}
+
 // perception agent: NL =====> embedding vector
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     FunctionCallInfo fcinfo = state->fcinfo;
-    elog(INFO, "the number of param: %d", PG_NARGS());
+    // elog(INFO, "the number of param: %d", PG_NARGS());
     for (int i = 0; i < PG_NARGS(); i++) {
         if (PG_ARGISNULL(i)) {
             elog(INFO, "param %d is null", i);
@@ -190,16 +242,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         }
     }
     TaskInfo task_info;
-    // task_type text,
-    // table_name text,
-    // limit_length int,
-    // select_table_name text,
-    // sample_size text, inner
-    // col_name text,
-    // dataset_name text,
-    // select_model_path text,
-    // regression_model_path text
-    char* task_type = (char*)PG_GETARG_CSTRING(0);
+    int load_index = 0;
+    char* task_type = (char*)PG_GETARG_CSTRING(load_index++);
     TaskType task_type_enum;
     if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
@@ -210,24 +254,58 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         return AgentAction::FAILURE;
     }
     task_info.task_type = task_type_enum;
-    task_info.table_name = (char*)PG_GETARG_CSTRING(1);
-    task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(2));
-    if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-        task_info.select_table_name = (char*)PG_GETARG_CSTRING(3);
-        task_info.col_name = (char*)PG_GETARG_CSTRING(4);
-        task_info.dataset_name = (char*)PG_GETARG_CSTRING(5);
-        task_info.select_model_path = (char*)PG_GETARG_CSTRING(6);
-        task_info.regression_model_path = (char*)PG_GETARG_CSTRING(7);
+    if (memory_manager.total_func_call == 0) {
+        memory_manager.total_func_call = PG_GETARG_INT32(load_index++);
+        if (memory_manager.ins_cache == NULL)
+        {
+            elog(INFO, "reset the space");
+            MemoryContext old_context = MemoryContextSwitchTo(TopMemoryContext);
+            memory_manager.ins_cache_data = (float**)palloc0(sizeof(float*) * memory_manager.total_func_call);
+            memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * memory_manager.total_func_call);
+            MemoryContextSwitchTo(old_context);
+            
+            elog(NOTICE, "Global memory allocated in TopMemoryContext.");
+        }
+        memory_manager.current_func_call = 0;
+    } else {
+        load_index++;
+        memory_manager.current_func_call++;
     }
-    state->task_info.emplace_back(task_info);
+    if (memory_manager.current_func_call >= memory_manager.total_func_call) {
+        throw std::runtime_error("variable fatal error in call times, restart the system.");
+    }
+    // elog(INFO, "test for total: %d, current: %d", memory_manager.total_func_call, memory_manager.current_func_call);
+    // TODO：下面代码应当只会被执行一次
+    if (memory_manager.current_func_call == 0) {
+        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+        task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
+        // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
+        if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
+            task_info.select_table_name = (char*)PG_GETARG_CSTRING(load_index++);
+            task_info.col_name = (char*)PG_GETARG_CSTRING(load_index++);
+        }
+        state->task_info.emplace_back(task_info);
+        MemoryContextSwitchTo(old_ctx);
+    } else {
+        if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION)
+            load_index += 3;
+        else load_index += 1;
+    }
+    // 下面代码每次调用均会执行
+    MVec* current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
+    LoadMVecData(current_data);
+    // 打印验证：指针与部分数据
+    // elog(INFO, "ins_cache[%d] header_size=%zu dim=%d data_ptr=%p first=%f", cache_idx, header_size, dim, (void*)(*data_slot), memory_manager.ins_cache_data[cache_idx][0]);
+    // elog(NOTICE, "Global memory allocated in TopMemoryContext.");
     state->last_action = AgentAction::PERCEPTION;
     return AgentAction::SCHEDULE;
 }
 
 // orchestration agent: model selection, resource management
 AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
-    SPIRegisterProcess();
     TaskInit(state);
+    if (memory_manager.current_func_call == 0)
+        SPIRegisterProcess();
     // to be done
     state->last_action = AgentAction::ORCHESTRATION;
     return AgentAction::SCHEDULE;
@@ -239,72 +317,98 @@ void OrchestrationAgent::SPIRegisterProcess() {
 }
 
 void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
-    state->current_start_index = 0;
-    state->current_end_index = 0;
+    // state->current_start_index = 0;
+    // state->current_end_index = 0;
     for (auto& task_unit : state->task_info) {
         // 先默认窗口为32
         int window_size = 32;
         std::string selected_model;
-        const char* task_model;
-        char* task_cuda;
-        switch (task_unit.task_type) {
-            case TaskType::IMAGE_CLASSIFICATION:
-                {
-                    selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name, task_unit.sample_size, task_unit.dataset_name, task_unit.select_model_path, task_unit.regression_model_path);
-                    // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
-                    task_model = pstrdup(selected_model.c_str());
-                    if (InitModel(task_model)) {
-                        elog(INFO, "InitModel success");
+        if (memory_manager.current_func_call == 0) {
+            elog(INFO, "start setting model and cuda");
+            switch (task_unit.task_type) {
+                case TaskType::IMAGE_CLASSIFICATION:
+                    {
+                        selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name);
+                        // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("gpu");   
+                        MemoryContextSwitchTo(old_ctx);
+                        if (InitModel(selected_model.c_str())) {
+                            elog(INFO, "InitModel success");
+                        }
+                        else {
+                            elog(ERROR, "InitModel failed");
+                        }
                     }
-                    else {
-                        elog(ERROR, "InitModel failed");
+                    break;
+                case TaskType::PREDICT:
+                    {
+                        if (strcmp(task_unit.table_name, "slice_test") == 0) {
+                            window_size = 32;
+                            MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                            task_unit.model_name = pstrdup("slice");
+                            task_unit.cuda_name = pstrdup("cpu");
+                            MemoryContextSwitchTo(old_ctx);
+                        }
                     }
-                    task_cuda = pstrdup("gpu");   
-                }
-                break;
-            case TaskType::PREDICT:
-                {
-                    if (strcmp(task_unit.table_name, "slice_test") == 0) {
-                        window_size = 32;
-                        task_model = pstrdup("slice");
-                        task_cuda = pstrdup("cpu");
-                    }
-                }
-                break;
-            default:
-                elog(ERROR, "unknown task type %d", task_unit.task_type);
-                break;
-        }
-        for (int i = 0; i < (task_unit.limit_length - 1) / window_size + 1; i++) {
-            Task* task = (Task*)palloc0(sizeof(Task));
-            if (task == NULL) {
-                elog(ERROR, "Failed to allocate memory for Task");
-                throw std::bad_alloc();
+                    break;
+                default:
+                    elog(ERROR, "unknown task type %d", task_unit.task_type);
+                    break;
             }
-            // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
-            task->model = pstrdup(task_model);
-            task->cuda = pstrdup(task_cuda);
-            task->table_name = task_unit.table_name;
-            // task->input_start_index = (i < window_size) ? 0 : (i - window_size);
-            // task->input_end_index = i + 1; // 包含start，不包含end
-            task->input_start_index = i * window_size;
-            task->input_end_index = ((i + 1) * window_size < task_unit.limit_length) ? (i + 1) * window_size : task_unit.limit_length; // 包含start，不包含end
-            task->output_start_index = 0;
-            task->output_end_index = task->input_end_index - task->input_start_index;
-            state->task_list = lappend(state->task_list, task);
         }
+        bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
+                              (memory_manager.current_func_call + 1 == memory_manager.total_func_call);
+        if (!ready_for_task)
+            continue;
+
+        int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
+        int64_t window_end = window_start + window_size;
+        if (window_end > memory_manager.total_func_call) {
+            window_end = memory_manager.total_func_call;
+        }
+        Task* task = (Task*)palloc0(sizeof(Task));
+        if (task == NULL) {
+            elog(ERROR, "Failed to allocate memory for Task");
+            throw std::bad_alloc();
+        }
+        // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
+        task->model = pstrdup(task_unit.model_name);
+        task->cuda = pstrdup(task_unit.cuda_name);
+        task->table_name = task_unit.table_name;
+        task->input_start_index = window_start;
+        task->input_end_index = window_end; // 包含start，不包含end
+        task->output_start_index = 0;
+        task->output_end_index = task->input_end_index - task->input_start_index;
+        state->task_list = lappend(state->task_list, task);
     }
-    elog(INFO, "task_list length: %d", list_length(state->task_list));
+    // elog(INFO, "task_list length: %d", list_length(state->task_list));
     for (int i = 0; i < list_length(state->task_list); i++) {
         Task* task = (Task*)list_nth(state->task_list, i);
         elog(INFO, "task %d: model: %s, cuda: %s, table_name: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
     }
 }
 
-std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name, int sample_size, const std::string& dataset_name, const std::string& select_model_path, const std::string& regression_model_path) {
+std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name) {
+    std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
+    std::string regression_model_path = "/home/why/pgdl/model/models/select_model/regression_model.onnx";
     ModelSelection image_classification(select_model_path, regression_model_path);
-    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, dataset_name);
-    size_t pos = temp_result.find('%');
+    int sample_size = 10;
+
+    std::string finetune_ds;
+    size_t pos = select_table_name.find('_');
+    if (pos != std::string::npos) {
+        finetune_ds = select_table_name.substr(0, pos);
+    } else {
+        elog(INFO, "Here");
+        finetune_ds = select_table_name;
+    }
+    if (finetune_ds == "cifar") {
+        finetune_ds += "10";
+    }
+    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, finetune_ds);
+    pos = temp_result.find('%');
     if (pos == std::string::npos) {
         // 没找到 %, 根据需求处理
         throw std::runtime_error("SelectModel: invalid result string");
@@ -314,7 +418,6 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, c
     }
     std::string arch = temp_result.substr(0, pos);
     std::string pretrain_ds = temp_result.substr(pos + 1);
-    std::string finetune_ds = dataset_name;
     std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
     return result_str;
 }
@@ -408,46 +511,70 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
     elog(INFO, "Execution task: %s, %s, %s, %ld, %ld", task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index);
+    
     if (task->input_start_index >= task->input_end_index) {
         ereport(ERROR, (errmsg("task input range error")));
         return AgentAction::FAILURE;
     }
+
+    // 设置模型参数
     state->current_state.model = task->model;
     state->current_state.cuda = task->cuda;
-    // 准备上下文
-    // TODO: 缓冲区仅支持一种任务，可通过设置多类型缓冲区扩展
-    while (state->current_start_index < task->input_start_index) {
-        state->current_state.ins = list_delete_first(state->current_state.ins);
-        // 内部逻辑似乎是覆盖而非清理
-        // state->current_state.outs = list_delete_first(state->current_state.outs);
-        state->current_start_index++;
-    }
-    while (state->current_end_index < task->input_end_index) {
-        // elog(INFO, "here");
-        Args* vec = MemoryManager::LoadOneRow(task->table_name, state->current_end_index);
+
+    // 【关键修正 2】: 抛弃“滑动窗口”逻辑，每次执行 Task 前彻底重置 Input/Output 列表
+    // 之前的逻辑导致 outs 列表无限增长，导致第二次 infer 时崩溃
+    state->current_state.ins = NIL;
+    state->current_state.outs = NIL;
+
+    // 重新构建本批次的输入列表
+    // 直接从 ins_cache 中根据 task 的索引范围抓取数据
+    for (int64_t i = task->input_start_index; i < task->input_end_index; i++) {
+        // 分配一个新的 Args 容器来承载指针 (注意：ins_cache 本身不需要拷贝)
+        Args* vec = (Args*)palloc0(sizeof(Args));
+        
+        // 防御性检查
+        if (memory_manager.ins_cache[i] == NULL) {
+             ereport(ERROR, (errmsg("ins_cache is null at index %ld", i)));
+        }
+        
+        vec->ptr = memory_manager.ins_cache[i];
+        
+        // 将其加入输入列表
         state->current_state.ins = lappend(state->current_state.ins, vec);
-        state->current_end_index++;
     }
-    elog(INFO, "list length: %d", list_length(state->current_state.ins));
-    // MVec* cur_mvec  = (MVec*)(((Args*)list_nth(state->current_state.ins, 0))[0].ptr);
-    // elog(INFO, "found mvec; ref is: %d, dim is: %d, shape_size is: %d", cur_mvec->ref_d.is_ref_tag, cur_mvec->vec_d.dim, cur_mvec->vec_d.shape_size);
+
+    elog(INFO, "Constructed batch size: %d. Starting inference...", list_length(state->current_state.ins));
+
+    // 执行推理
+    // infer_batch_internal 会将结果填入 state->current_state.outs
     infer_batch_internal(&state->current_state, true);
-    // Args* res = MemoryManager::LoadOneRow("slice_test", 0);
-    // state->current_state.ins = lappend(state->current_state.ins, res);
-    // to be done
+
     state->last_action = AgentAction::EXECUTION;
     return AgentAction::SCHEDULE;
 }
 
 // evaluation agent: evaluate the execution result
 AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
-    // TODO: 目前逻辑Execution和Evaluation强相关（current_state），考虑将其解耦
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
-    for (int i = task->output_start_index; i < task->output_end_index; i++) {
-        Args* ret = (Args*)list_nth(state->current_state.outs, i);
-        elog(INFO, "Evaluation Result on index %d: %f", task->input_start_index + i, ret->floating);
+    
+    // 【关键修正 3】: 配合 Execution 的修改
+    // 现在 outs 列表只包含当前 Task 的结果，索引从 0 开始
+    int result_count = list_length(state->current_state.outs);
+    int expected_count = task->input_end_index - task->input_start_index;
+
+    if (result_count != expected_count) {
+        elog(WARNING, "Evaluation warning: expected %d results, got %d", expected_count, result_count);
     }
-    // to be done
+
+    for (int i = 0; i < result_count; i++) {
+        Args* ret = (Args*)list_nth(state->current_state.outs, i);
+        // 计算对应的全局行号用于日志
+        long global_row_index = task->input_start_index + i;
+        elog(INFO, "Evaluation Result on index %ld: %f", global_row_index, ret->floating);
+    }
+
+    // 任务完成后，可以在这里选择性释放 current_state.outs 里的 Args* 内存，但这通常由 PG 上下文自动处理
+    
     state->last_action = AgentAction::EVALUATION;
     return AgentAction::SCHEDULE;
 }
@@ -464,7 +591,6 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
         } else if (state->last_action == AgentAction::OPTIMIZATION) {
             // to be done: 决策执行什么任务，若无任务可执行应当直接调到结束状态
             if (list_length(state->task_list) == 0) {
-                elog(INFO, "ScheduleAgent: no task left, exit");
                 return AgentAction::SUCCESS;
             }
             state->current_task_id = 0;
@@ -472,12 +598,12 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
         } else if (state->last_action == AgentAction::EXECUTION) {
             return AgentAction::EVALUATION;
         } else if (state->last_action == AgentAction::EVALUATION) {
-            // to be done: 如果可以，将已执行的任务删除
-            if (list_length(state->task_list) > state->current_task_id + 1) {
-                state->current_task_id++;
-                return AgentAction::EXECUTION;
-            } else {
+            state->task_list = list_delete_first(state->task_list);
+            if (list_length(state->task_list) == 0) {
                 return AgentAction::SUCCESS;
+            } else {                
+                state->current_task_id = 0;
+                return AgentAction::EXECUTION;
             } 
         } else {
             return AgentAction::SUCCESS;
