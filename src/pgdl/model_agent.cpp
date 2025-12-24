@@ -269,14 +269,12 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
         // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-            task_info.select_table_name = task_info.table_name;
-            task_info.col_name = (char*)PG_GETARG_CSTRING(load_index++);
         }
         state->task_info.emplace_back(task_info);
         MemoryContextSwitchTo(old_ctx);
     } else {
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION)
-            load_index += 2;
+            load_index += 1;
         else load_index += 1;
     }
     // 下面代码每次调用均会执行
@@ -330,7 +328,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
                     {
-                        selected_model = SelectModel(state, task_unit.select_table_name, task_unit.col_name);
+                        selected_model = SelectModel(state, task_unit.table_name);
                         from_select_model = true;
                         // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -391,7 +389,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     }
 }
 
-std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name, const std::string& col_name) {
+std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name) {
     std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
     std::string regression_model_path = "/home/why/pgdl/model/models/select_model/regression_model.onnx";
     ModelSelection image_classification(select_model_path, regression_model_path);
@@ -407,7 +405,8 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, c
     if (finetune_ds == "cifar") {
         finetune_ds += "10";
     }
-    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, finetune_ds);
+    std::string col_name = "padding";
+    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, finetune_ds, memory_manager.sample_path);
     pos = temp_result.find('%');
     if (pos == std::string::npos) {
         // 没找到 %, 根据需求处理

@@ -88,10 +88,8 @@ typedef struct Task {
 typedef struct TaskInfo {
     TaskType task_type;
     char* table_name;
-    char* select_table_name;
     char* model_name;
     char* cuda_name;
-    char* col_name;
 } TaskInfo;
 
 typedef struct VecAggState {
@@ -150,7 +148,7 @@ public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
     void SPIRegisterProcess();
     void TaskInit(std::shared_ptr<AgentState> state);
-    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name, const std::string& col_name);
+    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name);
     bool InitModel(const char* model_name, bool from_select_model);
 
     std::string Name() const override {
