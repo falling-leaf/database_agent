@@ -28,6 +28,8 @@ extern "C" {
 #include "utils/syscache.h"
 }
 
+#define MAX_CACHE_SIZE 10000
+
 class MemoryManager {
 public:
     MemoryManager() {}
@@ -37,10 +39,14 @@ public:
     static Args* Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim);
 
     // to be done
-    int total_func_call{0};
-    int current_func_call{0};
+    int current_func_call{-1};
+    bool is_last_call{false};
     float** ins_cache_data;
     MVec** ins_cache;
+    int out_cache_size{0};
+    float* out_cache_data;
+
+    std::vector<std::string> sample_path;
 };
 
 // agent result: the result of the agent execution
@@ -115,9 +121,6 @@ typedef struct AgentState {
     
     // to be done
 }AgentState;
-
-AgentAction initialize_state(std::shared_ptr<AgentState> state);
-
 // base agent node
 class BaseAgentNode {
 public:

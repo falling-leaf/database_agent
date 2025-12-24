@@ -2,6 +2,7 @@
 #include "model_manager.h"
 #include "model_utils.h"
 #include "vector.h"
+#include "embedding.h"
 #include "spi_connection.h"
 #include "md5.h"
 #include <cstddef>
@@ -174,14 +175,6 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
     return vec;
 }
 
-
-AgentAction initialize_state(std::shared_ptr<AgentState> state) {
-    // Initialize the agent state
-    state->last_action = AgentAction::START;
-    // to be done
-    return AgentAction::SCHEDULE;
-}
-
 void PerceptionAgent::LoadMVecData(MVec* current_data) {
     if (IS_MVEC_REF(current_data)) {
         ereport(ERROR, (errmsg("Input vector is a Reference (RowId: %ld), but api_agent requires materialized data. "
@@ -233,6 +226,22 @@ void PerceptionAgent::LoadMVecData(MVec* current_data) {
 
 // perception agent: NL =====> embedding vector
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
+    if (memory_manager.current_func_call == -1) {
+        if (memory_manager.ins_cache == NULL)
+        {
+            elog(INFO, "reset the space");
+            MemoryContext old_context = MemoryContextSwitchTo(TopMemoryContext);
+            memory_manager.ins_cache_data = (float**)palloc0(sizeof(float*) * MAX_CACHE_SIZE);
+            memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * MAX_CACHE_SIZE);
+            memory_manager.out_cache_data = (float*)palloc0(sizeof(float) * MAX_CACHE_SIZE);
+            MemoryContextSwitchTo(old_context);
+            
+            elog(NOTICE, "Global memory allocated in TopMemoryContext.");
+        }
+        memory_manager.current_func_call = 0;
+    } else {
+        memory_manager.current_func_call++;
+    }
     FunctionCallInfo fcinfo = state->fcinfo;
     // elog(INFO, "the number of param: %d", PG_NARGS());
     for (int i = 1; i < PG_NARGS(); i++) {
@@ -254,45 +263,32 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         return AgentAction::FAILURE;
     }
     task_info.task_type = task_type_enum;
-    if (memory_manager.total_func_call == 0) {
-        memory_manager.total_func_call = PG_GETARG_INT32(load_index++);
-        if (memory_manager.ins_cache == NULL)
-        {
-            elog(INFO, "reset the space");
-            MemoryContext old_context = MemoryContextSwitchTo(TopMemoryContext);
-            memory_manager.ins_cache_data = (float**)palloc0(sizeof(float*) * memory_manager.total_func_call);
-            memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * memory_manager.total_func_call);
-            MemoryContextSwitchTo(old_context);
-            
-            elog(NOTICE, "Global memory allocated in TopMemoryContext.");
-        }
-        memory_manager.current_func_call = 0;
-    } else {
-        load_index++;
-        memory_manager.current_func_call++;
-    }
-    if (memory_manager.current_func_call >= memory_manager.total_func_call) {
-        throw std::runtime_error("variable fatal error in call times, restart the system.");
-    }
-    // elog(INFO, "test for total: %d, current: %d", memory_manager.total_func_call, memory_manager.current_func_call);
     // TODO：下面代码应当只会被执行一次
     if (memory_manager.current_func_call == 0) {
         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
         task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
         // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-            task_info.select_table_name = (char*)PG_GETARG_CSTRING(load_index++);
+            task_info.select_table_name = task_info.table_name;
             task_info.col_name = (char*)PG_GETARG_CSTRING(load_index++);
         }
         state->task_info.emplace_back(task_info);
         MemoryContextSwitchTo(old_ctx);
     } else {
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION)
-            load_index += 3;
+            load_index += 2;
         else load_index += 1;
     }
     // 下面代码每次调用均会执行
-    MVec* current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
+    MVec* current_data;
+    if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
+        char* image_path = text_to_cstring(PG_GETARG_TEXT_PP(load_index++));
+        if (memory_manager.sample_path.size() <= 10)
+            memory_manager.sample_path.emplace_back(image_path);
+        //TODO: 这里现在仅限cifar，还需要进一步明确具体参数
+        current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+    }
+    else current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
     LoadMVecData(current_data);
     // 打印验证：指针与部分数据
     // elog(INFO, "ins_cache[%d] header_size=%zu dim=%d data_ptr=%p first=%f", cache_idx, header_size, dim, (void*)(*data_slot), memory_manager.ins_cache_data[cache_idx][0]);
@@ -321,10 +317,15 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     // state->current_end_index = 0;
     for (auto& task_unit : state->task_info) {
         // 先默认窗口为32
+        // 强制窗口要大于预设的样本数量
         int window_size = 32;
         std::string selected_model;
+        bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
+                              (memory_manager.is_last_call);
+        if (!ready_for_task)
+            continue;
         bool from_select_model = false;
-        if (memory_manager.current_func_call == 0) {
+        if (memory_manager.current_func_call == window_size - 1) {
             elog(INFO, "start setting model and cuda");
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
@@ -363,15 +364,10 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                 elog(ERROR, "InitModel failed");
             }
         }
-        bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
-                              (memory_manager.current_func_call + 1 == memory_manager.total_func_call);
-        if (!ready_for_task)
-            continue;
-
         int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
         int64_t window_end = window_start + window_size;
-        if (window_end > memory_manager.total_func_call) {
-            window_end = memory_manager.total_func_call;
+        if (memory_manager.is_last_call) {
+            window_end = memory_manager.current_func_call + 1;
         }
         Task* task = (Task*)palloc0(sizeof(Task));
         if (task == NULL) {
@@ -406,7 +402,6 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, c
     if (pos != std::string::npos) {
         finetune_ds = select_table_name.substr(0, pos);
     } else {
-        elog(INFO, "Here");
         finetune_ds = select_table_name;
     }
     if (finetune_ds == "cifar") {
@@ -580,6 +575,7 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         Args* ret = (Args*)list_nth(state->current_state.outs, i);
         // 计算对应的全局行号用于日志
         long global_row_index = task->input_start_index + i;
+        memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
         elog(INFO, "Evaluation Result on index %ld: %f", global_row_index, ret->floating);
     }
 

@@ -315,7 +315,8 @@ std::vector<std::string> ModelSelection::GetDataList(const std::string& table_na
 std::string ModelSelection::SelectModel(const std::string& table_name,
                                          const std::string& col_name,
                                          const int& sample_size,
-                                         std::string dataset)
+                                         std::string dataset,
+                                         std::vector<std::string> sample_path)
 {
     if(dataset.empty()){
         dataset = "mean";
@@ -329,9 +330,13 @@ std::string ModelSelection::SelectModel(const std::string& table_name,
     std::vector<float> meta_scores = meta_scores_map[dataset];
     
     int input_size = sample_size;
-    std::vector<std::string> data_list = GetDataList(table_name, 
-                                                     col_name, 
-                                                     sample_size);
+    std::vector<std::string> data_list;
+    if (sample_path.empty()){
+        data_list = GetDataList(table_name, col_name, sample_size);
+    }
+    else{
+        data_list = sample_path;
+    }
 
     // get forward from clip
     torch::Tensor predict_feats = GetForwardClip(data_list, visual_model_path);

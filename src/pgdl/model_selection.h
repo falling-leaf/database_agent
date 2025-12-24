@@ -36,7 +36,8 @@ public:
     std::string SelectModel(const std::string& table_name,
                              const std::string& col_name,
                              const int& sample_size,
-                             std::string dataset = "mean");
+                             std::string dataset = "mean",
+                             std::vector<std::string> sample_path = {});
 
 private:
     torch::Tensor GetForwardClip(const std::vector<std::string>& data_list, 

@@ -41,15 +41,15 @@ RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_predict'  
 LANGUAGE C STRICT;
 
+-- 2. 修改 Final Function 定义，返回 float8[]
+CREATE OR REPLACE FUNCTION db_agent_final(internal)
+RETURNS float8[]  -- <--- 这里修改了
+AS 'MODULE_PATHNAME', 'db_agent_final'
+LANGUAGE C;
 
 CREATE OR REPLACE FUNCTION db_agent_sfunc(internal, cstring, VARIADIC "any")
 RETURNS internal
 AS 'MODULE_PATHNAME', 'db_agent_sfunc' -- 对应 C 代码中的新入口名
-LANGUAGE C;
-
-CREATE OR REPLACE FUNCTION db_agent_final(internal)
-RETURNS boolean
-AS 'MODULE_PATHNAME', 'db_agent_final'
 LANGUAGE C;
 
 CREATE AGGREGATE db_agent(cstring, VARIADIC "any") (
