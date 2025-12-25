@@ -39,8 +39,8 @@ def run_scripts_in_directory(directory, scripts):
 if __name__ == "__main__":
     #run_scripts_in_directory(project_root, scripts_to_run.keys())
     # series test
-    # from morphingdb_test.series_test.slice_test.morphingdb_test import slice_all_test 
-    # slice_all_test()
+    from morphingdb_test.series_test.slice_test.morphingdb_test import slice_all_test 
+    slice_all_test()
     # from morphingdb_test.series_test.swarm_test.morphingdb_test import swarm_all_test
     # swarm_all_test()
     # from morphingdb_test.series_test.year_predict_test.morphingdb_test import year_predict_all_test

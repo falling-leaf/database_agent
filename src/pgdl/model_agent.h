@@ -40,11 +40,12 @@ public:
 
     // to be done
     int current_func_call{-1};
-    bool is_last_call{false};
+    int is_last_call{2};
     float** ins_cache_data;
     MVec** ins_cache;
     int out_cache_size{0};
     float* out_cache_data;
+    int output_index{0};
 
     std::vector<std::string> sample_path;
 };
@@ -148,7 +149,7 @@ public:
     AgentAction Execute(std::shared_ptr<AgentState> state) override;
     void SPIRegisterProcess();
     void TaskInit(std::shared_ptr<AgentState> state);
-    std::string SelectModel(std::shared_ptr<AgentState> state, const std::string& table_name);
+    std::string SelectModel(std::shared_ptr<AgentState> state, TaskType task_type);
     bool InitModel(const char* model_name, bool from_select_model);
 
     std::string Name() const override {

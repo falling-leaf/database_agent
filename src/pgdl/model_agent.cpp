@@ -266,16 +266,11 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     // TODO：下面代码应当只会被执行一次
     if (memory_manager.current_func_call == 0) {
         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
-        task_info.table_name = (char*)PG_GETARG_CSTRING(load_index++);
         // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
         if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
         }
         state->task_info.emplace_back(task_info);
         MemoryContextSwitchTo(old_ctx);
-    } else {
-        if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION)
-            load_index += 1;
-        else load_index += 1;
     }
     // 下面代码每次调用均会执行
     MVec* current_data;
@@ -319,7 +314,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         int window_size = 32;
         std::string selected_model;
         bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
-                              (memory_manager.is_last_call);
+                              (memory_manager.is_last_call == 1);
         if (!ready_for_task)
             continue;
         bool from_select_model = false;
@@ -328,7 +323,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
                     {
-                        selected_model = SelectModel(state, task_unit.table_name);
+                        selected_model = SelectModel(state, task_unit.task_type);
                         from_select_model = true;
                         // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -339,16 +334,11 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                     break;
                 case TaskType::PREDICT:
                     {
-                        if (strcmp(task_unit.table_name, "slice_test") == 0) {
-                            window_size = 32;
-                            selected_model = "slice";
-                            MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
-                            task_unit.model_name = pstrdup("slice");
-                            task_unit.cuda_name = pstrdup("cpu");
-                            MemoryContextSwitchTo(old_ctx);
-                        } else {
-                            elog(ERROR, "predict_table not implemented.");
-                        }
+                        selected_model = SelectModel(state, task_unit.task_type);
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("cpu");
+                        MemoryContextSwitchTo(old_ctx);
                     }
                     break;
                 default:
@@ -364,7 +354,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         }
         int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
         int64_t window_end = window_start + window_size;
-        if (memory_manager.is_last_call) {
+        if (memory_manager.is_last_call == 1) {
             window_end = memory_manager.current_func_call + 1;
         }
         Task* task = (Task*)palloc0(sizeof(Task));
@@ -375,7 +365,6 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
         task->model = pstrdup(task_unit.model_name);
         task->cuda = pstrdup(task_unit.cuda_name);
-        task->table_name = task_unit.table_name;
         task->input_start_index = window_start;
         task->input_end_index = window_end; // 包含start，不包含end
         task->output_start_index = 0;
@@ -385,40 +374,63 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     // elog(INFO, "task_list length: %d", list_length(state->task_list));
     for (int i = 0; i < list_length(state->task_list); i++) {
         Task* task = (Task*)list_nth(state->task_list, i);
-        elog(INFO, "task %d: model: %s, cuda: %s, table_name: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
+        elog(INFO, "task %d: model: %s, cuda: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
     }
 }
 
-std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, const std::string& select_table_name) {
-    std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
-    std::string regression_model_path = "/home/why/pgdl/model/models/select_model/regression_model.onnx";
-    ModelSelection image_classification(select_model_path, regression_model_path);
+std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, TaskType task_type) {
     int sample_size = 10;
+    if (task_type == TaskType::PREDICT) {
+        MVec* input = memory_manager.ins_cache[0];
+        int shape_size = GET_MVEC_SHAPE_SIZE(input);
+        if (shape_size == 2) {
+            int result0 = GET_MVEC_SHAPE_VAL(input, 0);
+            int result1 = GET_MVEC_SHAPE_VAL(input, 1);
+            if (result0 == 1 && result1 == 384) {
+                return "slice";
+            } else {
+                elog(ERROR, "input shape not (1, 384)");
+                throw std::runtime_error("SelectModel: invalid input shape");
+            }
+        } else {
+            elog(ERROR, "input shape size not 2");
+            throw std::runtime_error("SelectModel: invalid input shape");
+        }
+    } else if (task_type == TaskType::IMAGE_CLASSIFICATION) {
+        std::string finetune_ds;
+        MVec* input = memory_manager.ins_cache[0];
+        int shape_size = GET_MVEC_SHAPE_SIZE(input);
+        if (shape_size == 4) {
+            int result0 = GET_MVEC_SHAPE_VAL(input, 0);
+            int result1 = GET_MVEC_SHAPE_VAL(input, 1);
+            int result2 = GET_MVEC_SHAPE_VAL(input, 2);
+            int result3 = GET_MVEC_SHAPE_VAL(input, 3);
+            if (result0 == 1 && result1 == 3 && result2 == 224 && result3 == 224) {
+                finetune_ds = "cifar10";
+            } else {
+                elog(ERROR, "input shape not (1, 3, 224, 224)");
+                throw std::runtime_error("SelectModel: invalid input shape");
+            }
+        } else {
+            elog(ERROR, "input shape size not 4");
+            throw std::runtime_error("SelectModel: invalid input shape");
+        }
+        std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
+        std::string regression_model_path = "/home/why/pgdl/model/models/select_model/regression_model.onnx";
+        ModelSelection image_classification(select_model_path, regression_model_path);
 
-    std::string finetune_ds;
-    size_t pos = select_table_name.find('_');
-    if (pos != std::string::npos) {
-        finetune_ds = select_table_name.substr(0, pos);
-    } else {
-        finetune_ds = select_table_name;
+        std::string col_name = "padding";
+        std::string temp_result = image_classification.SelectModel(col_name, col_name, sample_size, finetune_ds, memory_manager.sample_path);
+        size_t pos = temp_result.find('%');
+        if (pos == std::string::npos) {
+            // 没找到 %, 根据需求处理
+            throw std::runtime_error("SelectModel: invalid result string");
+        }
+        std::string arch = temp_result.substr(0, pos);
+        std::string pretrain_ds = temp_result.substr(pos + 1);
+        std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
+        return result_str;
     }
-    if (finetune_ds == "cifar") {
-        finetune_ds += "10";
-    }
-    std::string col_name = "padding";
-    std::string temp_result = image_classification.SelectModel(select_table_name, col_name, sample_size, finetune_ds, memory_manager.sample_path);
-    pos = temp_result.find('%');
-    if (pos == std::string::npos) {
-        // 没找到 %, 根据需求处理
-        throw std::runtime_error("SelectModel: invalid result string");
-    }
-    if (select_table_name.size() < 12) {
-        throw std::runtime_error("SelectModel: invalid select_table_name");
-    }
-    std::string arch = temp_result.substr(0, pos);
-    std::string pretrain_ds = temp_result.substr(pos + 1);
-    std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
-    return result_str;
 }
 
 bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_model) {
@@ -467,9 +479,6 @@ bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_mode
         ereport(INFO, (errmsg("model struct equals")));
 
         model_parameter_extraction(model_path, base_model_path.c_str(), &parameter_list, layer_size);
-        // if(parameter_list == NULL){
-        //     ereport(ERROR, (errmsg("model_parameter_extraction error!")));
-        // }
 
         ereport(INFO, (errmsg("model extraction success")));
 
@@ -514,7 +523,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 // clear all the tasks
 AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
-    elog(INFO, "Execution task: %s, %s, %s, %ld, %ld", task->model, task->cuda, task->table_name, task->input_start_index, task->input_end_index);
+    elog(INFO, "Execution task: %s, %s, %ld, %ld", task->model, task->cuda, task->input_start_index, task->input_end_index);
     
     if (task->input_start_index >= task->input_end_index) {
         ereport(ERROR, (errmsg("task input range error")));
