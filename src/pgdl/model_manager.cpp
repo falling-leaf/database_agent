@@ -337,8 +337,10 @@ bool ModelManager::SetCuda(const std::string& model_path)
 {
     if(module_handle_.find(model_path) != module_handle_.end()){
         if(module_handle_[model_path].second == at::kCUDA){
+            // elog(INFO, "model %s already use gpu!", model_path.c_str());
             return true;
         } else {
+            // elog(INFO, "model %s not use gpu!", model_path.c_str());
             if(torch::cuda::is_available()){
                 module_handle_[model_path].second = at::kCUDA;
                 module_handle_[model_path].first.to(at::kCUDA);
@@ -346,6 +348,7 @@ bool ModelManager::SetCuda(const std::string& model_path)
                 ereport(INFO, (errmsg("libtorch use gpu!")));
                 return true;
             }
+            // elog(INFO, "model %s not use gpu, but gpu is not available!", model_path.c_str());
             return false;
         }
     } else {

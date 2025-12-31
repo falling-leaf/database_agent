@@ -20,8 +20,10 @@ def single_task_worker(task_id, row_count, symbol='cpu'):
         # 执行业务SQL
         # 注意：这里使用了你原本的逻辑
         cur.execute("select register_process();")
-        sql = f"select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
-        # sql = f"select db_agent('predict', sub_table.data) over (rows between current row and 31 following) FROM (SELECT * FROM slice_test) AS sub_table limit {row_count};"
+        # sql = f"select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+        sql = f"select db_agent('predict', sub_table.data) over (rows between current row and 31 following) FROM (SELECT * FROM slice_test) AS sub_table limit {row_count};"
+        # sql = f"select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit {row_count};"
+        # sql = "select db_agent('image_classification', sub_table.image_path) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_table limit 100) AS sub_table;"
         cur.execute(sql)
         cur.fetchall() # 确保数据读取完毕
         
@@ -38,6 +40,7 @@ def single_task_worker(task_id, row_count, symbol='cpu'):
             # "internal_timing": timing_raw # 如果需要深入分析PG内部耗时
         }
     except Exception as e:
+        print(f"Error in task {task_id}: {str(e)}")
         return {"task_id": task_id, "status": "failed", "error": str(e)}
 
 def run_throughput_test(concurrency_list, total_tasks_per_level, rows_per_query):
@@ -93,11 +96,12 @@ def slice_throughput_test():
     
     # 2. 配置吞吐量测试参数
     # 并发数：分别测试 1, 4, 8, 16, 32 个进程同时连接
-    CONCURRENCY_LEVELS = [1, 4, 8, 16, 32, 64] 
+    CONCURRENCY_LEVELS = [1, 4, 8, 16, 32] 
     # 每个并发级别总共执行的任务数（建议设为并发数的整数倍）
-    TOTAL_TASKS = 1024 
+    # TOTAL_TASKS = 1024 
+    TOTAL_TASKS = 64
     # 每个任务查询的数据量
-    ROWS_PER_QUERY = 1000 
+    ROWS_PER_QUERY = 1000
 
     print(f"Starting Throughput Test: Rows per query = {ROWS_PER_QUERY}\n")
     run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY)

@@ -241,6 +241,7 @@ infer_batch_internal(VecAggState *state, bool ret_float8)
     // 2. 设置gpu模式
     if(pg_strcasecmp(state->cuda, "gpu") == 0 && 
        model_manager.SetCuda(model_path)){
+        // elog(INFO, "set model %s use gpu success!", model_path.c_str());
         //model_path.clear();
         //ereport(ERROR, (errmsg("failed to set gpu mode!")));
     }
