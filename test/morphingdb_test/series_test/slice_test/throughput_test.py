@@ -96,10 +96,10 @@ def slice_throughput_test():
     
     # 2. 配置吞吐量测试参数
     # 并发数：分别测试 1, 4, 8, 16, 32 个进程同时连接
-    CONCURRENCY_LEVELS = [1, 4, 8, 16, 32] 
+    CONCURRENCY_LEVELS = [1, 4, 8, 16, 32, 64] 
     # 每个并发级别总共执行的任务数（建议设为并发数的整数倍）
     # TOTAL_TASKS = 1024 
-    TOTAL_TASKS = 64
+    TOTAL_TASKS = 1024
     # 每个任务查询的数据量
     ROWS_PER_QUERY = 1000
 

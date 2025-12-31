@@ -539,20 +539,15 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     state->current_state.ins = NIL;
     state->current_state.outs = NIL;
 
-    // 重新构建本批次的输入列表
-    // 直接从 ins_cache 中根据 task 的索引范围抓取数据
-    for (int64_t i = task->input_start_index; i < task->input_end_index; i++) {
-        // 分配一个新的 Args 容器来承载指针 (注意：ins_cache 本身不需要拷贝)
-        Args* vec = (Args*)palloc0(sizeof(Args));
-        
-        // 防御性检查
-        if (memory_manager.ins_cache[i] == NULL) {
-             ereport(ERROR, (errmsg("ins_cache is null at index %ld", i)));
+    const int64_t count = task->input_end_index - task->input_start_index;
+    Args* args_block = (Args*)palloc0(count * sizeof(Args));
+    for (int64_t i = 0; i < count; i++) {
+        const int64_t current_index = task->input_start_index + i;
+        Args* vec = args_block + i; 
+        if (memory_manager.ins_cache[current_index] == NULL) {
+            ereport(ERROR, (errmsg("ins_cache is null at index %ld", current_index)));
         }
-        
-        vec->ptr = memory_manager.ins_cache[i];
-        
-        // 将其加入输入列表
+        vec->ptr = memory_manager.ins_cache[current_index];
         state->current_state.ins = lappend(state->current_state.ins, vec);
     }
 
