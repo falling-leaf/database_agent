@@ -345,7 +345,7 @@ bool ModelManager::SetCuda(const std::string& model_path)
                 module_handle_[model_path].second = at::kCUDA;
                 module_handle_[model_path].first.to(at::kCUDA);
                 module_handle_[model_path].first.eval();
-                ereport(INFO, (errmsg("libtorch use gpu!")));
+                // ereport(INFO, (errmsg("libtorch use gpu!")));
                 return true;
             }
             // elog(INFO, "model %s not use gpu, but gpu is not available!", model_path.c_str());

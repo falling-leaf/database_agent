@@ -41,10 +41,15 @@ RETURNS boolean
 AS 'MODULE_PATHNAME', 'api_predict'  
 LANGUAGE C STRICT;
 
--- 2. 修改 Final Function 定义，返回 float8[]
+
 CREATE OR REPLACE FUNCTION db_agent_final(internal)
-RETURNS float8  -- <--- 这里修改了
+RETURNS float8
 AS 'MODULE_PATHNAME', 'db_agent_final'
+LANGUAGE C;
+
+CREATE OR REPLACE FUNCTION db_agent_sfinal(internal)
+RETURNS float8[]
+AS 'MODULE_PATHNAME', 'db_agent_sfinal'
 LANGUAGE C;
 
 CREATE OR REPLACE FUNCTION db_agent_sfunc(internal, cstring, VARIADIC "any")
@@ -59,7 +64,7 @@ CREATE OR REPLACE FUNCTION db_agent_minvfunc(IN aggstate internal, IN task_type 
 CREATE OR REPLACE FUNCTION db_agent_mfinalfunc(IN aggstate internal, OUT float8)
     AS 'MODULE_PATHNAME', 'db_agent_mfinalfunc' LANGUAGE C;
 
-CREATE AGGREGATE db_agent(cstring, VARIADIC "any") (
+CREATE AGGREGATE db_agent_batch(cstring, VARIADIC "any") (
     STYPE = internal,
     SFUNC = db_agent_sfunc,
     FINALFUNC = db_agent_final,
@@ -67,6 +72,12 @@ CREATE AGGREGATE db_agent(cstring, VARIADIC "any") (
     MSFUNC = db_agent_msfunc,
     MINVFUNC = db_agent_minvfunc,
     MFINALFUNC = db_agent_mfinalfunc
+);
+
+CREATE AGGREGATE db_agent_single(cstring, VARIADIC "any") (
+    STYPE = internal,
+    SFUNC = db_agent_sfunc,
+    FINALFUNC = db_agent_sfinal
 );
 
 -- insert into base_model_info values('resnet18', 'd17e88193d63653e785ccd1e8314caee', '/home/lhh/models/resnet18_resnet18_imagenet.pt');

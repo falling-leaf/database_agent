@@ -220,6 +220,7 @@ torch::Tensor MatToTensor(const cv::Mat& image) {
 
 torch::Tensor ModelSelection::GetForwardClip(const std::vector<std::string>& data_list, std::string visual_model_path) {
     torch::Device device(torch::kCPU);
+    // torch::Device device(torch::kCUDA);
     torch::jit::script::Module model = torch::jit::load(visual_model_path);
     model.to(device);
     model.eval();
@@ -318,6 +319,8 @@ std::string ModelSelection::SelectModel(const std::string& table_name,
                                          std::string dataset,
                                          std::vector<std::string> sample_path)
 {
+    auto start = std::chrono::system_clock::now();
+
     if(dataset.empty()){
         dataset = "mean";
     }
@@ -340,6 +343,10 @@ std::string ModelSelection::SelectModel(const std::string& table_name,
 
     // get forward from clip
     torch::Tensor predict_feats = GetForwardClip(data_list, visual_model_path);
+
+    auto end = std::chrono::system_clock::now();
+    elog(INFO, "GetForwardClip time: %ld us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    start = std::chrono::system_clock::now();
 
     // load regression model
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ONNXModel");
@@ -365,6 +372,10 @@ std::string ModelSelection::SelectModel(const std::string& table_name,
     torch::Tensor scores = torch::from_blob(float_array, torch::IntArrayRef(output_shape));
 
     torch::Tensor score = torch::mean(scores, 0);
+
+    end = std::chrono::system_clock::now();
+    elog(INFO, "RegressionModel time: %ld us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    start = std::chrono::system_clock::now();
 
     // calculate trans_scores
     torch::Tensor score_transposed = torch::unsqueeze(score, /*dim=*/1);

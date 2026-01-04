@@ -1,0 +1,2 @@
+from morphingdb_test.series_test.slice_test.throughput_test import slice_throughput_test
+slice_throughput_test()

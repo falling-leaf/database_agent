@@ -22,9 +22,52 @@ extern "C" {
 
 extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 }
+
 extern void register_callback();
 extern ModelManager model_manager;
 extern MemoryManager memory_manager;
+
+// Implementation of the timed execution wrapper
+AgentAction BaseAgentNode::ExecuteWithTiming(std::shared_ptr<AgentState> state) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+    
+    // Execute the actual agent logic
+    AgentAction result = this->Execute(state);
+    
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    
+    // Get the agent name for tracking
+    std::string agent_name = this->Name();
+    
+    // Update the accumulated execution time in memory_manager
+    memory_manager.execution_time_map[agent_name] += duration.count();
+    memory_manager.execution_count_map[agent_name]++;
+    
+    // Optional: Log the execution time for debugging
+    // elog(INFO, "Agent %s execution time: %lld microseconds, total accumulated: %lld microseconds, call count: %d", 
+    //      agent_name.c_str(), duration.count(), memory_manager.execution_time_map[agent_name], 
+    //      memory_manager.execution_count_map[agent_name]);
+    
+    return result;
+}
+
+void MemoryManager::PrintTimingStats() {
+    elog(INFO, "=== Agent Execution Timing Statistics ===");
+    for (const auto& pair : execution_time_map) {
+        std::string agent_name = pair.first;
+        long long total_time_microseconds = pair.second;  // time in microseconds
+        int call_count = execution_count_map[agent_name];
+        
+        // Convert to milliseconds with nanosecond precision (as floating point milliseconds)
+        double total_time_ms = total_time_microseconds / 1000.0;
+        double avg_time_ms = call_count > 0 ? total_time_microseconds / (1000.0 * call_count) : 0.0;
+        
+        elog(INFO, "Agent: %-20s Total: %10.3f ms, Calls: %6d, Average: %10.6f ms", 
+             agent_name.c_str(), total_time_ms, call_count, avg_time_ms);
+    }
+    elog(INFO, "=========================================");
+}
 
 Args* MemoryManager::Tuple2Vec(HeapTuple tuple, TupleDesc tupdesc, int start, int dim)
 {
@@ -234,6 +277,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
             memory_manager.ins_cache_data = (float**)palloc0(sizeof(float*) * MAX_CACHE_SIZE);
             memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * MAX_CACHE_SIZE);
             memory_manager.out_cache_data = (float*)palloc0(sizeof(float) * MAX_CACHE_SIZE);
+            memory_manager.ins_buffer = (Args*)palloc0(32 * sizeof(Args));
             MemoryContextSwitchTo(old_context);
             
             elog(NOTICE, "Global memory allocated in TopMemoryContext.");
@@ -372,10 +416,10 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         state->task_list = lappend(state->task_list, task);
     }
     // elog(INFO, "task_list length: %d", list_length(state->task_list));
-    for (int i = 0; i < list_length(state->task_list); i++) {
-        Task* task = (Task*)list_nth(state->task_list, i);
-        elog(INFO, "task %d: model: %s, cuda: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
-    }
+    // for (int i = 0; i < list_length(state->task_list); i++) {
+    //     Task* task = (Task*)list_nth(state->task_list, i);
+    //     elog(INFO, "task %d: model: %s, cuda: %s, input_start_index: %ld, input_end_index: %ld, output_start_index: %ld, output_end_index: %ld", i, task->model, task->cuda, task->input_start_index, task->input_end_index, task->output_start_index, task->output_end_index);
+    // }
 }
 
 std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, TaskType task_type) {
@@ -540,10 +584,9 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     state->current_state.outs = NIL;
 
     const int64_t count = task->input_end_index - task->input_start_index;
-    Args* args_block = (Args*)palloc0(count * sizeof(Args));
     for (int64_t i = 0; i < count; i++) {
         const int64_t current_index = task->input_start_index + i;
-        Args* vec = args_block + i; 
+        Args* vec = memory_manager.ins_buffer + i; 
         if (memory_manager.ins_cache[current_index] == NULL) {
             ereport(ERROR, (errmsg("ins_cache is null at index %ld", current_index)));
         }
@@ -579,7 +622,7 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         // 计算对应的全局行号用于日志
         long global_row_index = task->input_start_index + i;
         memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
-        elog(INFO, "Evaluation Result on index %ld: %f", global_row_index, ret->floating);
+        // elog(INFO, "Evaluation Result on index %ld: %f", global_row_index, ret->floating);
     }
 
     // 任务完成后，可以在这里选择性释放 current_state.outs 里的 Args* 内存，但这通常由 PG 上下文自动处理

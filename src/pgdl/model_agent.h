@@ -28,7 +28,10 @@ extern "C" {
 #include "utils/syscache.h"
 }
 
-#define MAX_CACHE_SIZE 10000
+#define MAX_CACHE_SIZE 100000
+
+#include <chrono>
+#include <unordered_map>
 
 class MemoryManager {
 public:
@@ -46,8 +49,16 @@ public:
     int out_cache_size{0};
     float* out_cache_data;
     int output_index{0};
+    Args* ins_buffer{nullptr};
 
     std::vector<std::string> sample_path;
+    
+    // Execution time tracking
+    std::unordered_map<std::string, long long> execution_time_map;  // Agent name to accumulated execution time (in microseconds)
+    std::unordered_map<std::string, int> execution_count_map;       // Agent name to execution count
+    
+    // Utility function to print timing statistics
+    void PrintTimingStats();
 };
 
 // agent result: the result of the agent execution
@@ -130,6 +141,9 @@ public:
     
     // 获取节点名称
     virtual std::string Name() const = 0;
+    
+    // Timed execution wrapper
+    AgentAction ExecuteWithTiming(std::shared_ptr<AgentState> state);
 };
 
 // perception agent: NL =====> embedding vector
