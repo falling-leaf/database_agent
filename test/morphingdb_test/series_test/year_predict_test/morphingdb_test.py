@@ -114,6 +114,12 @@ def year_predict_all_test():
     print("create model done")
     year_predict_test('', 'cpu')
     print("year_predict_test done")
+
+def year_predict_init_data():
+    import_year_predict_mvec_table()
+    print("import year_predict_mvec_table done")
+    import_year_predict_table()
+    print("import year_predict_table done")
  
 if __name__ == "__main__":
     create_model()

@@ -300,8 +300,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     TaskType task_type_enum;
     if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
-    } else if (strcmp(task_type, "predict") == 0) {
-        task_type_enum = TaskType::PREDICT;
+    } else if (strcmp(task_type, "series") == 0) {
+        task_type_enum = TaskType::SERIES;
     } else {
         ereport(ERROR, (errmsg("unknown task type %s", task_type)));
         return AgentAction::FAILURE;
@@ -376,7 +376,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                         MemoryContextSwitchTo(old_ctx);
                     }
                     break;
-                case TaskType::PREDICT:
+                case TaskType::SERIES:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -424,7 +424,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
 
 std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, TaskType task_type) {
     int sample_size = 10;
-    if (task_type == TaskType::PREDICT) {
+    if (task_type == TaskType::SERIES) {
         MVec* input = memory_manager.ins_cache[0];
         int shape_size = GET_MVEC_SHAPE_SIZE(input);
         if (shape_size == 2) {
@@ -432,8 +432,11 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
             int result1 = GET_MVEC_SHAPE_VAL(input, 1);
             if (result0 == 1 && result1 == 384) {
                 return "slice";
+            } else if (result0 == 1 && result1 == 2400) {
+                return "swarm";
+            } else if (result0 == 1 && result1 == 90) {
+                return "year_predict";
             } else {
-                elog(ERROR, "input shape not (1, 384)");
                 throw std::runtime_error("SelectModel: invalid input shape");
             }
         } else {
@@ -474,6 +477,8 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         std::string pretrain_ds = temp_result.substr(pos + 1);
         std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
         return result_str;
+    } else {
+        throw std::runtime_error("SelectModel: invalid task type");
     }
 }
 

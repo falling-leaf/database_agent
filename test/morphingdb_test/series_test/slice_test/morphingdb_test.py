@@ -94,10 +94,17 @@ def slice_all_test():
     print("import slice mvec table done")
     import_slice_table()
     print("import slice table done")
-    # create_model(slice_model_path)
-    # print("create slice model done")
-    # slice_test('', 'cpu')
-    # print("slice test done")
+    create_model(slice_model_path)
+    print("create slice model done")
+    slice_test('', 'cpu')
+    print("slice test done")
+
+def slice_init_data():
+    import_slice_mvec_table()
+    print("import slice mvec table done")
+    import_slice_table()
+    print("import slice table done")
+
 
 
 if __name__ == "__main__":

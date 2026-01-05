@@ -76,7 +76,7 @@ enum class AgentAction {
 
 enum class TaskType {
     IMAGE_CLASSIFICATION,
-    PREDICT
+    SERIES
 
     // to be done
 };

@@ -97,6 +97,12 @@ def swarm_all_test():
     print("create swarm model done")
     swarm_test('', 'cpu')
     print("swarm test done")
+
+def swarm_init_data():
+    import_swarm_table()
+    print("import swarm table done")
+    import_swarmm_mvec_table()
+    print("import swarm mvec table done")
  
 if __name__ == "__main__":
     create_model()
