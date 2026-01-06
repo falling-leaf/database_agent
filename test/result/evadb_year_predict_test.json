@@ -1,0 +1,57 @@
+[
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 100;\n        ",
+        "count": 100,
+        "total_time": 1.5818750858306885
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 1000;\n        ",
+        "count": 1000,
+        "total_time": 1.9314062595367432
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 2000;\n        ",
+        "count": 2000,
+        "total_time": 1.9815330505371094
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 3000;\n        ",
+        "count": 3000,
+        "total_time": 1.8860056400299072
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 4000;\n        ",
+        "count": 4000,
+        "total_time": 2.3875646591186523
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 5000;\n        ",
+        "count": 5000,
+        "total_time": 2.3721060752868652
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 6000;\n        ",
+        "count": 6000,
+        "total_time": 2.584700345993042
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 7000;\n        ",
+        "count": 7000,
+        "total_time": 2.685847520828247
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 8000;\n        ",
+        "count": 8000,
+        "total_time": 3.182631731033325
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 9000;\n        ",
+        "count": 9000,
+        "total_time": 2.9711906909942627
+    },
+    {
+        "sql": "cpuSELECT YearPredictClassifier(value0, value1, value2, value3, value4, value5, value6, value7, value8, value9, value10, value11, value12, value13, value14, value15, value16, value17, value18, value19, value20, value21, value22, value23, value24, value25, value26, value27, value28, value29, value30, value31, value32, value33, value34, value35, value36, value37, value38, value39, value40, value41, value42, value43, value44, value45, value46, value47, value48, value49, value50, value51, value52, value53, value54, value55, value56, value57, value58, value59, value60, value61, value62, value63, value64, value65, value66, value67, value68, value69, value70, value71, value72, value73, value74, value75, value76, value77, value78, value79, value80, value81, value82, value83, value84, value85, value86, value87, value88, value89)\n            FROM postgres_data.year_predict_origin_test limit 10000;\n        ",
+        "count": 10000,
+        "total_time": 3.4305946826934814
+    }
+]

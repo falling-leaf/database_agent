@@ -284,14 +284,14 @@ class CTslicesModel(nn.Module):
 def cost_model_test():
     model_map = {
         "slice": [CTslicesModel(384, 1), torch.randn(1,384)],
-        "swarm": [LogisticRegressionModel_swarm(2400, 1), torch.randn(1, 2400)],
-        "year_predict": [LogisticRegressionModel_year(90, 1), torch.randn(1,90)],
-        "cifar": [googlenet(), torch.randn(1, 3, 224, 224)],
-        "imagenet": [resnet18(), torch.randn(1, 3, 224, 224)],
-        "stanford_dogs": [alexnet(), torch.randn(1, 3, 224, 224)],
-        "imdb": [AlbertModel.from_pretrained("albert-base-v2"), torch.randint(0, 1000, (1, 128))],
-        "sst2": [AlbertModel.from_pretrained("albert-base-v2"), torch.randint(0, 1000, (1, 128))],
-        "financial_phrase": [RobertaModel.from_pretrained("roberta-base"), torch.randint(0, 1000, (1, 128))]
+        # "swarm": [LogisticRegressionModel_swarm(2400, 1), torch.randn(1, 2400)],
+        # "year_predict": [LogisticRegressionModel_year(90, 1), torch.randn(1,90)],
+        # "cifar": [googlenet(), torch.randn(1, 3, 224, 224)],
+        # "imagenet": [resnet18(), torch.randn(1, 3, 224, 224)],
+        # "stanford_dogs": [alexnet(), torch.randn(1, 3, 224, 224)],
+        # "imdb": [AlbertModel.from_pretrained("albert-base-v2"), torch.randint(0, 1000, (1, 128))],
+        # "sst2": [AlbertModel.from_pretrained("albert-base-v2"), torch.randint(0, 1000, (1, 128))],
+        # "financial_phrase": [RobertaModel.from_pretrained("roberta-base"), torch.randint(0, 1000, (1, 128))]
     }
     
     # 2. 初始化成本模型

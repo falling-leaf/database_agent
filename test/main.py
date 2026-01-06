@@ -39,8 +39,8 @@ def run_scripts_in_directory(directory, scripts):
 if __name__ == "__main__":
     #run_scripts_in_directory(project_root, scripts_to_run.keys())
     # series test
-    from morphingdb_test.series_test.slice_test.throughput_test import slice_throughput_test
-    slice_throughput_test()
+    # from morphingdb_test.series_test.slice_test.throughput_test import slice_throughput_test
+    # slice_throughput_test()
     # from morphingdb_test.series_test.slice_test.morphingdb_test import slice_all_test 
     # slice_all_test()
     # from morphingdb_test.series_test.swarm_test.morphingdb_test import swarm_all_test
@@ -73,8 +73,8 @@ if __name__ == "__main__":
     # auto_ml_test()
     
     # # cost model 
-    # from morphingdb_test.cost_model_test.cost_model_test import cost_model_test
-    # cost_model_test()
+    from morphingdb_test.cost_model_test.cost_model_test import cost_model_test
+    cost_model_test()
 
     # # batch test
     # from morphingdb_test.batch_test.morphingdb_test import batch_all_test
