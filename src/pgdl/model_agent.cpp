@@ -576,9 +576,20 @@ std::string exec_command(const char* cmd) {
     return result;
 }
 
+std::string trim(const std::string& s) {
+    auto start = s.begin();
+    while (start != s.end() && std::isspace(static_cast<unsigned char>(*start))) {
+        start++;
+    }
+    auto end = s.end();
+    do {
+        end--;
+    } while (std::distance(start, end) > 0 && std::isspace(static_cast<unsigned char>(*end)));
+    return std::string(start, end + 1);
+}
+
 // Helper function to estimate CPU FLOPS
 double estimate_cpu_flops() {
-    elog(INFO, "Starting CPU FLOPS estimation");
     try {
         // Read CPU info from /proc/cpuinfo
         std::ifstream cpuinfo("/proc/cpuinfo");
@@ -586,8 +597,7 @@ double estimate_cpu_flops() {
         std::string model_name;
         double cpu_mhz = 0.0;
         int reading_state = 0;
-        
-        // elog(INFO, "Reading CPU info from /proc/cpuinfo");
+
         while (std::getline(cpuinfo, line) && reading_state < 2) {
             if (line.find("model name") != std::string::npos) {
                 size_t colon_pos = line.find(":");
@@ -608,30 +618,23 @@ double estimate_cpu_flops() {
             }
         }
         
+        // 用当前的实际频率进行估算
         double freq_ghz = cpu_mhz / 1000.0;
-        elog(INFO, "CPU frequency in GHz: %.2f", freq_ghz);
         
-        // Determine FLOPs per cycle based on CPU model
-        double flops_per_cycle = 8.0; // Default conservative estimate
-        elog(INFO, "Initial FLOPs per cycle estimate: %.1f", flops_per_cycle);
-        
+        double flops_per_cycle = 8.0;
         std::transform(model_name.begin(), model_name.end(), model_name.begin(), ::tolower);
         if (model_name.find("xeon") != std::string::npos) {
             flops_per_cycle = 32.0;  // AVX-512
-            elog(INFO, "Detected Xeon CPU, setting FLOPs per cycle to 32.0 (AVX-512)");
         } else if (model_name.find("core") != std::string::npos || 
                    model_name.find("i3") != std::string::npos || 
                    model_name.find("i5") != std::string::npos || 
                    model_name.find("i7") != std::string::npos || 
                    model_name.find("i9") != std::string::npos) {
             flops_per_cycle = 16.0;  // AVX2
-            elog(INFO, "Detected Intel Core CPU, setting FLOPs per cycle to 16.0 (AVX2)");
-        } else {
-            elog(INFO, "CPU model not recognized, using default FLOPs per cycle: 8.0");
         }
         
         double result = flops_per_cycle * freq_ghz * 1e9;
-        elog(INFO, "Calculated CPU FLOPS: %.2e", result);
+        // elog(INFO, "Calculated CPU FLOPS: %.2e", result);
         return result;
     } catch (const std::exception& e) {
         elog(INFO, "Warning: Could not estimate CPU FLOPs, using default 50 GFLOPS. Error: %s", e.what());
@@ -641,39 +644,35 @@ double estimate_cpu_flops() {
 
 // Helper function to get GPU FLOPS
 double get_gpu_flops() {
-    elog(INFO, "Starting GPU FLOPS estimation");
     try {
-        // Check if GPU is available
-        elog(INFO, "Checking GPU availability with nvidia-smi");
         std::string gpu_status = exec_command("nvidia-smi --query-gpu=driver_version --format=csv,noheader,nounits 2>/dev/null | head -c 5");
-        elog(INFO, "GPU status check result: '%s'", gpu_status.c_str());
         if (gpu_status.empty()) {
+            // 如果empty说明没有显卡驱动
             elog(INFO, "No GPU available, returning 0.0 FLOPS");
             return 0.0; // No GPU available
         }
+        std::string gpu_cap = exec_command("nvidia-smi --id=0 --query-gpu=compute_cap --format=csv,noheader,nounits | head -c 100");
+        gpu_cap = trim(gpu_cap);
         
-        // For now, return a default value based on common GPU types
-        // In a real implementation, we would need to query the specific GPU compute capability
-        elog(INFO, "Querying GPU name with nvidia-smi");
-        std::string gpu_name = exec_command("nvidia-smi --query-gpu=name --format=csv,noheader,nounits | head -c 100");
-        elog(INFO, "Detected GPU: '%s'", gpu_name.c_str());
-        
-        if (gpu_name.find("3090") != std::string::npos) {
-            elog(INFO, "Detected RTX 3090, returning estimated FLOPS: %.2e", 10496.0 * 1400 * 2 * 1e6);
-            return 10496.0 * 1400 * 2 * 1e6; // RTX 3090 estimate
-        } else if (gpu_name.find("A100") != std::string::npos) {
-            elog(INFO, "Detected A100, returning estimated FLOPS: %.2e", 6912.0 * 1410 * 2 * 1e6);
-            return 6912.0 * 1410 * 2 * 1e6; // A100 estimate
-        } else if (gpu_name.find("V100") != std::string::npos) {
-            elog(INFO, "Detected V100, returning estimated FLOPS: %.2e", 5120.0 * 1530 * 2 * 1e6);
-            return 5120.0 * 1530 * 2 * 1e6; // V100 estimate
-        } else if (gpu_name.find("T4") != std::string::npos) {
-            elog(INFO, "Detected T4, returning estimated FLOPS: %.2e", 4608.0 * 1590 * 2 * 1e6);
-            return 4608.0 * 1590 * 2 * 1e6; // T4 estimate
+        double cuda_cores = 0.0;
+        if (gpu_cap == "8.0") {
+            cuda_cores = 6912;
+        } else if (gpu_cap == "7.5") {
+            cuda_cores = 4608;
+        } else if (gpu_cap == "7.0") {
+            cuda_cores = 5120;
+        } else if (gpu_cap == "8.6") {
+            cuda_cores = 10496;
         } else {
-            elog(INFO, "Unknown GPU type, returning default FLOPS: %.2e", 10e12);
-            return 10e12; // Default 10 TFLOPS
+            cuda_cores = 2048;
         }
+
+        std::string gpu_clocks = exec_command("nvidia-smi --id=0 --query-gpu=clocks.max.sm --format=csv,noheader,nounits | head -c 100");
+        double gpu_freq = std::stod(gpu_clocks);
+
+        double result = cuda_cores * gpu_freq * 1e6 * 2.0;
+        elog(INFO, "Calculated GPU FLOPS: %.2e", result);
+        return result;
     } catch (const std::exception& e) {
         elog(INFO, "Warning: Could not get GPU FLOPs, using default 10 TFLOPS. Error: %s", e.what());
         return 10e12; // Default value
@@ -682,20 +681,27 @@ double get_gpu_flops() {
 
 // Helper function to get CPU memory bandwidth
 double get_cpu_mem_bandwidth() {
-    elog(INFO, "Starting CPU memory bandwidth estimation");
     try {
-        // Try to get memory speed from dmidecode (requires sudo)
-        // As fallback, use lscpu to get memory info
-        elog(INFO, "Querying CPU info with lscpu for memory bandwidth estimation");
-        std::string lscpu_output = exec_command("lscpu -e=MAXMHZ | grep -v [A-Z] | head -n 1 | tr -d ' '");
-        elog(INFO, "lscpu output for memory bandwidth: '%s'", lscpu_output.c_str());
-        if (!lscpu_output.empty()) {
-            // This is a simplified estimation, in practice we'd use dmidecode
-            elog(INFO, "Using lscpu data to estimate memory bandwidth, returning: %.2e", 25.6 * 1e9);
-            return 25.6 * 1e9; // Default DDR4-3200 theoretical bandwidth in bytes/sec
+        std::string mem_bandwidth_str = exec_command("echo \"morphingdbwhy\" | sudo -S dmidecode -t memory | grep Speed | head -n 100");
+        std::vector<double> speeds;
+        std::stringstream ss(mem_bandwidth_str);
+        std::string line;
+        while (std::getline(ss, line)) {
+            if (line.find("Configured Memory Speed") != std::string::npos) {
+                continue;
+            }
+            size_t pos = line.find("Speed:");
+            if (pos != std::string::npos) {
+                std::string speed_str = line.substr(pos + 6);
+                speed_str.erase(std::remove(speed_str.begin(), speed_str.end(), ' '), speed_str.end());
+                speeds.push_back(std::stod(speed_str));
+            }
         }
-        elog(INFO, "No lscpu data available, using default memory bandwidth: %.2e", 25.6 * 1e9);
-        return 25.6 * 1e9; // Default value
+        double avg_speed = std::accumulate(speeds.begin(), speeds.end(), 0.0) / speeds.size();
+        elog(INFO, "Average memory bandwidth: %.2f MT/s", avg_speed);
+        // TODO: 假设双通道64位总线
+        double bandwidth_GBs = (avg_speed * 2 * 64 / 8) / 1000;
+        return bandwidth_GBs * 1e9; // Convert to bytes/sec
     } catch (const std::exception& e) {
         elog(INFO, "Warning: Could not get memory bandwidth, using default 25.6 GB/s. Error: %s", e.what());
         return 25.6 * 1e9; // Default value
@@ -704,11 +710,8 @@ double get_cpu_mem_bandwidth() {
 
 // Helper function to get GPU memory bandwidth
 double get_gpu_mem_bandwidth() {
-    elog(INFO, "Starting GPU memory bandwidth estimation");
     try {
-        // Get bus width and memory clock using nvidia-smi
-        elog(INFO, "Querying GPU bus width with nvidia-smi");
-        std::string bus_width_str = exec_command("nvidia-smi --query-gpu=memory_bus_width --format=csv,noheader,nounits | head -c 10");
+        std::string bus_width_str = exec_command("nvidia-smi --query-gpu=memory_info.width --format=csv,noheader,nounits | head -c 10");
         elog(INFO, "GPU bus width query result: '%s'", bus_width_str.c_str());
         
         elog(INFO, "Querying GPU memory clock with nvidia-smi");
