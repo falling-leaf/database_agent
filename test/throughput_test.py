@@ -115,7 +115,7 @@ IMAGE_SQL_QUERIES = [
     },
     {
         "name": "db_agent_image_classification",
-        "query": "select db_agent_batch('image_classification', sub_table.image_path) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_table) AS sub_table limit {row_count};"
+        "query": "select db_agent_batch('image_classification', sub_table.image_vector) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_vector_table) AS sub_table limit {row_count};"
     }
 ]
 
@@ -124,7 +124,7 @@ def run_all_throughput_tests():
     TOTAL_TASKS = 128
     ROWS_PER_QUERY = 1000
 
-    for sql_info in SERIES_SQL_QUERIES:
+    for sql_info in IMAGE_SQL_QUERIES:
         print(f"\n{'='*60}")
         print(f"Testing SQL: {sql_info['name']}")
         print(f"Query: {sql_info['query']}")

@@ -222,9 +222,13 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
 
 void PerceptionAgent::LoadMVecData(MVec* current_data) {
     if (IS_MVEC_REF(current_data)) {
-        ereport(ERROR, (errmsg("Input vector is a Reference (RowId: %ld), but api_agent requires materialized data. "
-                               "Please use de-referencing functions or ensure input is a concrete vector.", 
-                               (long)GET_MVEC_ROWID(current_data))));
+        int cache_idx = memory_manager.current_func_call;
+        memory_manager.ins_cache[cache_idx] = (MVec*)palloc0(sizeof(Args));
+        memory_manager.ins_cache[cache_idx] = current_data;
+        return;
+        // ereport(ERROR, (errmsg("Input vector is a Reference (RowId: %ld), but api_agent requires materialized data. "
+        //                        "Please use de-referencing functions or ensure input is a concrete vector.", 
+        //                        (long)GET_MVEC_ROWID(current_data))));
     }
 
     // 2. 安全地获取维度
@@ -396,11 +400,13 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                     elog(ERROR, "unknown task type %d", task_unit.task_type);
                     break;
             }
-            if (InitModel(selected_model.c_str(), from_select_model)) {
+            if (!ONLY_FOR_IMAGE_PREDICT) {
+                if (InitModel(selected_model.c_str(), from_select_model)) {
                 elog(INFO, "InitModel success");
-            }
-            else {
-                elog(ERROR, "InitModel failed");
+                }
+                else {
+                    elog(ERROR, "InitModel failed");
+                }
             }
         }
         int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
