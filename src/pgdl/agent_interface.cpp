@@ -123,6 +123,11 @@ void reset_global_memory_state() {
 
 Datum
 db_agent_sfunc(PG_FUNCTION_ARGS) {
+    if (memory_manager.is_last_call == 3) {
+        elog(INFO, "last call crashed, reset");
+        memory_manager.PrintTimingStats();
+        reset_global_memory_state();
+    }
     state_->fcinfo = fcinfo;
 
     if (memory_manager.current_func_call == -1)
@@ -150,7 +155,6 @@ db_agent_sfunc(PG_FUNCTION_ARGS) {
 }
 
 Datum db_agent_final(PG_FUNCTION_ARGS) {
-    memory_manager.is_last_call = 1;
     state_->last_action = AgentAction::PERCEPTION;
     AgentAction next_action = AgentAction::SCHEDULE;
 
@@ -205,6 +209,12 @@ Datum db_agent_sfinal(PG_FUNCTION_ARGS) {
 }
 
 Datum db_agent_msfunc(PG_FUNCTION_ARGS) {
+    elog(INFO, "db_agent_msfunc, is_last_call = %d, output_index = %d, memory_manager.current_func_call = %d", memory_manager.is_last_call, memory_manager.output_index, memory_manager.current_func_call);
+    if (memory_manager.is_last_call == 3) {
+        elog(INFO, "last call crashed, reset");
+        memory_manager.PrintTimingStats();
+        reset_global_memory_state();
+    }
     state_->fcinfo = fcinfo;
     memory_manager.is_last_call = 2;
 
@@ -233,14 +243,15 @@ Datum db_agent_msfunc(PG_FUNCTION_ARGS) {
 }
 
 Datum db_agent_minvfunc(PG_FUNCTION_ARGS) {
-    if (memory_manager.is_last_call == 2) {
+    elog(INFO, "db_agent_minvfunc, is_last_call = %d, output_index = %d, memory_manager.current_func_call = %d", memory_manager.is_last_call, memory_manager.output_index, memory_manager.current_func_call);
+    if (memory_manager.is_last_call == 3) {
         memory_manager.is_last_call = 1;
     }
     PG_RETURN_BOOL(true);
 }
 
 Datum db_agent_mfinalfunc(PG_FUNCTION_ARGS) {
-    // elog(INFO, "db_agent_mfinalfunc, is_last_call = %d, output_index = %d, memory_manager.current_func_call = %d", memory_manager.is_last_call, memory_manager.output_index, memory_manager.current_func_call);
+    elog(INFO, "db_agent_mfinalfunc, is_last_call = %d, output_index = %d, memory_manager.current_func_call = %d", memory_manager.is_last_call, memory_manager.output_index, memory_manager.current_func_call);
     if (memory_manager.is_last_call == 1) {
         state_->last_action = AgentAction::PERCEPTION;
         AgentAction next_action = AgentAction::SCHEDULE;  
@@ -254,8 +265,12 @@ Datum db_agent_mfinalfunc(PG_FUNCTION_ARGS) {
             }
         }
         memory_manager.is_last_call = 0;
+    } else {
+        memory_manager.is_last_call = 3;
     }
     double ret = (double)memory_manager.out_cache_data[memory_manager.output_index++];
+    // 原理在于：out_cache_size更新速度一定跑的比output_index快
+    // 问题：当整条sql后面有limit时，执行逻辑与预想不同；该方法只能支持有界完整的数据库查询指令
     if (memory_manager.is_last_call == 0 && memory_manager.output_index >= memory_manager.out_cache_size) {
         // Print timing statistics
         memory_manager.PrintTimingStats();

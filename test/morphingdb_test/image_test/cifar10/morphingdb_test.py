@@ -102,16 +102,21 @@ def cifar10_test(limit_flag:str, symbol:str = 'cpu'):
         with open(IMAGE_VECTOR_TEST_FILE.format(limit_flag), 'w') as f_vector:
             json.dump(timing_data_vector, f_vector, indent=4)
 
+def cifar10_init_data():
+    cifar10_import_mvec_dataset()
+    print("import cifar10 mvec table done")
+    cifar10_import_url_dataset()
+    print("import cifar10 url table done")
 
 def cifar10_all_test():
     cifar10_import_mvec_dataset()
     print("import cifar10 mvec table done")
     cifar10_import_url_dataset()
     print("import cifar10 url table done")
-    # create_model()
-    # print("create model done")
-    # cifar10_test('', 'gpu')
-    # print("cifar10 test done")
+    create_model()
+    print("create model done")
+    cifar10_test('', 'gpu')
+    print("cifar10 test done")
 
 
 if __name__ == "__main__":

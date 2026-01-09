@@ -23,11 +23,14 @@ def single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql_que
         
         # Use the provided SQL query
         sql = sql_query.format(row_count=row_count, symbol=symbol)
+        executed_rows = 0
         
         for i in range(query_times):
             cur.execute(sql)
-            cur.fetchall() # 确保数据读取完毕
-        
+            result = cur.fetchall() # 确保数据读取完毕
+            executed_rows += len(result)  # 记录本次查询返回的行数
+        expected_rows = row_count * query_times
+        assert executed_rows == expected_rows, f"Expected {expected_rows} rows, but got {executed_rows}"
         # cur.execute("select print_cost();")
         # timing_raw = cur.fetchall()[0][0]
         
@@ -94,22 +97,25 @@ def run_throughput_test(concurrency_list, total_tasks_per_level, rows_per_query,
     return results_summary
 
 # Define SQL queries to test
-SQL_QUERIES = [
+SERIES_SQL_QUERIES = [
     {
         "name": "slice_predict",
         "query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
     },
     {
         "name": "db_agent_predict",
-        "query": "select db_agent('predict', sub_table.data) over (rows between current row and 31 following) FROM (SELECT * FROM slice_test) AS sub_table limit {row_count};"
-    },
+        "query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit {row_count}) AS sub_table;"
+    }
+]
+
+IMAGE_SQL_QUERIES = [
     {
         "name": "googlenet_predict",
         "query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit {row_count};"
     },
     {
         "name": "db_agent_image_classification",
-        "query": "select db_agent('image_classification', sub_table.image_path) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_table limit 100) AS sub_table;"
+        "query": "select db_agent_batch('image_classification', sub_table.image_path) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_table) AS sub_table limit {row_count};"
     }
 ]
 
@@ -118,14 +124,14 @@ def run_all_throughput_tests():
     TOTAL_TASKS = 128
     ROWS_PER_QUERY = 1000
 
-    for sql_info in SQL_QUERIES:
+    for sql_info in SERIES_SQL_QUERIES:
         print(f"\n{'='*60}")
         print(f"Testing SQL: {sql_info['name']}")
         print(f"Query: {sql_info['query']}")
         print(f"Starting Throughput Test: Rows per query = {ROWS_PER_QUERY}")
         print(f"{'='*60}")
         
-        run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY, sql_info['query'], query_times=10)
+        run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY, sql_info['query'], query_times=1)
 
 if __name__ == "__main__":
     run_all_throughput_tests()

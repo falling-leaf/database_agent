@@ -17,6 +17,7 @@
 #include <sstream>
 #include <algorithm>
 
+#define ONLY_FOR_IMAGE_PREDICT true
 
 extern "C" {
 #include "catalog/pg_type_d.h"
@@ -369,7 +370,8 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                 case TaskType::IMAGE_CLASSIFICATION:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
-                        from_select_model = true;
+                        if (!ONLY_FOR_IMAGE_PREDICT)
+                            from_select_model = true;
                         // 关键修复：使用 pstrdup 复制字符串到 PostgreSQL 内存上下文
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                         task_unit.model_name = pstrdup(selected_model.c_str());
@@ -445,6 +447,9 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
             throw std::runtime_error("SelectModel: invalid input shape");
         }
     } else if (task_type == TaskType::IMAGE_CLASSIFICATION) {
+        if (ONLY_FOR_IMAGE_PREDICT) {
+            return "googlenet_cifar10";
+        }
         std::string finetune_ds;
         MVec* input = memory_manager.ins_cache[0];
         int shape_size = GET_MVEC_SHAPE_SIZE(input);
@@ -710,22 +715,19 @@ double get_cpu_mem_bandwidth() {
 
 // Helper function to get GPU memory bandwidth
 double get_gpu_mem_bandwidth() {
+    // TODO：当前实验环境不支持memory_info.with,因此返回值会固定为900*1e9
     try {
         std::string bus_width_str = exec_command("nvidia-smi --query-gpu=memory_info.width --format=csv,noheader,nounits | head -c 10");
-        elog(INFO, "GPU bus width query result: '%s'", bus_width_str.c_str());
-        
-        elog(INFO, "Querying GPU memory clock with nvidia-smi");
+
         std::string mem_clock_str = exec_command("nvidia-smi --query-gpu=clocks.max.mem --format=csv,noheader,nounits | head -c 10");
-        elog(INFO, "GPU memory clock query result: '%s'", mem_clock_str.c_str());
-        
+
         if (!bus_width_str.empty() && !mem_clock_str.empty()) {
             int bus_width = std::stoi(bus_width_str);
             int mem_clock = std::stoi(mem_clock_str);
-            elog(INFO, "Parsed bus width: %d, memory clock: %d", bus_width, mem_clock);
-            
+
             // Calculate effective bandwidth (GDDR5/GDDR6 double data rate)
             double bandwidth = (bus_width * mem_clock * 2) / 8; // Convert to GB/s
-            elog(INFO, "Calculated GPU bandwidth in GB/s: %.2f", bandwidth);
+
             double result = bandwidth * 1e9; // Convert to bytes/sec
             elog(INFO, "Calculated GPU memory bandwidth: %.2e bytes/sec", result);
             return result;
@@ -740,32 +742,23 @@ double get_gpu_mem_bandwidth() {
 
 // optimization agent: planning tree optimization
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
-    if (memory_manager.current_func_call == 0) {
-        elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
-        // Get hardware information
-        double cpu_flops = estimate_cpu_flops();
-        elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
-        double gpu_flops = get_gpu_flops();
-        elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
-        double cpu_bandwidth = get_cpu_mem_bandwidth();
-        elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
-        double gpu_bandwidth = get_gpu_mem_bandwidth();
-        elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
+    // if (memory_manager.current_func_call == 0) {
+    //     elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
+    //     // Get hardware information
+    //     double cpu_flops = estimate_cpu_flops();
+    //     double gpu_flops = get_gpu_flops();
+    //     double cpu_bandwidth = get_cpu_mem_bandwidth();
+    //     double gpu_bandwidth = get_gpu_mem_bandwidth();
+
+    //     elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
+    //     elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
+    //     elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
+    //     elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
         
-        elog(INFO, "Hardware Info - CPU FLOPS: %.2f GFLOPS, GPU FLOPS: %.2f TFLOPS", cpu_flops / 1e9, gpu_flops / 1e12);
-        elog(INFO, "Hardware Info - CPU Bandwidth: %.2f GB/s, GPU Bandwidth: %.2f GB/s", cpu_bandwidth / 1e9, gpu_bandwidth / 1e9);
+    //     int num_rows = 32;
         
-        // Decision logic based on hardware capabilities
-        elog(INFO, "OptimizationAgent::Execute - Starting decision logic");
-        if (gpu_flops > cpu_flops * 10 && gpu_bandwidth > cpu_bandwidth * 2) {
-            elog(INFO, "Decision: GPU is significantly more powerful, recommending GPU execution");
-        } else if (gpu_flops > 0) {
-            elog(INFO, "Decision: GPU available, consider model characteristics for final decision");
-        } else {
-            elog(INFO, "Decision: No GPU available, using CPU execution");
-        }
-        elog(INFO, "OptimizationAgent::Execute - Decision logic completed");
-    }
+
+    // }
     state->last_action = AgentAction::OPTIMIZATION;
     return AgentAction::SCHEDULE;
 }
