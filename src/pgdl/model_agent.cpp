@@ -321,11 +321,15 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     // 下面代码每次调用均会执行
     MVec* current_data;
     if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-        char* image_path = text_to_cstring(PG_GETARG_TEXT_PP(load_index++));
-        if (memory_manager.sample_path.size() <= 10)
-            memory_manager.sample_path.emplace_back(image_path);
-        //TODO: 这里现在仅限cifar，还需要进一步明确具体参数
-        current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+        if (ONLY_FOR_IMAGE_PREDICT) {
+            current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
+        } else {
+            char* image_path = text_to_cstring(PG_GETARG_TEXT_PP(load_index++));
+            if (memory_manager.sample_path.size() <= 10)
+                memory_manager.sample_path.emplace_back(image_path);
+            //TODO: 这里现在仅限cifar，还需要进一步明确具体参数
+            current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+        }
     }
     else current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
     LoadMVecData(current_data);
