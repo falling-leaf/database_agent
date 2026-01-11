@@ -17,7 +17,7 @@
 #include <sstream>
 #include <algorithm>
 
-#define ONLY_FOR_IMAGE_PREDICT true
+#define ONLY_FOR_IMAGE_PREDICT false
 
 extern "C" {
 #include "catalog/pg_type_d.h"
@@ -478,7 +478,8 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
             elog(ERROR, "input shape size not 4");
             throw std::runtime_error("SelectModel: invalid input shape");
         }
-        std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
+        // std::string select_model_path = "/home/why/pgdl/model/models/select_model/ViT-L-14_visual_traced.pt";
+        std::string select_model_path = "/home/why/save/vit_l14_gpu_fixed.pt";
         std::string regression_model_path = "/home/why/pgdl/model/models/select_model/regression_model.onnx";
         ModelSelection image_classification(select_model_path, regression_model_path);
 

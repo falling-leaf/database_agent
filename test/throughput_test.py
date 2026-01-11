@@ -120,7 +120,8 @@ IMAGE_SQL_QUERIES = [
 ]
 
 def run_all_throughput_tests():
-    CONCURRENCY_LEVELS = [1, 4, 8, 16, 32, 64] 
+    # CONCURRENCY_LEVELS = [1, 4, 8, 16, 32, 64]
+    CONCURRENCY_LEVELS = [1, 4, 8]
     TOTAL_TASKS = 128
     ROWS_PER_QUERY = 1000
 

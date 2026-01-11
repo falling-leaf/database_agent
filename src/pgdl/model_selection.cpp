@@ -219,36 +219,74 @@ torch::Tensor MatToTensor(const cv::Mat& image) {
 
 
 torch::Tensor ModelSelection::GetForwardClip(const std::vector<std::string>& data_list, std::string visual_model_path) {
-    torch::Device device(torch::kCPU);
-    // torch::Device device(torch::kCUDA);
+    // torch::Device device(torch::kCPU);
+    torch::Device device(torch::kCUDA);
+    auto start = std::chrono::high_resolution_clock::now();
     torch::jit::script::Module model = torch::jit::load(visual_model_path);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Loading model time: " << duration.count() << " ms" << std::endl;
+
+    start = std::chrono::high_resolution_clock::now();
     model.to(device);
+    end = std::chrono::high_resolution_clock::now();
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Moving model to device time: " << duration.count() << " ms" << std::endl;
     model.eval();
 
     std::vector<torch::Tensor> all_feats;
     torch::NoGradGuard no_grad;
-    for (const auto& image_path : data_list) {
-        torch::Tensor image = Preprocess(image_path, default_n_px).to(device);
-        torch::Tensor feats = model.forward({image}).toTensor().to(device);
-        all_feats.push_back(feats);
+
+    const size_t BATCH_SIZE = 64; 
+    const size_t total_images = data_list.size();
+    size_t current_index = 0;
+    while (current_index < total_images) {
+        size_t batch_start = current_index;
+        size_t batch_end = std::min(current_index + BATCH_SIZE, total_images);
+        size_t actual_batch_size = batch_end - batch_start;
+
+        std::vector<torch::Tensor> batch_tensors;
+
+        auto sub_start = std::chrono::high_resolution_clock::now();
+        for (size_t i = batch_start; i < batch_end; ++i) {
+            torch::Tensor image_tensor = Preprocess(data_list[i], default_n_px); 
+            batch_tensors.push_back(image_tensor);
+        }
+        auto sub_end = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(sub_end - sub_start);
+        std::cout << "Preprocess time: " << duration.count() << " ms" << std::endl;
+        
+        torch::Tensor batch_input = torch::stack(batch_tensors, 0); 
+        batch_input = batch_input.to(device);
+        auto forward_start = std::chrono::high_resolution_clock::now();
+        torch::Tensor batch_feats = model.forward({batch_input}).toTensor(); 
+        auto forward_end = std::chrono::high_resolution_clock::now();
+        duration = std::chrono::duration_cast<std::chrono::milliseconds>(forward_end - forward_start);
+        std::cout << "Forward time: " << duration.count() << " ms" << std::endl;   
+        
+        for (size_t i = 0; i < actual_batch_size; ++i) {
+            all_feats.push_back(batch_feats.slice(0, i, i + 1).clone()); 
+        }
+        current_index = batch_end;
     }
+    // for (const auto& image_path : data_list) {
+    //     torch::Tensor image = Preprocess(image_path, default_n_px).to(device);
+    //     torch::Tensor feats = model.forward({image}).toTensor().to(device);
+    //     all_feats.push_back(feats);
+    // }
 
     torch::Tensor result = torch::cat(all_feats, 0);
-    return result;
+    return result.to(torch::kCPU);
 }
 
-
 torch::Tensor ModelSelection::Preprocess(const std::string& image_path, int n_px) {
-    // Read image using OpenCV
-    cv::Mat image = cv::imread(image_path);
-
+    cv::Mat image = cv::imread(image_path, cv::IMREAD_COLOR);
     if (image.empty()) {
-        //std::cerr << "Failed to read image: " << image_path << std::endl;
-        //exit(-1);
+        return torch::Tensor();
     }
 
-    // Resize image (the shorter edge scaled to n_px, bicubic interpolation)
-    int new_rows = 0, new_cols = 0;
+    // Resize (same as before)
+    int new_rows, new_cols;
     if (image.rows > image.cols) {
         new_cols = n_px;
         new_rows = n_px * image.rows / image.cols;
@@ -261,29 +299,79 @@ torch::Tensor ModelSelection::Preprocess(const std::string& image_path, int n_px
     // Center crop
     int crop_x = (image.cols - n_px) / 2;
     int crop_y = (image.rows - n_px) / 2;
-    cv::Rect roi(crop_x, crop_y, n_px, n_px);
+    image = image(cv::Rect(crop_x, crop_y, n_px, n_px));
 
-    image = image(roi);
-
-    // Convert BGR to RGB
+    // BGR → RGB
     cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
-    // Convert Mat to Tensor and permute dimensions to match [1, 3, n_px, n_px]
-    // torch::Tensor tensor_image = torch::from_blob(image.data, {image.rows, image.cols, 3}, torch::kByte);
-    // tensor_image = tensor_image.permute({2, 0, 1});
-    torch::Tensor tensor_image = MatToTensor(image); // use our own function (from_blob doesn't work, why?)
+    // uint8 → float32 and scale to [0,1]
+    image.convertTo(image, CV_32FC3, 1.0 / 255.0);
 
-    // Normalize (the parameters are fixed)
-    tensor_image = torch::data::transforms::Normalize<>(
-        {0.48145466, 0.4578275, 0.40821073},
-        {0.26862954, 0.26130258, 0.27577711}
-    )(tensor_image);
+    // Zero-copy OpenCV → Torch (HWC)
+    auto tensor = torch::from_blob(
+        image.data,
+        {n_px, n_px, 3},
+        torch::kFloat32
+    );
 
-    // Add batch dimension
-    tensor_image = tensor_image.unsqueeze(0);  // Add batch dimension
+    // HWC → CHW (view only)
+    tensor = tensor.permute({2, 0, 1});
 
-    return tensor_image;
+    // Normalize (same numbers as before)
+    static const auto mean = torch::tensor({0.48145466f, 0.4578275f, 0.40821073f}).view({3,1,1});
+    static const auto std  = torch::tensor({0.26862954f, 0.26130258f, 0.27577711f}).view({3,1,1});
+
+    tensor = (tensor - mean) / std;
+
+    return tensor.clone();   // make it contiguous & owned by Torch
 }
+
+// torch::Tensor ModelSelection::Preprocess(const std::string& image_path, int n_px) {
+//     // Read image using OpenCV
+//     cv::Mat image = cv::imread(image_path);
+
+//     if (image.empty()) {
+//         //std::cerr << "Failed to read image: " << image_path << std::endl;
+//         //exit(-1);
+//     }
+
+//     // Resize image (the shorter edge scaled to n_px, bicubic interpolation)
+//     int new_rows = 0, new_cols = 0;
+//     if (image.rows > image.cols) {
+//         new_cols = n_px;
+//         new_rows = n_px * image.rows / image.cols;
+//     } else {
+//         new_rows = n_px;
+//         new_cols = n_px * image.cols / image.rows;
+//     }
+//     cv::resize(image, image, cv::Size(new_cols, new_rows), 0, 0, cv::INTER_CUBIC);
+
+//     // Center crop
+//     int crop_x = (image.cols - n_px) / 2;
+//     int crop_y = (image.rows - n_px) / 2;
+//     cv::Rect roi(crop_x, crop_y, n_px, n_px);
+
+//     image = image(roi);
+
+//     // Convert BGR to RGB
+//     cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+
+//     // Convert Mat to Tensor and permute dimensions to match [1, 3, n_px, n_px]
+//     // torch::Tensor tensor_image = torch::from_blob(image.data, {image.rows, image.cols, 3}, torch::kByte);
+//     // tensor_image = tensor_image.permute({2, 0, 1});
+//     torch::Tensor tensor_image = MatToTensor(image); // use our own function (from_blob doesn't work, why?)
+
+//     // Normalize (the parameters are fixed)
+//     tensor_image = torch::data::transforms::Normalize<>(
+//         {0.48145466, 0.4578275, 0.40821073},
+//         {0.26862954, 0.26130258, 0.27577711}
+//     )(tensor_image);
+
+//     // Add batch dimension
+//     // tensor_image = tensor_image.unsqueeze(0);  // Add batch dimension
+
+//     return tensor_image;
+// }
 
 std::vector<std::string> ModelSelection::GetDataList(const std::string& table_name,
                                          const std::string& col_name,

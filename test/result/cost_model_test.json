@@ -198,5 +198,105 @@
         "GPU Cost": 9.000000206335542,
         "CPU Cost": 0.00010330061437715147,
         "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 2.5844509601593018,
+        "Num rows": 1000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000049541116,
+        "CPU Cost": 8.386936586002786e-06,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.03814840316772461,
+        "Num rows": 2000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.00000006696272,
+        "CPU Cost": 1.674348254700557e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.021146059036254883,
+        "Num rows": 3000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000084384322,
+        "CPU Cost": 2.5100028508008356e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.022768259048461914,
+        "Num rows": 4000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000101805925,
+        "CPU Cost": 3.3456574469011145e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.02513909339904785,
+        "Num rows": 5000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000119227527,
+        "CPU Cost": 4.181312043001393e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.022112607955932617,
+        "Num rows": 6000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000136649131,
+        "CPU Cost": 5.0169666391016716e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.02040386199951172,
+        "Num rows": 7000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000154070733,
+        "CPU Cost": 5.85262123520195e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.0200045108795166,
+        "Num rows": 8000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000171492337,
+        "CPU Cost": 6.688275831302228e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.02037811279296875,
+        "Num rows": 9000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000188913939,
+        "CPU Cost": 7.523930427402507e-05,
+        "Recommended Platform": "CPU"
+    },
+    {
+        "model": "slice",
+        "time": 0.020134449005126953,
+        "Num rows": 10000,
+        "Model Params": 385,
+        "Model Size": 0.001483917236328125,
+        "GPU Cost": 9.000000206335542,
+        "CPU Cost": 8.359585023502785e-05,
+        "Recommended Platform": "CPU"
     }
 ]
