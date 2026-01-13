@@ -102,6 +102,11 @@ def stanford_dogs_test(limit_flag:str, symbol:str = 'cpu'):
         with open(IMAGE_VECTOR_TEST_FILE.format(limit_flag), 'w') as f_vector:
             json.dump(timing_data_vector, f_vector, indent=4)
 
+def stanford_dogs_init_data():
+    import_stanford_dogs_vector_dataset()
+    print("import stanford_dogs mvec table done")
+    import_stanford_dogs_dataset()
+    print("import stanford_dogs image table done")
 
 def stanford_dogs_all_test():
     import_stanford_dogs_vector_dataset()

@@ -102,6 +102,11 @@ def imagenet_test(limit_flag:str, symbol:str = 'cpu'):
         with open(IMAGE_VECTOR_TEST_FILE.format(limit_flag), 'w') as f_vector:
             json.dump(timing_data_vector, f_vector, indent=4)
 
+def imagenet_init_data():
+    import_imagenet_mvec_dataset()
+    print("import imagenet mvec table done")
+    import_imagenet_dataset()
+    print("import imagenet image table done")
 
 def imagenet_all_test():
     import_imagenet_mvec_dataset()

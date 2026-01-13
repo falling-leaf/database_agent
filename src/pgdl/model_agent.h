@@ -211,4 +211,14 @@ public:
     }
 };
 
+// Structure to hold the result of model analysis
+struct ModelAnalysisResult {
+    long long mac_count;      // Multiply-Accumulate operations
+    long long param_count;    // Total number of parameters
+    size_t param_size_bytes;  // Total size of parameters in bytes
+};
+
+// Function to analyze model characteristics: MAC, parameter count, and parameter size
+ModelAnalysisResult AnalyzeModelWithInference(const std::string& model_name);
+
 #endif

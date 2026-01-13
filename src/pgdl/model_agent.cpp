@@ -273,7 +273,27 @@ void PerceptionAgent::LoadMVecData(MVec* current_data) {
     MemoryContextSwitchTo(old_context);
 }
 
-// perception agent: NL =====> embedding vector
+char* str_to_lower(const char* str) {
+    if (str == nullptr) {
+        return nullptr;
+    }
+    // 分配内存存储小写字符串（+1 留空字符位置）
+    char* lower_str = (char*)malloc(strlen(str) + 1);
+    if (lower_str == nullptr) {
+        elog(ERROR, "Failed to allocate memory for lower case string");
+        return nullptr;
+    }
+    
+    // 逐个字符转换为小写
+    for (int i = 0; str[i] != '\0'; i++) {
+        lower_str[i] = tolower((unsigned char)str[i]);
+    }
+    // 末尾添加字符串结束符
+    lower_str[strlen(str)] = '\0';
+    
+    return lower_str;
+}
+
 AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     if (memory_manager.current_func_call == -1) {
         if (memory_manager.ins_cache == NULL)
@@ -331,8 +351,17 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
             char* image_path = text_to_cstring(PG_GETARG_TEXT_PP(load_index++));
             if (memory_manager.sample_path.size() <= 10)
                 memory_manager.sample_path.emplace_back(image_path);
-            //TODO: 这里现在仅限cifar，还需要进一步明确具体参数
-            current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+            char* check_result = str_to_lower(image_path);
+            if (strstr(check_result, "cifar10") != nullptr) {
+                // elog(INFO, "cifar10 image path: %s", image_path);
+                current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+            } else if (strstr(check_result, "stanford_dogs") != nullptr) {
+                // elog(INFO, "stanford_dogs image path: %s", image_path);
+                current_data = image_to_vector(256,224,0.485,0.456,0.406,0.229,0.224,0.225, image_path);
+            } else {
+                // elog(INFO, "default image path: %s", image_path);
+                current_data = image_to_vector(224,224,0.4914,0.4822,0.4465,0.2023,0.1994,0.2010, image_path);
+            }
         }
     }
     else current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
@@ -392,7 +421,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                         selected_model = SelectModel(state, task_unit.task_type);
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                         task_unit.model_name = pstrdup(selected_model.c_str());
-                        task_unit.cuda_name = pstrdup("cpu");
+                        task_unit.cuda_name = pstrdup("gpu");
                         MemoryContextSwitchTo(old_ctx);
                     }
                     break;
@@ -469,7 +498,10 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
             int result2 = GET_MVEC_SHAPE_VAL(input, 2);
             int result3 = GET_MVEC_SHAPE_VAL(input, 3);
             if (result0 == 1 && result1 == 3 && result2 == 224 && result3 == 224) {
+                // TODO: cifar10和imagenet shape一样
                 finetune_ds = "cifar10";
+            } else if (result0 == 1 && result1 == 3 && result2 == 256 && result3 == 224) {
+                finetune_ds = "stanford_dogs";
             } else {
                 elog(ERROR, "input shape not (1, 3, 224, 224)");
                 throw std::runtime_error("SelectModel: invalid input shape");
@@ -493,10 +525,30 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         std::string arch = temp_result.substr(0, pos);
         std::string pretrain_ds = temp_result.substr(pos + 1);
         std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
+        // elog(INFO, "SelectModel: %s", result_str.c_str());
         return result_str;
     } else {
         throw std::runtime_error("SelectModel: invalid task type");
     }
+}
+
+// Function to analyze model characteristics: MAC, parameter count, and parameter size
+ModelAnalysisResult AnalyzeModelWithInference(const std::string& model_name) {
+    ModelAnalysisResult result = {0, 0, 0};
+    
+    std::string model_path;
+    if (!model_manager.GetModelPath(model_name, model_path)) {
+        ereport(WARNING, (errmsg("Model %s not found", model_name.c_str())));
+        return result;
+    }
+    
+    // Use the new AnalyzeModel method
+    if (!model_manager.AnalyzeModel(model_name, model_path, result.mac_count, result.param_count, result.param_size_bytes)) {
+        ereport(WARNING, (errmsg("Failed to analyze model %s", model_name.c_str())));
+        return result;
+    }
+    
+    return result;
 }
 
 bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_model) {
@@ -753,23 +805,37 @@ double get_gpu_mem_bandwidth() {
 
 // optimization agent: planning tree optimization
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
-    // if (memory_manager.current_func_call == 0) {
-    //     elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
-    //     // Get hardware information
-    //     double cpu_flops = estimate_cpu_flops();
-    //     double gpu_flops = get_gpu_flops();
-    //     double cpu_bandwidth = get_cpu_mem_bandwidth();
-    //     double gpu_bandwidth = get_gpu_mem_bandwidth();
+    if (false) {
+    // if (memory_manager.current_func_call == 31 || (memory_manager.current_func_call < 31 && memory_manager.is_last_call == 1)) {
+        elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
+        // Get hardware information
+        double cpu_flops = estimate_cpu_flops();
+        double gpu_flops = get_gpu_flops();
+        double cpu_bandwidth = get_cpu_mem_bandwidth();
+        double gpu_bandwidth = get_gpu_mem_bandwidth();
 
-    //     elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
-    //     elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
-    //     elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
-    //     elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
-        
-    //     int num_rows = 32;
-        
+        elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
+        elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
+        elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
+        elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
 
-    // }
+        Task* task = (Task*)list_nth(state->task_list, 0);
+        
+        ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
+        elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+        int num_rows = 32;
+        double latency = 0;
+        double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
+        elog(INFO, "GPU cost: %.2e", gpu_cost);
+        double cpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.mac_count / cpu_flops) * num_rows;
+        elog(INFO, "CPU cost: %.2e", cpu_cost);
+
+        // if (gpu_cost < cpu_cost) {
+        //     state->current_state.cuda = "gpu";
+        // } else {
+        //     state->current_state.cuda = "cpu";
+        // }
+    }
     state->last_action = AgentAction::OPTIMIZATION;
     return AgentAction::SCHEDULE;
 }

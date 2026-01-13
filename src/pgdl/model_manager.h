@@ -201,6 +201,13 @@ public:
                  std::vector<torch::jit::IValue>& input, 
                  torch::jit::IValue& output);
 
+    // New method to analyze model without performing inference
+    bool AnalyzeModel(const std::string& model_name, 
+                      const std::string& model_path,
+                      long long& mac_count,
+                      long long& param_count,
+                      size_t& param_size_bytes);
+
     bool InitBaseModel();
 private:
     ModelManager(const ModelManager &other);  

@@ -72,6 +72,7 @@ def imdb_vector_test(limit_flag:str, symbol:str = 'cpu'):
         cur.execute("select register_process();")
         start = time.time()
         sql = "select predict_batch_float8('sst2_vec', '{}', comment_vec) over (rows between current row and 31 following ) from {} limit {};".format(symbol, IMAGE_VECTOR_TABLE, count)
+        print(sql)
         cur.execute(sql)
         end = time.time()
         cur.execute("select print_cost();")
@@ -148,10 +149,10 @@ def imdb_vector_test(limit_flag:str, symbol:str = 'cpu'):
 #         json.dump(timing_data_image, f_image, indent=4)
 
 def imdb_all_test():
-    import_imdb_dataset()
-    print('import imdb dataset done')
-    import_imdb_mvec_dataset()
-    print('import imdb mvec dataset')
+    # import_imdb_dataset()
+    # print('import imdb dataset done')
+    # import_imdb_mvec_dataset()
+    # print('import imdb mvec dataset')
     create_model()
     print('create model done')
     imdb_vector_test('', 'gpu')

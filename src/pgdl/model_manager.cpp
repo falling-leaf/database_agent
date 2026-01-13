@@ -27,8 +27,104 @@ ModelManager::~ModelManager()
     
 }
 
-bool ModelManager::InitBaseModel()
-{
+// Helper function to estimate MACs for a single layer based on its weight tensor and type
+long long EstimateMACsForLayer(const torch::Tensor& weight_tensor) {
+    long long macs = 0;
+    
+    if (weight_tensor.dim() == 4) { // Convolutional layer: [out_channels, in_channels, kernel_h, kernel_w]
+        long long out_channels = weight_tensor.size(0);
+        long long in_channels = weight_tensor.size(1);
+        long long kernel_h = weight_tensor.size(2);
+        long long kernel_w = weight_tensor.size(3);
+        
+        // Typical input shape assumptions for estimation (we'll use a standard size)
+        long long input_h = 224; // Standard ImageNet input height
+        long long input_w = 224; // Standard ImageNet input width
+        
+        // For convolution: MACs ≈ out_channels * in_channels * kernel_h * kernel_w * output_h * output_w
+        // Assuming stride=1 and padding that preserves spatial dimensions for simplicity
+        long long output_h = input_h;  // Simplified assumption
+        long long output_w = input_w;  // Simplified assumption
+        
+        macs = out_channels * in_channels * kernel_h * kernel_w * output_h * output_w;
+    }
+    else if (weight_tensor.dim() == 2) { // Linear/FC layer: [out_features, in_features]
+        long long out_features = weight_tensor.size(0);
+        long long in_features = weight_tensor.size(1);
+        
+        // For linear layer: MACs ≈ in_features * out_features (assuming batch size of 1)
+        macs = in_features * out_features;
+    }
+    else if (weight_tensor.dim() == 1) { // 1D tensors may represent various operations
+        // For 1D tensors, this could be BatchNorm parameters (weight/bias), LayerNorm, etc.
+        // These typically don't contribute significant MACs in the traditional sense,
+        // but if they're used in element-wise multiplication/addition operations,
+        // they could contribute to MACs based on the input size they're applied to.
+        // For now, we'll treat them as having MACs equal to their size
+        // (assuming each parameter is applied to each input element)
+        macs = weight_tensor.size(0);
+    }
+    else if (weight_tensor.dim() == 3) { // 3D tensors (e.g., 1x1 convolutions, some specialized layers)
+        long long size_0 = weight_tensor.size(0);
+        long long size_1 = weight_tensor.size(1);
+        long long size_2 = weight_tensor.size(2);
+        // For 3D convolutions or other operations
+        macs = size_0 * size_1 * size_2;
+    }
+    else {
+        elog(INFO, "EstimateMACsForLayer: unsupported layer type with dim %d", weight_tensor.dim());
+    }
+    
+    return macs;
+}
+
+bool ModelManager::AnalyzeModel(const std::string& model_name, 
+                                const std::string& model_path,
+                                long long& mac_count,
+                                long long& param_count,
+                                size_t& param_size_bytes) {
+    mac_count = 0;
+    param_count = 0;
+    param_size_bytes = 0;
+    
+    // Load the model if not already loaded
+    std::string actual_model_path;
+    if (!GetModelPath(model_name, actual_model_path)) {
+        actual_model_path = model_path;  // Use provided path if model name not found in registry
+    }
+    
+    // Check if model is already loaded
+    if (module_handle_.find(actual_model_path) == module_handle_.end()) {
+        if (!LoadModel(model_name, actual_model_path)) {
+            return false;
+        }
+    }
+    
+    // Get the loaded model module
+    torch::jit::script::Module& module = module_handle_[actual_model_path].first;
+    
+    // Count total parameters and calculate parameter size
+    auto named_params = module.named_parameters();
+    for (const auto& param : named_params) {
+        long long numel = param.value.numel();
+        param_count += numel;
+        param_size_bytes += numel * param.value.element_size();
+    }
+    
+    // Calculate MACs based on the model's layers
+    for (const auto& param : named_params) {
+        std::string param_name = param.name;
+        
+        // Only count MACs for weight parameters (not bias)
+        if (param_name.find(".weight") != std::string::npos) {
+            mac_count += EstimateMACsForLayer(param.value);
+        }
+    }
+    
+    return true;
+}
+
+bool ModelManager::InitBaseModel() {
     std::vector<std::pair<std::string, std::string>> base_model_list;
     GetBaseModelPaths(base_model_list);
     ereport(INFO, (errmsg("base_model_list:%s.", base_model_list[0].second.c_str())));

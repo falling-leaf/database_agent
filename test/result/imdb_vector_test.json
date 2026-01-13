@@ -1,0 +1,152 @@
+[
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 100;",
+        "count": 100,
+        "total_time": 2.4910547733306885,
+        "scan_time": 0.46892777333068847,
+        "load_model_time": 0.489894,
+        "pre_time": 0.005243,
+        "infer_time": 1.516852,
+        "post_time": 0.010138
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 1000;",
+        "count": 1000,
+        "total_time": 3.3983848094940186,
+        "scan_time": 0.4114238094940186,
+        "load_model_time": 0.483217,
+        "pre_time": 0.031111,
+        "infer_time": 2.394357,
+        "post_time": 0.078276
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 2000;",
+        "count": 2000,
+        "total_time": 4.832711458206177,
+        "scan_time": 0.45122545820617677,
+        "load_model_time": 0.485821,
+        "pre_time": 0.059018,
+        "infer_time": 3.684868,
+        "post_time": 0.151779
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 3000;",
+        "count": 3000,
+        "total_time": 6.398472309112549,
+        "scan_time": 0.5310963091125488,
+        "load_model_time": 0.483216,
+        "pre_time": 0.124524,
+        "infer_time": 5.031125,
+        "post_time": 0.228511
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 4000;",
+        "count": 4000,
+        "total_time": 7.85778546333313,
+        "scan_time": 0.5831484633331299,
+        "load_model_time": 0.492124,
+        "pre_time": 0.115216,
+        "infer_time": 6.368542,
+        "post_time": 0.298755
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 5000;",
+        "count": 5000,
+        "total_time": 9.382223129272461,
+        "scan_time": 0.615236129272461,
+        "load_model_time": 0.484889,
+        "pre_time": 0.143334,
+        "infer_time": 7.763547,
+        "post_time": 0.375217
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 6000;",
+        "count": 6000,
+        "total_time": 10.9371817111969,
+        "scan_time": 0.6797417111968994,
+        "load_model_time": 0.486285,
+        "pre_time": 0.172726,
+        "infer_time": 9.148638,
+        "post_time": 0.449791
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 7000;",
+        "count": 7000,
+        "total_time": 12.359823226928711,
+        "scan_time": 0.7263942269287109,
+        "load_model_time": 0.490151,
+        "pre_time": 0.199469,
+        "infer_time": 10.420653,
+        "post_time": 0.523156
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 8000;",
+        "count": 8000,
+        "total_time": 13.878507614135742,
+        "scan_time": 0.7861056141357422,
+        "load_model_time": 0.488459,
+        "pre_time": 0.227656,
+        "infer_time": 11.779802,
+        "post_time": 0.596485
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 9000;",
+        "count": 9000,
+        "total_time": 15.506047487258911,
+        "scan_time": 0.8761064872589112,
+        "load_model_time": 0.494187,
+        "pre_time": 0.268598,
+        "infer_time": 13.186312,
+        "post_time": 0.680844
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 10000;",
+        "count": 10000,
+        "total_time": 17.072967052459717,
+        "scan_time": 0.9166970524597168,
+        "load_model_time": 0.483521,
+        "pre_time": 0.283983,
+        "infer_time": 14.641451,
+        "post_time": 0.747315
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 100;",
+        "count": 100,
+        "total_time": 2.156555652618408,
+        "scan_time": 0.4582936526184082,
+        "load_model_time": 0.481794,
+        "pre_time": 0.005169,
+        "infer_time": 1.201148,
+        "post_time": 0.010151
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 1000;",
+        "count": 1000,
+        "total_time": 3.376626968383789,
+        "scan_time": 0.4015169683837891,
+        "load_model_time": 0.478337,
+        "pre_time": 0.031078,
+        "infer_time": 2.386284,
+        "post_time": 0.079411
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 2000;",
+        "count": 2000,
+        "total_time": 4.89144229888916,
+        "scan_time": 0.45384929888916015,
+        "load_model_time": 0.489134,
+        "pre_time": 0.05983,
+        "infer_time": 3.736665,
+        "post_time": 0.151964
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 3000;",
+        "count": 3000,
+        "total_time": 6.325564384460449,
+        "scan_time": 0.5126833844604493,
+        "load_model_time": 0.484364,
+        "pre_time": 0.087052,
+        "infer_time": 5.013536,
+        "post_time": 0.227929
+    }
+]
