@@ -7,7 +7,7 @@ from morphingdb_test.config import db_config, financial_phrasebank_dataset_path
 import morphingdb_test.text_test.financial_phrasebank.morphingdb as morphingdb
 
 
-tokenizer = AutoTokenizer.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
+tokenizer = AutoTokenizer.from_pretrained("/home/why/pgdl/model/models/distilroberta-finetuned-financial-news-sentiment-analysis")
 
 TEXT_COUNT_LIST = [100, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
 TEXT_TABLE = 'financial_phrasebank_test'

@@ -193,10 +193,37 @@ bool SST2_VecPreProcess(std::vector<torch::jit::IValue>& img_tensor, Args* args)
     return true;
 }
 
+// bool SST2OutputProcessFloat(torch::jit::IValue& outputs, Args* args, float8& result)
+// {
+//     elog(INFO, "outputs 类型检查:");
+//     elog(INFO, "  - isTuple(): %s", outputs.isTuple() ? "true" : "false");
+//     elog(INFO, "  - isTensor(): %s", outputs.isTensor() ? "true" : "false");
+//     elog(INFO, "  - isList(): %s", outputs.isList() ? "true" : "false");
+//     elog(INFO, "  - isInt(): %s", outputs.isInt() ? "true" : "false");
+//     auto tensor = outputs.toTuple()->elements()[0].toTensor();
+//     result = torch::cat(tensor, 0).argmax(1).item<float8>();
+//     return true;
+// }
 bool SST2OutputProcessFloat(torch::jit::IValue& outputs, Args* args, float8& result)
 {
-    auto tensor = outputs.toTuple()->elements()[0].toTensor();
-    result = torch::cat(tensor, 0).argmax(1).item<float8>();
+    // 1. 安全检查并获取 Tensor
+    torch::Tensor tensor;
+    if (outputs.isTensor()) {
+        tensor = outputs.toTensor();
+    } else if (outputs.isTuple()) {
+        // 兼容模式：如果模型以后改回了 Tuple，取第一个元素
+        tensor = outputs.toTuple()->elements()[0].toTensor();
+    } else {
+        elog(ERROR, "Unexpected output type: expected Tensor or Tuple");
+        return false;
+    }
+    try {
+        result = torch::cat(tensor, 0).argmax(1).item<float8>();
+    } catch (const c10::Error& e) {
+        elog(ERROR, "Tensor processing error: %s", e.what());
+        return false;
+    }
+
     return true;
 }
 
@@ -538,6 +565,10 @@ void register_callback()
     model_manager.RegisterPreProcess("sst2_vec", SST2_VecPreProcess);
     model_manager.RegisterOutoutProcessFloat("sst2_vec", SST2OutputProcessFloat);
     model_manager.RegisterOutoutProcessText("sst2_vec", SST2OutputProcessText);
+
+    model_manager.RegisterPreProcess("traced_albert_vec", SST2_VecPreProcess);
+    model_manager.RegisterOutoutProcessFloat("traced_albert_vec", SST2OutputProcessFloat);
+    model_manager.RegisterOutoutProcessText("traced_albert_vec", SST2OutputProcessText);
 
     model_manager.RegisterPreProcess("iris", IrisPreProcess);
     model_manager.RegisterOutoutProcessFloat("iris", IrisOutputProcessFloat);

@@ -1,0 +1,52 @@
+[
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 100;",
+        "count": 100,
+        "total_time": 7.703649997711182,
+        "scan_time": 0.02659199771118164,
+        "load_model_time": 0.486913,
+        "pre_time": 0.005495,
+        "infer_time": 7.181533,
+        "post_time": 0.003117
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 1000;",
+        "count": 1000,
+        "total_time": 54.246318101882935,
+        "scan_time": 0.17314510188293458,
+        "load_model_time": 0.487013,
+        "pre_time": 0.056194,
+        "infer_time": 53.503575,
+        "post_time": 0.026391
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 2000;",
+        "count": 2000,
+        "total_time": 91.95709443092346,
+        "scan_time": 0.2873404309234619,
+        "load_model_time": 0.489948,
+        "pre_time": 0.094509,
+        "infer_time": 91.026867,
+        "post_time": 0.05843
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 3000;",
+        "count": 3000,
+        "total_time": 162.87875366210938,
+        "scan_time": 0.468381662109375,
+        "load_model_time": 0.488191,
+        "pre_time": 0.139656,
+        "infer_time": 161.703488,
+        "post_time": 0.079037
+    },
+    {
+        "sql": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 4000;",
+        "count": 4000,
+        "total_time": 220.73158192634583,
+        "scan_time": 0.6526279263458252,
+        "load_model_time": 0.493639,
+        "pre_time": 0.180256,
+        "infer_time": 219.295285,
+        "post_time": 0.109774
+    }
+]

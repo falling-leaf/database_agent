@@ -59,10 +59,10 @@ if __name__ == "__main__":
     # # text test
     # from morphingdb_test.text_test.financial_phrasebank.morphingdb_test import financial_phrasebank_all_test
     # financial_phrasebank_all_test()
-    from morphingdb_test.text_test.imdb.morphingdb_test import imdb_all_test
-    imdb_all_test()
-    # from morphingdb_test.text_test.sst2.morphingdb_test import sst2_all_test
-    # sst2_all_test()
+    # from morphingdb_test.text_test.imdb.morphingdb_test import imdb_all_test
+    # imdb_all_test()
+    from morphingdb_test.text_test.sst2.morphingdb_test import sst2_all_test
+    sst2_all_test()
 
     # # muti test
     # from morphingdb_test.muti_query.morphingdb_test import muti_query_all_test

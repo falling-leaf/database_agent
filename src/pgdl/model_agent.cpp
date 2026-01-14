@@ -328,17 +328,15 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
     } else if (strcmp(task_type, "series") == 0) {
         task_type_enum = TaskType::SERIES;
+    } else if (strcmp(task_type, "nlp") == 0) {
+        task_type_enum = TaskType::NLP;
     } else {
         ereport(ERROR, (errmsg("unknown task type %s", task_type)));
         return AgentAction::FAILURE;
     }
     task_info.task_type = task_type_enum;
-    // TODO：下面代码应当只会被执行一次
     if (memory_manager.current_func_call == 0) {
         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
-        // task_info.limit_length = atoi((char*)PG_GETARG_CSTRING(load_index++));
-        if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
-        }
         state->task_info.emplace_back(task_info);
         MemoryContextSwitchTo(old_ctx);
     }
@@ -376,7 +374,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
 // orchestration agent: model selection, resource management
 AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
     TaskInit(state);
-    if (memory_manager.current_func_call == 0)
+    if (memory_manager.current_func_call == 31 || (memory_manager.current_func_call < 31 && memory_manager.is_last_call == 1))
         SPIRegisterProcess();
     // to be done
     state->last_action = AgentAction::ORCHESTRATION;
@@ -389,11 +387,7 @@ void OrchestrationAgent::SPIRegisterProcess() {
 }
 
 void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
-    // state->current_start_index = 0;
-    // state->current_end_index = 0;
     for (auto& task_unit : state->task_info) {
-        // 先默认窗口为32
-        // 强制窗口要大于预设的样本数量
         int window_size = 32;
         std::string selected_model;
         bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
@@ -417,6 +411,15 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                     }
                     break;
                 case TaskType::SERIES:
+                    {
+                        selected_model = SelectModel(state, task_unit.task_type);
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("cpu");
+                        MemoryContextSwitchTo(old_ctx);
+                    }
+                    break;
+                case TaskType::NLP:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -466,7 +469,26 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
 
 std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, TaskType task_type) {
     int sample_size = 10;
-    if (task_type == TaskType::SERIES) {
+    bool is_imagenet = false;
+    if (task_type == TaskType::NLP) {
+        MVec* input = memory_manager.ins_cache[0];
+        int shape_size = GET_MVEC_SHAPE_SIZE(input);
+        if (shape_size == 3) {
+            int result0 = GET_MVEC_SHAPE_VAL(input, 0);
+            int result1 = GET_MVEC_SHAPE_VAL(input, 1);
+            int result2 = GET_MVEC_SHAPE_VAL(input, 2);
+            if (result0 == 1 && result1 == 4 && result2 == 128) {
+                return "sst2_vec";
+            } else if (result0 == 1 && result1 == 2 && result2 == 133) {
+                return "finance";
+            } else {
+                throw std::runtime_error("SelectModel: invalid input shape");
+            }
+        } else {
+            elog(ERROR, "input shape size not 2");
+            throw std::runtime_error("SelectModel: invalid input shape");
+        }
+    } else if (task_type == TaskType::SERIES) {
         MVec* input = memory_manager.ins_cache[0];
         int shape_size = GET_MVEC_SHAPE_SIZE(input);
         if (shape_size == 2) {
@@ -499,7 +521,16 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
             int result3 = GET_MVEC_SHAPE_VAL(input, 3);
             if (result0 == 1 && result1 == 3 && result2 == 224 && result3 == 224) {
                 // TODO: cifar10和imagenet shape一样
-                finetune_ds = "cifar10";
+                char* sample_path_lower = str_to_lower(memory_manager.sample_path[0].c_str());
+                if (strstr(sample_path_lower, "cifar10")) {
+                    finetune_ds = "cifar10";
+                } else if (strstr(sample_path_lower, "image-net")) {
+                    is_imagenet = true;
+                    finetune_ds = "imagenet";
+                } else {
+                    elog(ERROR, "input shape not (1, 3, 224, 224)");
+                    throw std::runtime_error("SelectModel: invalid input shape");
+                }
             } else if (result0 == 1 && result1 == 3 && result2 == 256 && result3 == 224) {
                 finetune_ds = "stanford_dogs";
             } else {
@@ -526,6 +557,9 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         std::string pretrain_ds = temp_result.substr(pos + 1);
         std::string result_str = arch + "_" + arch + "_" + finetune_ds + "_" + "from" + "_" + pretrain_ds;
         // elog(INFO, "SelectModel: %s", result_str.c_str());
+        if (is_imagenet) {
+            result_str = "resnet18_resnet18_imagenet";
+        }
         return result_str;
     } else {
         throw std::runtime_error("SelectModel: invalid task type");
@@ -558,7 +592,14 @@ bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_mode
     } else {
         full_path = "/home/why/pgdl/model/models/";
     }
-    full_path += model_name;
+    // TODO: sentiment模型很大，MD5计算缓慢（硬性），因此时间计算时要把InitModel模块剥离出来
+    if (strcmp(model_name, "sst2_vec") == 0) {
+        full_path += "traced_albert_vec";
+    } else if (strcmp(model_name, "finance") == 0) {
+        full_path += "sentiment_analysis_model";
+    } else {
+        full_path += model_name;
+    }
     full_path += ".pt";
     const char* model_path = full_path.c_str();
     const char* base_model_name = "";
@@ -572,11 +613,11 @@ bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_mode
     }
     
     if(access(model_path, F_OK) != 0){
+        elog(INFO, "model_path: %s", model_path);
         ereport(ERROR, (errmsg("model is not exist!")));
     }
 
     model_manager.DropModel(model_name);
-
     if(strlen(base_model_name) == 0){
         if(model_manager.CreateModel(model_name, model_path, base_model_name, discription)){
             return true;
@@ -827,6 +868,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
         double latency = 0;
         double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
         elog(INFO, "GPU cost: %.2e", gpu_cost);
+        // TODO：cpu/gpu 利用率，调度，其他线程占用
         double cpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.mac_count / cpu_flops) * num_rows;
         elog(INFO, "CPU cost: %.2e", cpu_cost);
 
