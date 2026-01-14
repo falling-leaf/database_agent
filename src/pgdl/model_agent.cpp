@@ -844,40 +844,171 @@ double get_gpu_mem_bandwidth() {
     }
 }
 
-// optimization agent: planning tree optimization
+struct GpuStatus {
+    int id;
+    double util;        // 0-100
+    double mem_used;    // MiB
+    double mem_total;   // MiB
+};
+
+// 获取系统平均负载 (1分钟内)
+double get_cpu_load_factor() {
+    try {
+        std::string load_str = exec_command("cat /proc/loadavg | awk '{print $1}'");
+        double load = std::stod(load_str);
+        // 获取逻辑核心数
+        std::string nproc_str = exec_command("nproc");
+        double nproc = std::stod(nproc_str);
+        // 如果负载超过核心数，说明存在严重的调度排队
+        return (load / nproc); 
+    } catch (...) { return 1.0; }
+}
+
+// 获取所有 GPU 的状态信息
+std::vector<GpuStatus> get_all_gpu_status() {
+    std::vector<GpuStatus> status_list;
+    try {
+        // 一次性查询所有 GPU 的 ID, 利用率, 已用显存, 总显存
+        std::string output = exec_command("nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits");
+        std::stringstream ss(output);
+        std::string line;
+        while (std::getline(ss, line)) {
+            GpuStatus gpu;
+            char comma;
+            std::stringstream ls(line);
+            ls >> gpu.id >> comma >> gpu.util >> comma >> gpu.mem_used >> comma >> gpu.mem_total;
+            status_list.push_back(gpu);
+        }
+    } catch (...) {}
+    return status_list;
+}
+
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
-    if (false) {
+    if (memory_manager.current_func_call % 32 == 31 || memory_manager.is_last_call == 1) {
+    // once for all
     // if (memory_manager.current_func_call == 31 || (memory_manager.current_func_call < 31 && memory_manager.is_last_call == 1)) {
-        elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
-        // Get hardware information
-        double cpu_flops = estimate_cpu_flops();
-        double gpu_flops = get_gpu_flops();
-        double cpu_bandwidth = get_cpu_mem_bandwidth();
-        double gpu_bandwidth = get_gpu_mem_bandwidth();
+        bool enable_dynamic_cost = true; 
+        if (enable_dynamic_cost) {
+            elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
 
-        elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
-        elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
-        elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
-        elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
+            // 1. 基础信息提取 (利用现有工具函数)
+            double cpu_flops = estimate_cpu_flops();
+            double cpu_bandwidth = get_cpu_mem_bandwidth();
+            double gpu_bandwidth = get_gpu_mem_bandwidth();
+            Task* task = (Task*)list_nth(state->task_list, 0);
+            ModelAnalysisResult analysis_result = AnalyzeModelWithInference(task->model);
+            int num_rows = 32;
 
-        Task* task = (Task*)list_nth(state->task_list, 0);
-        
-        ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
-        elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
-        int num_rows = 32;
-        double latency = 0;
-        double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
-        elog(INFO, "GPU cost: %.2e", gpu_cost);
-        // TODO：cpu/gpu 利用率，调度，其他线程占用
-        double cpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.mac_count / cpu_flops) * num_rows;
-        elog(INFO, "CPU cost: %.2e", cpu_cost);
+            // --- CPU 动态 Cost 计算 ---
+            // 静态部分
+            double cpu_cost_static = (analysis_result.param_size_bytes / cpu_bandwidth) + 
+                                    (analysis_result.mac_count / cpu_flops) * num_rows;
+            
+            // 动态部分：提取 CPU 负载情况 (Load Average)
+            double cpu_load = 0.0;
+            int cpu_cores = 1;
+            try {
+                cpu_load = std::stod(exec_command("cat /proc/loadavg | awk '{print $1}'"));
+                cpu_cores = std::stoi(exec_command("nproc"));
+            } catch (...) { cpu_load = 0.5; cpu_cores = 1; }
+            
+            // 动态公平性修正：负载越高，调度延迟越大
+            // 修正系数 = (当前负载 / 核心数) + 1.0 (基础开销)
+            double cpu_dynamic_multiplier = (cpu_load / (double)cpu_cores) + 1.0;
+            double cpu_cost = cpu_cost_static * cpu_dynamic_multiplier;
 
-        // if (gpu_cost < cpu_cost) {
-        //     state->current_state.cuda = "gpu";
-        // } else {
-        //     state->current_state.cuda = "cpu";
-        // }
+            // --- GPU 动态 Cost 计算与多卡评估 ---
+            double min_gpu_cost = std::numeric_limits<double>::max();
+            int best_gpu_id = -1;
+
+            // 提取所有 GPU 状态：index, utilization, memory_used, memory_total
+            std::string gpu_info = exec_command("nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits");
+            std::stringstream ss(gpu_info);
+            std::string line;
+
+            while (std::getline(ss, line)) {
+                int idx;
+                double util, mem_used, mem_total;
+                char comma;
+                std::stringstream ls(line);
+                if (ls >> idx >> comma >> util >> comma >> mem_used >> comma >> mem_total) {
+                    // 静态部分 (针对当前 GPU)
+                    // 注意：此处假设各卡规格相近，使用全局 get_gpu_flops，可根据 idx 进一步精细化
+                    double current_gpu_flops = get_gpu_flops(); 
+                    double latency = 5e-4;
+                    double gpu_cost_static = latency + (analysis_result.param_size_bytes / cpu_bandwidth) + 
+                                            (analysis_result.param_size_bytes / gpu_bandwidth) + 
+                                            (analysis_result.mac_count / current_gpu_flops) * num_rows;
+
+                    // 动态公平性修正：利用率越高，等待时间呈指数级上升 (排队论模型)
+                    // 修正系数 = 1 / (1 - utilization%)，防止利用率 100% 导致除零，取 util max 0.99
+                    double gpu_dynamic_multiplier = 1.0 / (1.0 - (std::min(util, 99.0) / 100.0));
+                    
+                    // 显存占用惩罚：若剩余显存不足以放下模型参数，增加巨大惩罚项
+                    double vram_penalty = 1.0;
+                    if ((mem_total - mem_used) < (analysis_result.param_size_bytes / (1024.0 * 1024.0))) {
+                        vram_penalty = 100.0; // 显著增加 Cost 避免 OOM
+                    }
+
+                    double current_gpu_total_cost = gpu_cost_static * gpu_dynamic_multiplier * vram_penalty;
+
+                    if (current_gpu_total_cost < min_gpu_cost) {
+                        min_gpu_cost = current_gpu_total_cost;
+                        best_gpu_id = idx;
+                    }
+                }
+            }
+
+            // 2. 最终决策
+            double final_gpu_cost = (best_gpu_id == -1) ? std::numeric_limits<double>::max() : min_gpu_cost;
+            
+            elog(INFO, "Dynamic Analysis: CPU_Cost=%.2e (LoadFactor=%.2f), Best_GPU(%d)_Cost=%.2e", 
+                    cpu_cost, cpu_dynamic_multiplier, best_gpu_id, final_gpu_cost);
+
+            if (final_gpu_cost < cpu_cost) {
+                task->cuda = "gpu";
+                // 记录选择的 GPU ID 供后续调度使用
+                elog(INFO, "Decision: Switch to GPU %d", best_gpu_id);
+                // set_target_gpu_id(best_gpu_id); // 假设有对应设置函数
+            } else {
+                task->cuda = "cpu";
+                elog(INFO, "Decision: Switch to CPU");
+            }
+
+        } else if (false) {
+            // --- 原有静态逻辑完全不变 ---
+            elog(INFO, "OptimizationAgent::Execute - Starting hardware information gathering");
+            // Get hardware information
+            double cpu_flops = estimate_cpu_flops();
+            double gpu_flops = get_gpu_flops();
+            double cpu_bandwidth = get_cpu_mem_bandwidth();
+            double gpu_bandwidth = get_gpu_mem_bandwidth();
+
+            elog(INFO, "OptimizationAgent::Execute - CPU FLOPS retrieved: %.2e", cpu_flops);
+            elog(INFO, "OptimizationAgent::Execute - GPU FLOPS retrieved: %.2e", gpu_flops);
+            elog(INFO, "OptimizationAgent::Execute - CPU bandwidth retrieved: %.2e", cpu_bandwidth);
+            elog(INFO, "OptimizationAgent::Execute - GPU bandwidth retrieved: %.2e", gpu_bandwidth);
+
+            Task* task = (Task*)list_nth(state->task_list, 0);
+            
+            ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
+            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            int num_rows = 32;
+            double latency = 1e-4;
+            double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
+            elog(INFO, "GPU cost: %.2e", gpu_cost);
+            
+            double cpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.mac_count / cpu_flops) * num_rows;
+            elog(INFO, "CPU cost: %.2e", cpu_cost);
+
+            if (gpu_cost < cpu_cost) {
+                task->cuda = "gpu";
+            } else {
+                task->cuda = "cpu";
+            }
+        }
     }
+
     state->last_action = AgentAction::OPTIMIZATION;
     return AgentAction::SCHEDULE;
 }
