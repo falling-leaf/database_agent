@@ -18,6 +18,8 @@
 #include <algorithm>
 
 #define ONLY_FOR_IMAGE_PREDICT false
+#define WINDOW_SIZE 32
+#define SAMPLE_SIZE 10
 
 extern "C" {
 #include "catalog/pg_type_d.h"
@@ -56,6 +58,7 @@ AgentAction BaseAgentNode::ExecuteWithTiming(std::shared_ptr<AgentState> state) 
 
 void MemoryManager::PrintTimingStats() {
     elog(INFO, "=== Agent Execution Timing Statistics ===");
+    double overall_total_time_ms = 0;
     for (const auto& pair : execution_time_map) {
         std::string agent_name = pair.first;
         long long total_time_microseconds = pair.second;  // time in microseconds
@@ -64,10 +67,12 @@ void MemoryManager::PrintTimingStats() {
         // Convert to milliseconds with nanosecond precision (as floating point milliseconds)
         double total_time_ms = total_time_microseconds / 1000.0;
         double avg_time_ms = call_count > 0 ? total_time_microseconds / (1000.0 * call_count) : 0.0;
+        overall_total_time_ms += total_time_ms;
         
         elog(INFO, "Agent: %-20s Total: %10.3f ms, Calls: %6d, Average: %10.6f ms", 
              agent_name.c_str(), total_time_ms, call_count, avg_time_ms);
     }
+    elog(INFO, "Overall Total: %10.3f ms", overall_total_time_ms);
     elog(INFO, "=========================================");
 }
 
@@ -303,7 +308,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
             memory_manager.ins_cache_data = (float**)palloc0(sizeof(float*) * MAX_CACHE_SIZE);
             memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * MAX_CACHE_SIZE);
             memory_manager.out_cache_data = (float*)palloc0(sizeof(float) * MAX_CACHE_SIZE);
-            memory_manager.ins_buffer = (Args*)palloc0(32 * sizeof(Args));
+            memory_manager.ins_buffer = (Args*)palloc0(WINDOW_SIZE * sizeof(Args));
             MemoryContextSwitchTo(old_context);
             
             elog(NOTICE, "Global memory allocated in TopMemoryContext.");
@@ -347,7 +352,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
             current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
         } else {
             char* image_path = text_to_cstring(PG_GETARG_TEXT_PP(load_index++));
-            if (memory_manager.sample_path.size() <= 10)
+            if (memory_manager.sample_path.size() <= SAMPLE_SIZE)
                 memory_manager.sample_path.emplace_back(image_path);
             char* check_result = str_to_lower(image_path);
             if (strstr(check_result, "cifar10") != nullptr) {
@@ -374,7 +379,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
 // orchestration agent: model selection, resource management
 AgentAction OrchestrationAgent::Execute(std::shared_ptr<AgentState> state) {
     TaskInit(state);
-    if (memory_manager.current_func_call == 31 || (memory_manager.current_func_call < 31 && memory_manager.is_last_call == 1))
+    if (memory_manager.current_func_call == WINDOW_SIZE - 1 || (memory_manager.current_func_call < WINDOW_SIZE - 1 && memory_manager.is_last_call == 1))
         SPIRegisterProcess();
     // to be done
     state->last_action = AgentAction::ORCHESTRATION;
@@ -390,12 +395,12 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     for (auto& task_unit : state->task_info) {
         int window_size = 32;
         std::string selected_model;
-        bool ready_for_task = (memory_manager.current_func_call % window_size == window_size - 1) ||
+        bool ready_for_task = (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1) ||
                               (memory_manager.is_last_call == 1);
         if (!ready_for_task)
             continue;
         bool from_select_model = false;
-        if (memory_manager.current_func_call == window_size - 1) {
+        if (memory_manager.current_func_call == WINDOW_SIZE - 1) {
             elog(INFO, "start setting model and cuda");
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
@@ -441,8 +446,8 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                 }
             }
         }
-        int64_t window_start = (memory_manager.current_func_call / window_size) * window_size;
-        int64_t window_end = window_start + window_size;
+        int64_t window_start = (memory_manager.current_func_call / WINDOW_SIZE) * WINDOW_SIZE;
+        int64_t window_end = window_start + WINDOW_SIZE;
         if (memory_manager.is_last_call == 1) {
             window_end = memory_manager.current_func_call + 1;
         }
@@ -468,7 +473,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
 }
 
 std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, TaskType task_type) {
-    int sample_size = 10;
+    int sample_size = SAMPLE_SIZE;
     bool is_imagenet = false;
     if (task_type == TaskType::NLP) {
         MVec* input = memory_manager.ins_cache[0];
@@ -884,9 +889,9 @@ std::vector<GpuStatus> get_all_gpu_status() {
 }
 
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
-    if (memory_manager.current_func_call % 32 == 31 || memory_manager.is_last_call == 1) {
+    if (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1 || memory_manager.is_last_call == 1) {
     // once for all
-    // if (memory_manager.current_func_call == 31 || (memory_manager.current_func_call < 31 && memory_manager.is_last_call == 1)) {
+    // if (memory_manager.current_func_call == WINDOW_SIZE - 1 || (memory_manager.current_func_call < WINDOW_SIZE - 1 && memory_manager.is_last_call == 1)) {
         bool enable_dynamic_cost = true; 
         if (enable_dynamic_cost) {
             elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
@@ -897,7 +902,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             double gpu_bandwidth = get_gpu_mem_bandwidth();
             Task* task = (Task*)list_nth(state->task_list, 0);
             ModelAnalysisResult analysis_result = AnalyzeModelWithInference(task->model);
-            int num_rows = 32;
+            int num_rows = WINDOW_SIZE;
 
             // --- CPU 动态 Cost 计算 ---
             // 静态部分
@@ -914,7 +919,23 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             
             // 动态公平性修正：负载越高，调度延迟越大
             // 修正系数 = (当前负载 / 核心数) + 1.0 (基础开销)
-            double cpu_dynamic_multiplier = (cpu_load / (double)cpu_cores) + 1.0;
+            double m = (cpu_load / (double)cpu_cores) + 1.0;
+
+            double threshold = 1.2 + 0.1 * std::log2((double)cpu_cores);
+    
+            // 利用对数缩放模型进行辅助判断
+            double cpu_dynamic_multiplier = m;
+
+            // 3. 判定是否进入指数惩罚区
+            if (m > threshold) {
+                // m * e^(m - T) 
+                // 保证在 m = threshold 时曲线连续（e^0 = 1）
+                // 且当 m 超过阈值后，Cost 会随负载比增加呈指数级飞升
+                cpu_dynamic_multiplier = m * std::exp(5.0 * (m - threshold));
+            } else {
+                cpu_dynamic_multiplier = m; // 线性增长区
+            }
+
             double cpu_cost = cpu_cost_static * cpu_dynamic_multiplier;
 
             // --- GPU 动态 Cost 计算与多卡评估 ---
@@ -951,7 +972,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                     }
 
                     double current_gpu_total_cost = gpu_cost_static * gpu_dynamic_multiplier * vram_penalty;
-
+                    // elog(INFO, "current_gpu_total_cost: %.2e", current_gpu_total_cost);
                     if (current_gpu_total_cost < min_gpu_cost) {
                         min_gpu_cost = current_gpu_total_cost;
                         best_gpu_id = idx;
@@ -966,12 +987,18 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                     cpu_cost, cpu_dynamic_multiplier, best_gpu_id, final_gpu_cost);
 
             if (final_gpu_cost < cpu_cost) {
-                task->cuda = "gpu";
+                std::string gpu_str = "gpu:" + std::to_string(best_gpu_id);
+                MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                task->cuda = pstrdup(gpu_str.c_str());
+                MemoryContextSwitchTo(old_ctx);
+                
                 // 记录选择的 GPU ID 供后续调度使用
                 elog(INFO, "Decision: Switch to GPU %d", best_gpu_id);
                 // set_target_gpu_id(best_gpu_id); // 假设有对应设置函数
             } else {
-                task->cuda = "cpu";
+                MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                task->cuda = pstrdup("cpu");
+                MemoryContextSwitchTo(old_ctx);
                 elog(INFO, "Decision: Switch to CPU");
             }
 
@@ -993,7 +1020,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             
             ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
             elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
-            int num_rows = 32;
+            int num_rows = WINDOW_SIZE;
             double latency = 1e-4;
             double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
             elog(INFO, "GPU cost: %.2e", gpu_cost);
@@ -1002,9 +1029,13 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             elog(INFO, "CPU cost: %.2e", cpu_cost);
 
             if (gpu_cost < cpu_cost) {
-                task->cuda = "gpu";
+                MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                task->cuda = pstrdup("gpu");
+                MemoryContextSwitchTo(old_ctx);
             } else {
-                task->cuda = "cpu";
+                MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                task->cuda = pstrdup("cpu");
+                MemoryContextSwitchTo(old_ctx);
             }
         }
     }
@@ -1087,6 +1118,11 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
         if (state->last_action == AgentAction::START) {
             return AgentAction::PERCEPTION;
         } else if (state->last_action == AgentAction::PERCEPTION) {
+            bool ready_for_task = (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1) ||
+                              (memory_manager.is_last_call == 1);
+            if (!ready_for_task) {
+                return AgentAction::SUCCESS;
+            }
             return AgentAction::ORCHESTRATION;
         } else if (state->last_action == AgentAction::ORCHESTRATION) {
             return AgentAction::OPTIMIZATION;

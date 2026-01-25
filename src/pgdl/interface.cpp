@@ -281,7 +281,7 @@ predict_float(PG_FUNCTION_ARGS)
 
     // 2. choose cpu or gpu to predict
     if (pg_strcasecmp(cuda, "gpu") == 0 && 
-        model_manager.SetCuda(model_path)){
+        model_manager.SetCuda(model_path, cuda)){
         
     }
 
@@ -403,7 +403,7 @@ predict_text(PG_FUNCTION_ARGS)
 
     // 2. choose cpu or gpu to predict
     if (pg_strcasecmp(cuda, "gpu") == 0 && 
-        model_manager.SetCuda(model_path)){
+        model_manager.SetCuda(model_path, cuda)){
         
     }
 

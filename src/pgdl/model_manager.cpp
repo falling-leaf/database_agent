@@ -429,7 +429,7 @@ bool ModelManager::LoadModel(std::string model_name, std::string model_path)
     return true;
 }
 
-bool ModelManager::SetCuda(const std::string& model_path)
+bool ModelManager::SetCuda(const std::string& model_path, const std::string& cuda)
 {
     if(module_handle_.find(model_path) != module_handle_.end()){
         if(module_handle_[model_path].second == at::kCUDA){
@@ -438,10 +438,22 @@ bool ModelManager::SetCuda(const std::string& model_path)
         } else {
             // elog(INFO, "model %s not use gpu!", model_path.c_str());
             if(torch::cuda::is_available()){
-                module_handle_[model_path].second = at::kCUDA;
-                module_handle_[model_path].first.to(at::kCUDA);
-                module_handle_[model_path].first.eval();
-                // ereport(INFO, (errmsg("libtorch use gpu!")));
+                std::string valid_cuda_str = cuda;
+                if (cuda.find("gpu") == 0) {
+                    // 将gpu替换为cuda（比如gpu:0 → cuda:0）
+                    valid_cuda_str.replace(0, 3, "cuda");
+                }
+                torch::Device target_device(valid_cuda_str);
+                if (target_device.is_cuda()) {
+                    module_handle_[model_path].first.to(target_device);
+                    module_handle_[model_path].second = at::kCUDA;
+                    module_handle_[model_path].first.eval();
+                } else {
+                    module_handle_[model_path].second = at::kCUDA;
+                    module_handle_[model_path].first.to(at::kCUDA);
+                    module_handle_[model_path].first.eval();
+                    // ereport(INFO, (errmsg("libtorch use gpu!")));
+                }
                 return true;
             }
             // elog(INFO, "model %s not use gpu, but gpu is not available!", model_path.c_str());

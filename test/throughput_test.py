@@ -121,11 +121,12 @@ IMAGE_SQL_QUERIES = [
 
 def run_all_throughput_tests():
     # CONCURRENCY_LEVELS = [1, 4, 8, 16, 32, 64]
-    CONCURRENCY_LEVELS = [1, 4, 8]
+    # CONCURRENCY_LEVELS = [1, 4, 8]
+    CONCURRENCY_LEVELS = [32, 64]
     TOTAL_TASKS = 128
     ROWS_PER_QUERY = 1000
 
-    for sql_info in IMAGE_SQL_QUERIES:
+    for sql_info in SERIES_SQL_QUERIES:
         print(f"\n{'='*60}")
         print(f"Testing SQL: {sql_info['name']}")
         print(f"Query: {sql_info['query']}")

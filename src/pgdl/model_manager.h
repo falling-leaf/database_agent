@@ -121,7 +121,7 @@ public:
      * @param {string&} model_path
      * @return {*}
      */    
-    bool SetCuda(const std::string& model_path);
+    bool SetCuda(const std::string& model_path, const std::string& cuda);
 
     /**
      * @description: 
