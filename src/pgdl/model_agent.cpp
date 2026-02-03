@@ -5,6 +5,7 @@
 #include "embedding.h"
 #include "spi_connection.h"
 #include "md5.h"
+#include "cpu_load_predictor.h"
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -35,6 +36,31 @@ extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 extern void register_callback();
 extern ModelManager model_manager;
 extern MemoryManager memory_manager;
+
+// Global CPU load predictor instance
+static CPULoadPredictor cpu_load_predictor;
+
+// Global variables to track ExecutionAgent timing
+static std::chrono::high_resolution_clock::time_point execution_start_time;
+static bool execution_timing_active = false;
+
+// Function to start ExecutionAgent timing
+void StartExecutionAgentTiming() {
+    execution_start_time = std::chrono::high_resolution_clock::now();
+    execution_timing_active = true;
+}
+
+// Function to get ExecutionAgent runtime in microseconds
+long long GetExecutionAgentRuntimeUs() {
+    if (!execution_timing_active) {
+        return 0; // Return 0 if timing hasn't started
+    }
+    
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - execution_start_time);
+    execution_timing_active = false; // Reset timing flag
+    return duration.count();
+}
 
 // Implementation of the timed execution wrapper
 AgentAction BaseAgentNode::ExecuteWithTiming(std::shared_ptr<AgentState> state) {
@@ -702,6 +728,75 @@ std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
+// Function to collect CPU load and ExecutionAgent runtime data
+void CollectCPULoadAndRuntimeData() {
+    // Get CPU load average
+    double cpu_load = 0.0;
+    int cpu_cores = 1;
+    try {
+        cpu_load = std::stod(exec_command("cat /proc/loadavg | awk '{print $1}'"));
+        cpu_cores = std::stoi(exec_command("nproc"));
+    } catch (...) { 
+        cpu_load = 0.5; 
+        cpu_cores = 1; 
+    }
+    
+    // Get ExecutionAgent runtime measurement
+    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
+    
+    // Store the collected data to database via SPI
+    SPIConnector spi_connector;
+    if (!spi_connector.Connect()) {
+        elog(WARNING, "Failed to connect to SPI for storing CPU load data");
+        return;
+    }
+    
+    // Create table if it doesn't exist to store the training data
+    std::string create_table_sql = R"(
+        CREATE TABLE IF NOT EXISTS cpu_load_training_data (
+            id SERIAL PRIMARY KEY,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            cpu_load DOUBLE PRECISION,
+            cpu_cores INTEGER,
+            execution_runtime_us BIGINT,
+            normalized_load_factor DOUBLE PRECISION
+        )
+    )";
+    
+    if (!spi_connector.Execute(create_table_sql)) {
+        elog(WARNING, "Failed to create cpu_load_training_data table");
+        return;
+    }
+    
+    // Calculate normalized load factor (similar to the current dynamic multiplier logic)
+    double normalized_load_factor = (cpu_load / (double)cpu_cores) + 1.0;
+    double threshold = 1.2 + 0.1 * std::log2((double)cpu_cores);
+    
+    if ((cpu_load / (double)cpu_cores) + 1.0 > threshold) {
+        normalized_load_factor = ((cpu_load / (double)cpu_cores) + 1.0) * std::exp(5.0 * (((cpu_load / (double)cpu_cores) + 1.0) - threshold));
+    }
+    
+    // Insert the collected data
+    std::string insert_sql = "INSERT INTO cpu_load_training_data (cpu_load, cpu_cores, execution_runtime_us, normalized_load_factor) VALUES ($1, $2, $3, $4)";
+    SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 4);
+    
+    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cpu_load)) ||
+        !sql_wrapper.Bind(2, INT4OID, Int32GetDatum(cpu_cores)) ||
+        !sql_wrapper.Bind(3, INT8OID, Int64GetDatum(execution_runtime_us)) ||
+        !sql_wrapper.Bind(4, FLOAT8OID, Float8GetDatum(normalized_load_factor))) {
+        elog(WARNING, "Failed to bind parameters for inserting CPU load data");
+        return;
+    }
+    
+    if (!sql_wrapper.Execute()) {
+        elog(WARNING, "Failed to insert CPU load data into database");
+        return;
+    }
+    
+    elog(INFO, "Successfully stored CPU load data: load=%.3f, cores=%d, runtime=%lld us, factor=%.3f", 
+         cpu_load, cpu_cores, execution_runtime_us, normalized_load_factor);
+}
+
 // Helper function to estimate CPU FLOPS
 double estimate_cpu_flops() {
     try {
@@ -917,6 +1012,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                 cpu_cores = std::stoi(exec_command("nproc"));
             } catch (...) { cpu_load = 0.5; cpu_cores = 1; }
             
+            // OLD FIXED FORMULA (preserved as comment):
             // 动态公平性修正：负载越高，调度延迟越大
             // 修正系数 = (当前负载 / 核心数) + 1.0 (基础开销)
             double m = (cpu_load / (double)cpu_cores) + 1.0;
@@ -935,6 +1031,28 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             } else {
                 cpu_dynamic_multiplier = m; // 线性增长区
             }
+            
+            // NEW MODEL-BASED APPROACH:
+            // Try to load the model from .pt file if not already loaded
+            // static bool model_tried_loading = false;
+            // if (!model_tried_loading) {
+            //     if (!cpu_load_predictor.LoadModel("/tmp/cpu_load_model.pt")) {
+            //         elog(INFO, "Model file not found, attempting to train new model from database data");
+            //         if (cpu_load_predictor.TrainModel()) {
+            //             cpu_load_predictor.SaveModel("/tmp/cpu_load_model.pt");
+            //             elog(INFO, "New model trained and saved to /tmp/cpu_load_model.pt");
+            //         } else {
+            //             elog(WARNING, "Failed to train model, will use fallback logic");
+            //         }
+            //     }
+            //     model_tried_loading = true;
+            // }
+            
+            // // Use the trained model to predict the dynamic multiplier
+            // double cpu_dynamic_multiplier = cpu_load_predictor.Predict(cpu_load, cpu_cores);
+            
+            // elog(INFO, "Model-based CPU dynamic multiplier: %.3f (load=%.3f, cores=%d)", 
+            //      cpu_dynamic_multiplier, cpu_load, cpu_cores);
 
             double cpu_cost = cpu_cost_static * cpu_dynamic_multiplier;
 
@@ -1077,9 +1195,15 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
 
     elog(INFO, "Constructed batch size: %d. Starting inference...", list_length(state->current_state.ins));
 
+    // Start timing for ExecutionAgent
+    StartExecutionAgentTiming();
+
     // 执行推理
     // infer_batch_internal 会将结果填入 state->current_state.outs
     infer_batch_internal(&state->current_state, true);
+
+    // Collect CPU load and runtime data after execution
+    CollectCPULoadAndRuntimeData();
 
     state->last_action = AgentAction::EXECUTION;
     return AgentAction::SCHEDULE;

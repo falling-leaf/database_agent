@@ -99,6 +99,13 @@ def create_model():
     conn.close()
 
 
+def sst2_init_data():
+    import_sst2_dataset()
+    print("import sst2 dataset done")
+    import_sst2_mvec_dataset()
+    print("import sst2 mvec dataset done")
+
+
 def sst2_vec_test(limit_flag:str, symbol:str = 'cpu'):
     for count in TEXT_COUNT_LIST:
         # 连接数据库

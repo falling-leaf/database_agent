@@ -1,0 +1,121 @@
+[
+    {
+        "count": 0,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.14248251914978027,
+        "pre_time": 0,
+        "infer_time": 0,
+        "post_time": 0
+    },
+    {
+        "count": 100,
+        "total_time": 9.655656576156616,
+        "scan_time": 0.4456322193145752,
+        "load_model_time": 0.14012861251831055,
+        "pre_time": 0.01721978187561035,
+        "infer_time": 9.04515528678894,
+        "post_time": 0.0075206756591796875,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 100;"
+    },
+    {
+        "count": 1000,
+        "total_time": 85.41507029533386,
+        "scan_time": 2.0657763481140137,
+        "load_model_time": 0.1344752311706543,
+        "pre_time": 0.1598982810974121,
+        "infer_time": 82.9775755405426,
+        "post_time": 0.07734489440917969,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 1000;"
+    },
+    {
+        "count": 2000,
+        "total_time": 177.60582065582275,
+        "scan_time": 3.906303644180298,
+        "load_model_time": 0.13214516639709473,
+        "pre_time": 0.3359949588775635,
+        "infer_time": 173.08185148239136,
+        "post_time": 0.14952540397644043,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 2000;"
+    },
+    {
+        "count": 3000,
+        "total_time": 266.8526978492737,
+        "scan_time": 5.843071937561035,
+        "load_model_time": 0.12995672225952148,
+        "pre_time": 0.46285510063171387,
+        "infer_time": 260.18791818618774,
+        "post_time": 0.228895902633667,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 3000;"
+    },
+    {
+        "count": 4000,
+        "total_time": 335.8761866092682,
+        "scan_time": 7.697411775588989,
+        "load_model_time": 0.14310240745544434,
+        "pre_time": 0.7273883819580078,
+        "infer_time": 326.9925706386566,
+        "post_time": 0.31571340560913086,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 4000;"
+    },
+    {
+        "count": 5000,
+        "total_time": 431.9677836894989,
+        "scan_time": 9.743788719177246,
+        "load_model_time": 0.13299894332885742,
+        "pre_time": 0.7701823711395264,
+        "infer_time": 420.9305582046509,
+        "post_time": 0.3902554512023926,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 5000;"
+    },
+    {
+        "count": 6000,
+        "total_time": 493.3268747329712,
+        "scan_time": 11.357157468795776,
+        "load_model_time": 0.13601899147033691,
+        "pre_time": 0.9329991340637207,
+        "infer_time": 480.422753572464,
+        "post_time": 0.47794556617736816,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 6000;"
+    },
+    {
+        "count": 7000,
+        "total_time": 590.9095113277435,
+        "scan_time": 13.272046566009521,
+        "load_model_time": 0.13178706169128418,
+        "pre_time": 1.0675115585327148,
+        "infer_time": 575.9063911437988,
+        "post_time": 0.5317749977111816,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 7000;"
+    },
+    {
+        "count": 8000,
+        "total_time": 698.9222693443298,
+        "scan_time": 15.114020347595215,
+        "load_model_time": 0.13406968116760254,
+        "pre_time": 1.2695271968841553,
+        "infer_time": 681.8107371330261,
+        "post_time": 0.5939149856567383,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 8000;"
+    },
+    {
+        "count": 9000,
+        "total_time": 765.1359629631042,
+        "scan_time": 17.87103247642517,
+        "load_model_time": 0.14547085762023926,
+        "pre_time": 1.5538463592529297,
+        "infer_time": 744.8922619819641,
+        "post_time": 0.6733512878417969,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 9000;"
+    },
+    {
+        "count": 10000,
+        "total_time": 864.6221024990082,
+        "scan_time": 18.181291103363037,
+        "load_model_time": 0.13567042350769043,
+        "pre_time": 1.4844639301300049,
+        "infer_time": 844.0891396999359,
+        "post_time": 0.7315373420715332,
+        "sql": "cpu SELECT SST2Test(comment) FROM postgres_data.nlp_test limit 10000;"
+    }
+]

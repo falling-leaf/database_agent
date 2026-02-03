@@ -58,6 +58,13 @@ def create_model():
     conn.close()
 
 
+def financial_phrasebank_init_data():
+    import_financial_phrasebank_dataset()
+    print("import financial phrasebank dataset done")
+    import_financial_phrasebank_mvec_dataset()
+    print("import financial phrasebank mvec dataset done")
+
+
 def finance_test(limit_flag:str, symbol:str = 'cpu'):
     for count in TEXT_COUNT_LIST:
         # 连接数据库

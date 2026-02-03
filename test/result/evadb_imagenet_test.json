@@ -1,0 +1,121 @@
+[
+    {
+        "count": 0,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.34050607681274414,
+        "pre_time": 0,
+        "infer_time": 0,
+        "post_time": 0
+    },
+    {
+        "count": 100,
+        "total_time": 21.203550100326538,
+        "scan_time": 11.927861213684082,
+        "load_model_time": 0.11111903190612793,
+        "pre_time": 0.7267551422119141,
+        "infer_time": 8.375281810760498,
+        "post_time": 0.06253290176391602,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 100;"
+    },
+    {
+        "count": 1000,
+        "total_time": 77.20090389251709,
+        "scan_time": 8.03824257850647,
+        "load_model_time": 0.11329865455627441,
+        "pre_time": 5.408284664154053,
+        "infer_time": 63.058348178863525,
+        "post_time": 0.5827298164367676,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 1000;"
+    },
+    {
+        "count": 2000,
+        "total_time": 155.7020766735077,
+        "scan_time": 16.61189365386963,
+        "load_model_time": 0.09294843673706055,
+        "pre_time": 10.685956478118896,
+        "infer_time": 127.06132698059082,
+        "post_time": 1.2499511241912842,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 2000;"
+    },
+    {
+        "count": 3000,
+        "total_time": 228.37101817131042,
+        "scan_time": 24.46790313720703,
+        "load_model_time": 0.09413743019104004,
+        "pre_time": 15.878995656967163,
+        "infer_time": 186.0351550579071,
+        "post_time": 1.894826889038086,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 3000;"
+    },
+    {
+        "count": 4000,
+        "total_time": 296.4991693496704,
+        "scan_time": 32.15033459663391,
+        "load_model_time": 0.08672046661376953,
+        "pre_time": 20.7716121673584,
+        "infer_time": 241.02848553657532,
+        "post_time": 2.4620165824890137,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 4000;"
+    },
+    {
+        "count": 5000,
+        "total_time": 377.84467601776123,
+        "scan_time": 39.833155393600464,
+        "load_model_time": 0.09406399726867676,
+        "pre_time": 25.76731038093567,
+        "infer_time": 309.01701402664185,
+        "post_time": 3.133132219314575,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 5000;"
+    },
+    {
+        "count": 6000,
+        "total_time": 438.60219264030457,
+        "scan_time": 47.476800203323364,
+        "load_model_time": 0.09502530097961426,
+        "pre_time": 30.453624725341797,
+        "infer_time": 356.911315202713,
+        "post_time": 3.6654272079467773,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 6000;"
+    },
+    {
+        "count": 7000,
+        "total_time": 516.8906407356262,
+        "scan_time": 55.40739154815674,
+        "load_model_time": 0.09078168869018555,
+        "pre_time": 35.52908182144165,
+        "infer_time": 421.5635459423065,
+        "post_time": 4.299839735031128,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 7000;"
+    },
+    {
+        "count": 8000,
+        "total_time": 591.6064519882202,
+        "scan_time": 64.27871584892273,
+        "load_model_time": 0.09219050407409668,
+        "pre_time": 41.008546113967896,
+        "infer_time": 481.2684688568115,
+        "post_time": 4.95853066444397,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 8000;"
+    },
+    {
+        "count": 9000,
+        "total_time": 662.2382230758667,
+        "scan_time": 71.84705352783203,
+        "load_model_time": 0.09178590774536133,
+        "pre_time": 45.23190402984619,
+        "infer_time": 539.4846212863922,
+        "post_time": 5.582858324050903,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 9000;"
+    },
+    {
+        "count": 10000,
+        "total_time": 737.352438211441,
+        "scan_time": 79.13557529449463,
+        "load_model_time": 0.09872770309448242,
+        "pre_time": 50.15400528907776,
+        "infer_time": 601.8059475421906,
+        "post_time": 6.158182382583618,
+        "sql": "cpuSELECT Resnet18Test(data)  FROM IMAGENET limit 10000;"
+    }
+]

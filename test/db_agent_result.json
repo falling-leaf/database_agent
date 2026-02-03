@@ -1,0 +1,330 @@
+{
+  "timestamp": "2026-01-31T17:53:00.744919",
+  "queries_used": "NEW_SQL_QUERIES (db_agent_single)",
+  "tests": [
+    {
+      "name": "slice_db_agent",
+      "table": "slice_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.5903682708740234,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.629594087600708,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7652490139007568,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.001173734664917,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "series",
+      "column": "data"
+    },
+    {
+      "name": "swarm_db_agent",
+      "table": "swarm_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6370809078216553,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7271342277526855,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.9786994457244873,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.366729497909546,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "series",
+      "column": "data"
+    },
+    {
+      "name": "year_predict_db_agent",
+      "table": "year_predict_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.5475282669067383,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.5604152679443359,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6357383728027344,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.845757007598877,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "series",
+      "column": "data"
+    },
+    {
+      "name": "imdb_db_agent",
+      "table": "imdb_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 14.512662172317505,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 15.788383483886719,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 18.591787338256836,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 26.50874948501587,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    },
+    {
+      "name": "financial_phrasebank_db_agent",
+      "table": "financial_phrasebank_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 17.81971049308777,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 18.518516063690186,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 21.04649066925049,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 25.34110689163208,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    },
+    {
+      "name": "nlp_db_agent",
+      "table": "nlp_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 12.355424404144287,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 15.621154069900513,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 20.55155110359192,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 26.65004062652588,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    },
+    {
+      "name": "cifar_db_agent",
+      "table": "cifar_image_table",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 25.69787836074829,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM cifar_image_table limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 24.73879051208496,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM cifar_image_table limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 36.337395668029785,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM cifar_image_table limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 58.14984178543091,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM cifar_image_table limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "image_classification",
+      "column": "image_path"
+    },
+    {
+      "name": "stanford_dogs_db_agent",
+      "table": "stanford_dogs_image_table",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 24.202112436294556,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM stanford_dogs_image_table limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 32.48126792907715,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM stanford_dogs_image_table limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 59.80075025558472,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM stanford_dogs_image_table limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 100.94192123413086,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM stanford_dogs_image_table limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "image_classification",
+      "column": "image_path"
+    },
+    {
+      "name": "imagenet_db_agent",
+      "table": "imagenet_image_table",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 27.555187225341797,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM imagenet_image_table limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 37.327377796173096,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM imagenet_image_table limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 75.26203489303589,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM imagenet_image_table limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 130.26806735992432,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM imagenet_image_table limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "image_classification",
+      "column": "image_path"
+    }
+  ]
+}

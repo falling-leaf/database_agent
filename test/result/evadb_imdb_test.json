@@ -1,0 +1,120 @@
+[
+    {
+        "count": 0,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.32625842094421387,
+        "pre_time": 0,
+        "infer_time": 0,
+        "post_time": 0
+    },
+    {
+        "count": 100,
+        "total_time": 10.35053038597107,
+        "scan_time": 0.5519628524780273,
+        "load_model_time": 0.12972593307495117,
+        "pre_time": 0.040917396545410156,
+        "infer_time": 9.619678497314453,
+        "post_time": 0.008245706558227539,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 100;"
+    },
+    {
+        "count": 1000,
+        "total_time": 91.50084710121155,
+        "scan_time": 2.4324791431427,
+        "load_model_time": 0.13692951202392578,
+        "pre_time": 0.48940300941467285,
+        "infer_time": 88.36282801628113,
+        "post_time": 0.0792074203491211,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 1000;"
+    },
+    {
+        "count": 2000,
+        "total_time": 171.65372490882874,
+        "scan_time": 3.914497137069702,
+        "load_model_time": 0.14997220039367676,
+        "pre_time": 0.9629404544830322,
+        "infer_time": 166.47111821174622,
+        "post_time": 0.1551969051361084,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 2000;"
+    },
+    {
+        "count": 3000,
+        "total_time": 254.03322792053223,
+        "scan_time": 5.77034854888916,
+        "load_model_time": 0.1324615478515625,
+        "pre_time": 1.463087797164917,
+        "infer_time": 246.42638754844666,
+        "post_time": 0.24094247817993164,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 3000;"
+    },
+    {
+        "count": 4000,
+        "total_time": 331.36193084716797,
+        "scan_time": 7.558116436004639,
+        "load_model_time": 0.13229799270629883,
+        "pre_time": 2.007828712463379,
+        "infer_time": 321.33285689353943,
+        "post_time": 0.33083081245422363,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 4000;"
+    },
+    {
+        "count": 5000,
+        "total_time": 416.3539626598358,
+        "scan_time": 9.405988931655884,
+        "load_model_time": 0.12968707084655762,
+        "pre_time": 2.472019672393799,
+        "infer_time": 403.9336009025574,
+        "post_time": 0.41266608238220215,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 5000;"
+    },
+    {
+        "count": 6000,
+        "total_time": 524.9519808292389,
+        "scan_time": 12.682892799377441,
+        "load_model_time": 0.1327211856842041,
+        "pre_time": 3.0031580924987793,
+        "infer_time": 508.62874960899353,
+        "post_time": 0.5044591426849365,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 6000;"
+    },
+    {
+        "count": 7000,
+        "total_time": 601.1765553951263,
+        "scan_time": 13.726035118103027,
+        "load_model_time": 0.14124202728271484,
+        "pre_time": 3.7977898120880127,
+        "infer_time": 582.9484565258026,
+        "post_time": 0.5630319118499756,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 7000;"
+    },
+    {
+        "count": 8000,
+        "total_time": 691.9464058876038,
+        "scan_time": 15.36601710319519,
+        "load_model_time": 0.16903376579284668,
+        "pre_time": 4.0218281745910645,
+        "infer_time": 671.7641634941101,
+        "post_time": 0.6253633499145508,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 8000;"
+    },
+    {
+        "count": 9000,
+        "total_time": 773.867044210434,
+        "scan_time": 16.61921262741089,
+        "load_model_time": 0.1326584815979004,
+        "pre_time": 4.530520915985107,
+        "infer_time": 751.8958344459534,
+        "post_time": 0.6888177394866943,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 9000;"
+    },
+    {
+        "count": 9999,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.13062143325805664,
+        "pre_time": 5.034409761428833,
+        "infer_time": 827.8071620464325,
+        "post_time": 0.769397497177124
+    }
+]

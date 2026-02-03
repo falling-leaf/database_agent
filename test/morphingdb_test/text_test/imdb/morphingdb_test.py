@@ -60,6 +60,13 @@ def create_model():
     conn.commit()
     conn.close()
 
+
+def imdb_init_data():
+    import_imdb_dataset()
+    print("import imdb dataset done")
+    import_imdb_mvec_dataset()
+    print("import imdb mvec dataset done")
+
 def imdb_test():
     pass
 

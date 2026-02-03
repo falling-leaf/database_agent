@@ -8,6 +8,7 @@
 #include "batch_interface.h"
 #include "myfunc.h"
 #include "vector.h"
+#include "cpu_load_predictor.h"
 
 #include <stdbool.h>
 #include <string>

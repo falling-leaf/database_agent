@@ -1,0 +1,329 @@
+{
+  "timestamp": "2026-01-31T14:48:26.960471",
+  "tests": [
+    {
+      "name": "slice_predict",
+      "table": "slice_test",
+      "model": "slice",
+      "column": "data",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6391451358795166,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7359755039215088,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.9526214599609375,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.3040661811828613,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "swarm_predict",
+      "table": "swarm_test",
+      "model": "swarm",
+      "column": "data",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6573390960693359,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7816622257232666,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.1802644729614258,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.6864087581634521,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "year_predict_test",
+      "table": "year_predict_test",
+      "model": "year_predict",
+      "column": "data",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.5908386707305908,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6148099899291992,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7959063053131104,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.0772902965545654,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "imdb_vector_predict",
+      "table": "imdb_vector_test",
+      "model": "sst2_vec",
+      "column": "comment_vec",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 53.27989315986633,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 90.52731537818909,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 214.0586485862732,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 444.18957567214966,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "financial_phrasebank_predict",
+      "table": "financial_phrasebank_vector_test",
+      "model": "finance",
+      "column": "comment_vec",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 30.342888116836548,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('finance', 'cpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 53.33640670776367,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('finance', 'cpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 112.95416927337646,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('finance', 'cpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 247.18206238746643,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('finance', 'cpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "nlp_vector_predict",
+      "table": "nlp_vector_test",
+      "model": "sst2_vec",
+      "column": "comment_vec",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 45.81159067153931,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 94.59202527999878,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 222.31209254264832,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 440.2633776664734,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('sst2_vec', 'cpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "cifar_image_predict",
+      "table": "cifar_image_vector_table",
+      "model": "googlenet_cifar10",
+      "column": "image_vector",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 16.013603925704956,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('googlenet_cifar10', 'cpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 31.16795563697815,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('googlenet_cifar10', 'cpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 73.70429134368896,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('googlenet_cifar10', 'cpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 150.54449558258057,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('googlenet_cifar10', 'cpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "stanford_dogs_image_predict",
+      "table": "stanford_dogs_image_vector_table",
+      "model": "alexnet_stanford_dogs",
+      "column": "image_vector",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 7.895165681838989,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('alexnet_stanford_dogs', 'cpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 13.063954591751099,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('alexnet_stanford_dogs', 'cpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 28.665191173553467,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('alexnet_stanford_dogs', 'cpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 57.5394504070282,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('alexnet_stanford_dogs', 'cpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 10000;"
+        }
+      ]
+    },
+    {
+      "name": "imagenet_image_predict",
+      "table": "imagenet_image_vector_table",
+      "model": "defect_vec",
+      "column": "image_vector",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 13.361508131027222,
+          "row_count": 1000,
+          "formatted_query": "select predict_batch_float8('defect_vec', 'cpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 25.003291845321655,
+          "row_count": 2000,
+          "formatted_query": "select predict_batch_float8('defect_vec', 'cpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 2000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 60.332841634750366,
+          "row_count": 5000,
+          "formatted_query": "select predict_batch_float8('defect_vec', 'cpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 5000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 119.75537991523743,
+          "row_count": 10000,
+          "formatted_query": "select predict_batch_float8('defect_vec', 'cpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 10000;"
+        }
+      ]
+    }
+  ]
+}
