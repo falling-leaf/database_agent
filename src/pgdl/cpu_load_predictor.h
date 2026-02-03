@@ -20,8 +20,11 @@ public:
     bool SaveModel(const std::string& model_path);
     double Predict(double cpu_load, int cpu_cores);
 
-    bool ExtractTrainingData(std::vector<std::vector<double>>& features,
-                             std::vector<double>& targets);
+    // ⚠️ 声明与 cpp 中实现必须 100% 一致
+    bool ExtractTrainingData(
+        std::vector<std::vector<double>>& features,
+        std::vector<double>& targets
+    );
 
 private:
     bool model_loaded_;
@@ -42,4 +45,4 @@ private:
     SimpleMLP model_;
 };
 
-#endif
+#endif  // _CPU_LOAD_PREDICTOR_H_
