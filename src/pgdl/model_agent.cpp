@@ -18,7 +18,7 @@
 #include <sstream>
 #include <algorithm>
 
-#define ONLY_FOR_IMAGE_PREDICT false
+#define ONLY_FOR_IMAGE_PREDICT true
 #define ADD_OPTIMIZATION_LOGIC true
 #define WINDOW_SIZE 32
 #define SAMPLE_SIZE 10
@@ -44,6 +44,7 @@ static CPULoadPredictor cpu_load_predictor;
 // Global variables to track ExecutionAgent timing
 static std::chrono::high_resolution_clock::time_point execution_start_time;
 static bool execution_timing_active = false;
+static bool data_cleaning = false;
 
 // Function to start ExecutionAgent timing
 void StartExecutionAgentTiming() {
@@ -541,7 +542,6 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         }
     } else if (task_type == TaskType::IMAGE_CLASSIFICATION) {
         if (ONLY_FOR_IMAGE_PREDICT) {
-            elog(INFO, "here1");
             MVec* input = memory_manager.ins_cache[0];
             int shape_size = GET_MVEC_SHAPE_SIZE(input);
             if (shape_size == 4) {
@@ -549,14 +549,10 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
                 int result1 = GET_MVEC_SHAPE_VAL(input, 1);
                 int result2 = GET_MVEC_SHAPE_VAL(input, 2);
                 int result3 = GET_MVEC_SHAPE_VAL(input, 3);
-                elog(INFO, "here2, result0: %d, result1: %d, result2: %d, result3: %d", result0, result1, result2, result3);
                 if (result0 == 1 && result1 == 3 && result2 == 224 && result3 == 224) {
-                    // TODO: cifar10和imagenet shape一样
-                    // char* sample_path_lower = str_to_lower(memory_manager.sample_path[0].c_str());
-                    // elog(INFO, "sample_path_lower: %s", sample_path_lower);
-                    if (false) {
+                    if (GET_MVEC_VAL(input, 0) > -2) {
                         return "googlenet_cifar10";
-                    } else  {
+                    } else {
                         return "defect_vec";
                     }
                 } else if (result0 == 1 && result1 == 3 && result2 == 256 && result3 == 224) {
@@ -759,7 +755,7 @@ std::string trim(const std::string& s) {
 }
 
 // Function to collect CPU load and ExecutionAgent runtime data
-void CollectCPULoadAndRuntimeData(char* task_type) {
+void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, ModelAnalysisResult analysis_result) {
     // Get CPU load average
     double cpu_load = 0.0;
     int cpu_cores = 1;
@@ -789,14 +785,33 @@ void CollectCPULoadAndRuntimeData(char* task_type) {
     }
     
     // Insert the collected data
-    std::string insert_sql = "INSERT INTO cpu_load_training_data (cpu_load, cpu_cores, execution_runtime_us, normalized_load_factor, tasktype) VALUES ($1, $2, $3, $4, $5)";
-    SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 5);
+    // CREATE TABLE IF NOT EXISTS cpu_load_training_data (
+    //     id SERIAL PRIMARY KEY,
+    //     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    //     cpu_load DOUBLE PRECISION,
+    //     cpu_cores INTEGER,
+    //     execution_runtime_us BIGINT,
+    //     data_shape_1 BIGINT,
+    //     data_shape_2 BIGINT,
+    //     data_shape_3 BIGINT,
+    //     data_shape_4 BIGINT,
+    //     model_mac_count BIGINT,
+    //     model_param_count BIGINT,
+    //     model_param_size BIGINT
+    //     )
+    std::string insert_sql = "INSERT INTO cpu_load_training_data (cpu_load, cpu_cores, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+    SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 10);
     
     if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cpu_load)) ||
         !sql_wrapper.Bind(2, INT4OID, Int32GetDatum(cpu_cores)) ||
         !sql_wrapper.Bind(3, INT8OID, Int64GetDatum(execution_runtime_us)) ||
-        !sql_wrapper.Bind(4, FLOAT8OID, Float8GetDatum(normalized_load_factor)) ||
-        !sql_wrapper.Bind(5, TEXTOID, CStringGetTextDatum(task_type))) {
+        !sql_wrapper.Bind(4, INT8OID, Int64GetDatum(shape0)) ||
+        !sql_wrapper.Bind(5, INT8OID, Int64GetDatum(shape1)) ||
+        !sql_wrapper.Bind(6, INT8OID, Int64GetDatum(shape2)) ||
+        !sql_wrapper.Bind(7, INT8OID, Int64GetDatum(shape3)) ||
+        !sql_wrapper.Bind(8, INT8OID, Int64GetDatum(analysis_result.mac_count)) ||
+        !sql_wrapper.Bind(9, INT8OID, Int64GetDatum(analysis_result.param_count)) ||
+        !sql_wrapper.Bind(10, INT8OID, Int64GetDatum(analysis_result.param_size_bytes))) {
         elog(WARNING, "Failed to bind parameters for inserting CPU load data");
         return;
     }
@@ -806,8 +821,9 @@ void CollectCPULoadAndRuntimeData(char* task_type) {
         return;
     }
     
-    elog(INFO, "Successfully stored CPU load data: load=%.3f, cores=%d, runtime=%lld us, factor=%.3f, tasktype=%s", 
-         cpu_load, cpu_cores, execution_runtime_us, normalized_load_factor, task_type);
+    elog(INFO, "Successfully stored CPU load data: load=%.3f, cores=%d, runtime=%lld us, shapes=[%d,%d,%d,%d], model_mac=%lld, model_param=%lld, model_size=%zu", 
+         cpu_load, cpu_cores, execution_runtime_us, shape0, shape1, shape2, shape3, 
+         analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
 }
 
 // Helper function to estimate CPU FLOPS
@@ -957,13 +973,6 @@ double get_gpu_mem_bandwidth() {
     }
 }
 
-struct GpuStatus {
-    int id;
-    double util;        // 0-100
-    double mem_used;    // MiB
-    double mem_total;   // MiB
-};
-
 // 获取系统平均负载 (1分钟内)
 double get_cpu_load_factor() {
     try {
@@ -1062,7 +1071,33 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             }
             
             // Use the trained model to predict the dynamic multiplier
-            double cpu_dynamic_multiplier = cpu_load_predictor.Predict(cpu_load, cpu_cores);
+            MVec* input = memory_manager.ins_cache[0];
+            int shape_size = GET_MVEC_SHAPE_SIZE(input);
+            int result0 = 0, result1 = 0, result2 = 0, result3 = 0;
+            if (shape_size == 4) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+                result2 = GET_MVEC_SHAPE_VAL(input, 2);
+                result3 = GET_MVEC_SHAPE_VAL(input, 3);
+            } else if (shape_size == 3) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+                result2 = GET_MVEC_SHAPE_VAL(input, 2);
+            } else if (shape_size == 2) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+            }
+            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            std::vector<double> workload = {
+                (double)result0,
+                (double)result1,
+                (double)result2,
+                (double)result3,
+                (double)analysis_result.mac_count,
+                (double)analysis_result.param_count,
+                (double)analysis_result.param_size_bytes
+            };
+            double cpu_dynamic_multiplier = cpu_load_predictor.Predict(workload, cpu_load, cpu_cores);
             
             elog(INFO, "Model-based CPU dynamic multiplier: %.3f (load=%.3f, cores=%d)", 
                  cpu_dynamic_multiplier, cpu_load, cpu_cores);
@@ -1074,42 +1109,42 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             int best_gpu_id = -1;
 
             // 提取所有 GPU 状态：index, utilization, memory_used, memory_total
-            // std::string gpu_info = exec_command("nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits");
-            // std::stringstream ss(gpu_info);
-            // std::string line;
+            std::string gpu_info = exec_command("nvidia-smi --query-gpu=index,utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits");
+            std::stringstream ss(gpu_info);
+            std::string line;
 
-            // while (std::getline(ss, line)) {
-            //     int idx;
-            //     double util, mem_used, mem_total;
-            //     char comma;
-            //     std::stringstream ls(line);
-            //     if (ls >> idx >> comma >> util >> comma >> mem_used >> comma >> mem_total) {
-            //         // 静态部分 (针对当前 GPU)
-            //         // 注意：此处假设各卡规格相近，使用全局 get_gpu_flops，可根据 idx 进一步精细化
-            //         double current_gpu_flops = get_gpu_flops(); 
-            //         double latency = 5e-4;
-            //         double gpu_cost_static = latency + (analysis_result.param_size_bytes / cpu_bandwidth) + 
-            //                                 (analysis_result.param_size_bytes / gpu_bandwidth) + 
-            //                                 (analysis_result.mac_count / current_gpu_flops) * num_rows;
+            while (std::getline(ss, line)) {
+                int idx;
+                double util, mem_used, mem_total;
+                char comma;
+                std::stringstream ls(line);
+                if (ls >> idx >> comma >> util >> comma >> mem_used >> comma >> mem_total) {
+                    // 静态部分 (针对当前 GPU)
+                    // 注意：此处假设各卡规格相近，使用全局 get_gpu_flops，可根据 idx 进一步精细化
+                    double current_gpu_flops = get_gpu_flops(); 
+                    double latency = 5e-4;
+                    double gpu_cost_static = latency + (analysis_result.param_size_bytes / cpu_bandwidth) + 
+                                            (analysis_result.param_size_bytes / gpu_bandwidth) + 
+                                            (analysis_result.mac_count / current_gpu_flops) * num_rows;
 
-            //         // 动态公平性修正：利用率越高，等待时间呈指数级上升 (排队论模型)
-            //         // 修正系数 = 1 / (1 - utilization%)，防止利用率 100% 导致除零，取 util max 0.99
-            //         double gpu_dynamic_multiplier = 1.0 / (1.0 - (std::min(util, 99.0) / 100.0));
+                    // 动态公平性修正：利用率越高，等待时间呈指数级上升 (排队论模型)
+                    // 修正系数 = 1 / (1 - utilization%)，防止利用率 100% 导致除零，取 util max 0.99
+                    double gpu_dynamic_multiplier = 1.0 / (1.0 - (std::min(util, 99.0) / 100.0));
                     
-            //         // 显存占用惩罚：若剩余显存不足以放下模型参数，增加巨大惩罚项
-            //         double vram_penalty = 1.0;
-            //         if ((mem_total - mem_used) < (analysis_result.param_size_bytes / (1024.0 * 1024.0))) {
-            //             vram_penalty = 100.0; // 显著增加 Cost 避免 OOM
-            //         }
+                    // 显存占用惩罚：若剩余显存不足以放下模型参数，增加巨大惩罚项
+                    double vram_penalty = 1.0;
+                    if ((mem_total - mem_used) < (analysis_result.param_size_bytes / (1024.0 * 1024.0))) {
+                        vram_penalty = 100.0; // 显著增加 Cost 避免 OOM
+                    }
 
-            //         double current_gpu_total_cost = gpu_cost_static * gpu_dynamic_multiplier * vram_penalty;
-            //         // elog(INFO, "current_gpu_total_cost: %.2e", current_gpu_total_cost);
-            //         if (current_gpu_total_cost < min_gpu_cost) {
-            //             min_gpu_cost = current_gpu_total_cost;
-            //             best_gpu_id = idx;
-            //         }
-            //     }
-            // }
+                    double current_gpu_total_cost = gpu_cost_static * gpu_dynamic_multiplier * vram_penalty;
+                    // elog(INFO, "current_gpu_total_cost: %.2e", current_gpu_total_cost);
+                    if (current_gpu_total_cost < min_gpu_cost) {
+                        min_gpu_cost = current_gpu_total_cost;
+                        best_gpu_id = idx;
+                    }
+                }
+            }
 
             // 2. 最终决策
             double final_gpu_cost = (best_gpu_id == -1) ? std::numeric_limits<double>::max() : min_gpu_cost;
@@ -1209,7 +1244,8 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     elog(INFO, "Constructed batch size: %d. Starting inference...", list_length(state->current_state.ins));
 
     // Start timing for ExecutionAgent
-    StartExecutionAgentTiming();
+    if (ADD_OPTIMIZATION_LOGIC)
+        StartExecutionAgentTiming();
 
     // 执行推理
     // infer_batch_internal 会将结果填入 state->current_state.outs
@@ -1221,8 +1257,31 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     infer_batch_internal(&state->current_state, true);
 
     // Collect CPU load and runtime data after execution
-    if (ADD_OPTIMIZATION_LOGIC && (list_length(state->current_state.ins) == 32))
-        CollectCPULoadAndRuntimeData("slice");
+    if (ADD_OPTIMIZATION_LOGIC && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
+        if (!data_cleaning)
+            data_cleaning = true;
+        else {
+            MVec* input = memory_manager.ins_cache[0];
+            int shape_size = GET_MVEC_SHAPE_SIZE(input);
+            int result0 = 0, result1 = 0, result2 = 0, result3 = 0;
+            if (shape_size == 4) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+                result2 = GET_MVEC_SHAPE_VAL(input, 2);
+                result3 = GET_MVEC_SHAPE_VAL(input, 3);
+            } else if (shape_size == 3) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+                result2 = GET_MVEC_SHAPE_VAL(input, 2);
+            } else if (shape_size == 2) {
+                result0 = GET_MVEC_SHAPE_VAL(input, 0);
+                result1 = GET_MVEC_SHAPE_VAL(input, 1);
+            }
+            ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
+            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            CollectCPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
+        }
+    }
 
     state->last_action = AgentAction::EXECUTION;
     return AgentAction::SCHEDULE;

@@ -1,0 +1,57 @@
+[
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 100;",
+        "count": 100,
+        "total_time": 3.5362393856048584
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 1000;",
+        "count": 1000,
+        "total_time": 25.72197437286377
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 2000;",
+        "count": 2000,
+        "total_time": 47.70122838020325
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 3000;",
+        "count": 3000,
+        "total_time": 71.28553819656372
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 4000;",
+        "count": 4000,
+        "total_time": 97.696697473526
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 5000;",
+        "count": 5000,
+        "total_time": 120.17326831817627
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 6000;",
+        "count": 6000,
+        "total_time": 133.7905330657959
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 7000;",
+        "count": 7000,
+        "total_time": 169.92665338516235
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 8000;",
+        "count": 8000,
+        "total_time": 181.34258794784546
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 9000;",
+        "count": 9000,
+        "total_time": 207.49816703796387
+    },
+    {
+        "sql": "cpu SELECT FinanceTest(comment) FROM postgres_data.financial_phrasebank_test limit 10000;",
+        "count": 10000,
+        "total_time": 224.68097519874573
+    }
+]

@@ -1,0 +1,5036 @@
+{
+  "timestamp": "2026-02-05T13:13:29.165401",
+  "test_type": "concurrency_stress_test_both_query_types",
+  "original_queries_results": {
+    "slice_predict": {
+      "name": "slice_predict",
+      "table": "slice_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.962315559387207
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 2.5768961906433105
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 2.5069162845611572
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 2.463393449783325
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 6.6092095375061035
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 5.1481475830078125
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 5.937829256057739
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 6.485407590866089
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 6.29115891456604
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 5.974830150604248
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 11.27056336402893
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 11.564216375350952
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 10.971290111541748
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 7.387246608734131
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 11.598596096038818
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 11.657624006271362
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 17.261096239089966
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 17.560057878494263
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 17.32467794418335
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 17.542916297912598
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 17.145692110061646
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 17.45117163658142
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 6.0533318519592285
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 13.118435859680176
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 15.842597484588623
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 14.614869594573975
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 20.347031354904175
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 20.353538513183594
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 20.129523754119873
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 7.6677467823028564
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 20.329402208328247
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 18.730454444885254
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 10.867267847061157
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 19.8935444355011
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 15.68288278579712
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 17.754299879074097
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 25.322102785110474
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 11.472121477127075
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 25.860533714294434
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 25.538398265838623
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 22.744332790374756
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 26.08041477203369
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 26.028982162475586
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 25.381468534469604
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 11.94965648651123
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 25.873945713043213
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 26.07316493988037
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 26.03270196914673
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 13.874327659606934
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 28.057753562927246
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 30.05266499519348
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 23.83781099319458
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 25.047052145004272
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 29.554503440856934
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 26.125062704086304
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 29.364025592803955
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 29.45002555847168
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 29.356518268585205
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 29.938985109329224
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 19.514456272125244
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 30.020859241485596
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 13.425993919372559
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 9.49738621711731
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 30.04974126815796
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 31.151177406311035
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 30.82426691055298
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 18.243955373764038
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 30.28783345222473
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 31.137104749679565
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 21.438363552093506
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 31.128509759902954
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 28.608272552490234
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 31.110234022140503
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 14.472551345825195
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 17.83191752433777
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 29.292097091674805
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 29.865643739700317
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 24.238521814346313
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 11.83957839012146
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 30.062960147857666
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        }
+      ]
+    },
+    "swarm_predict": {
+      "name": "swarm_predict",
+      "table": "swarm_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 1.1667335033416748
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 3.1248245239257812
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 2.9183876514434814
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 2.9686315059661865
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 6.852620363235474
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 7.013767957687378
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 7.236102104187012
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 7.2689290046691895
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 7.186802864074707
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 10.756548166275024
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 11.073391675949097
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 11.407736539840698
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 9.31560468673706
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 11.443487644195557
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 10.937888622283936
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 11.411174535751343
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 7.291193246841431
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 15.21038556098938
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 15.18645429611206
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 15.188384532928467
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 7.279048919677734
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 15.034051179885864
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 15.041975736618042
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 14.358804941177368
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 13.848672866821289
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 20.93086266517639
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 21.439552545547485
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 21.353805541992188
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 21.402642726898193
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 20.705605030059814
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 21.407225370407104
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 20.693328142166138
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 19.722660779953003
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 21.198591947555542
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 20.937254667282104
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 7.72867226600647
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 24.29345202445984
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 24.36962628364563
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 10.462862730026245
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 24.30024552345276
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 22.544142484664917
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 23.974992036819458
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 22.679402828216553
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 24.432086944580078
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 10.349630355834961
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 23.98622703552246
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 22.98861289024353
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 24.406287670135498
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 9.307381868362427
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 13.373185157775879
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 28.87196183204651
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 27.265045404434204
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 28.746041297912598
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 28.94721007347107
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 19.713819980621338
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 26.37527322769165
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 19.35776114463806
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 27.90696430206299
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 27.51673698425293
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 28.95265221595764
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 28.908670663833618
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 28.856256246566772
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 26.27493119239807
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 18.27755308151245
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 14.750905752182007
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 17.033993005752563
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 15.20121455192566
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 30.79566526412964
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 31.206572771072388
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 31.14535164833069
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 31.152854681015015
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 28.712087154388428
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 28.767488956451416
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 31.19085383415222
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 30.672803163528442
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 30.788759469985962
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 28.667689085006714
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 30.964824438095093
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 30.920440196990967
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 14.783641338348389
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        }
+      ]
+    },
+    "year_predict_test": {
+      "name": "year_predict_test",
+      "table": "year_predict_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8590734004974365
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8248181343078613
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8037893772125244
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.813539981842041
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8188128471374512
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8159821033477783
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8168551921844482
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.8173015117645264
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8377969264984131
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.9039530754089355
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8888559341430664
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8720383644104004
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.8480310440063477
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8664627075195312
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.86627197265625
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.8981997966766357
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8250157833099365
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8246936798095703
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8356649875640869
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.839716911315918
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8359410762786865
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.833765983581543
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.8422303199768066
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.8543694019317627
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.8489189147949219
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.837061882019043
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.9043238162994385
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8615429401397705
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.8371505737304688
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8376061916351318
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.8494691848754883
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.8547635078430176
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.8623912334442139
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.8591811656951904
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.8415355682373047
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.8591465950012207
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.872147798538208
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8733909130096436
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8361179828643799
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.9472174644470215
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.867077112197876
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.8907299041748047
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.9331936836242676
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.8740499019622803
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.8662109375
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.846158504486084
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.8469595909118652
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.9399113655090332
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.8351819515228271
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8614394664764404
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8763289451599121
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8431668281555176
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.8741869926452637
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8679780960083008
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.8699219226837158
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.8683583736419678
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.899024248123169
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.8801274299621582
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.8861563205718994
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.9190177917480469
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.8579516410827637
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.8617427349090576
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 0.8445084095001221
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 0.8683874607086182
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.9142394065856934
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.8928775787353516
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.8758161067962646
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.883683443069458
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.8911659717559814
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 1.0016930103302002
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.8823847770690918
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.8590881824493408
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.8520557880401611
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.8659002780914307
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.8667488098144531
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.8638215065002441
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.8801798820495605
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 0.8731117248535156
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 0.9107749462127686
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 1.0589580535888672
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        }
+      ]
+    },
+    "imdb_vector_predict": {
+      "name": "imdb_vector_predict",
+      "table": "imdb_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.00422978401184
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 30.697853326797485
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 30.697375535964966
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 30.580521821975708
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 49.683512687683105
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 49.79761290550232
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 49.79775333404541
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 49.683634996414185
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 49.68347096443176
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 6,
+          "failed_tasks": 1,
+          "success_rate": 0.8571428571428571,
+          "failure_rate": 0.14285714285714285,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 68.90833735466003
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 68.90790438652039
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 69.08355689048767
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 69.08229112625122
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 68.90763711929321
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 68.90765261650085
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from imdb_vector_test limit 1000;"
+        }
+      ]
+    },
+    "financial_phrasebank_predict": {
+      "name": "financial_phrasebank_predict",
+      "table": "financial_phrasebank_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 9,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 9.765389204025269
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 21.948627948760986
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 21.948208808898926
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 21.947431087493896
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 33.08365750312805
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 33.05376434326172
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 33.054295778274536
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 33.05406737327576
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 33.0540828704834
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 44.41504716873169
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 44.41450357437134
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 44.44360375404358
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 44.415735721588135
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 44.41600322723389
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 44.41547632217407
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 44.41527462005615
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 56.06594920158386
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 56.06799387931824
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 56.067633628845215
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 56.06814384460449
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 56.06743240356445
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 56.0676634311676
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 56.06729292869568
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 56.06753420829773
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 56.066757917404175
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 4,
+          "failed_tasks": 7,
+          "success_rate": 0.36363636363636365,
+          "failure_rate": 0.6363636363636364,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 31.006568908691406
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 31.494506359100342
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 31.822332620620728
+            },
+            {
+              "task_id": 3,
+              "status": "failed",
+              "error": "0\u0003J\u0019:predict error!\n"
+            },
+            {
+              "task_id": 4,
+              "status": "failed",
+              "error": "�\u001fN\u0019:predict error!\n"
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 31.82181215286255
+            },
+            {
+              "task_id": 6,
+              "status": "failed",
+              "error": "��6\u0007:predict error!\n"
+            },
+            {
+              "task_id": 7,
+              "status": "failed",
+              "error": "`5N\u0019:predict error!\n"
+            },
+            {
+              "task_id": 8,
+              "status": "failed",
+              "error": "P\u0005J\u0019:predict error!\n"
+            },
+            {
+              "task_id": 9,
+              "status": "failed",
+              "error": "��6\u0007:predict error!\n"
+            },
+            {
+              "task_id": 10,
+              "status": "failed",
+              "error": "P\u000fJ\u0019:predict error!\n"
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following) from financial_phrasebank_vector_test limit 1000;"
+        }
+      ]
+    },
+    "nlp_vector_predict": {
+      "name": "nlp_vector_predict",
+      "table": "nlp_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.010529518127441
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 31.211211442947388
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 31.259298086166382
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 31.210813999176025
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 50.14682936668396
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 50.14638352394104
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 50.14642834663391
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 50.14648985862732
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 50.19650626182556
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 6,
+          "failed_tasks": 1,
+          "success_rate": 0.8571428571428571,
+          "failure_rate": 0.14285714285714285,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 68.89022302627563
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 68.89040565490723
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 69.12226390838623
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 69.12427067756653
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 69.12443709373474
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 69.12426233291626
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following) from nlp_vector_test limit 1000;"
+        }
+      ]
+    },
+    "cifar_image_predict": {
+      "name": "cifar_image_predict",
+      "table": "cifar_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 3,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 12.318658828735352
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 20.300239086151123
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 18.99958825111389
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 18.996175289154053
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 4,
+          "failed_tasks": 1,
+          "success_rate": 0.8,
+          "failure_rate": 0.2,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 67.23245739936829
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 67.75679445266724
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 43.807724952697754
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 67.56328821182251
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;"
+        }
+      ]
+    },
+    "stanford_dogs_image_predict": {
+      "name": "stanford_dogs_image_predict",
+      "table": "stanford_dogs_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 15.818090915679932
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 19.76033926010132
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 19.24828267097473
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 19.357855319976807
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 53.90209412574768
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 54.62375783920288
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 54.3862841129303
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 46.06088376045227
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 54.67491412162781
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 4,
+          "failed_tasks": 3,
+          "success_rate": 0.5714285714285714,
+          "failure_rate": 0.42857142857142855,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 2,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 192.0949637889862
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 193.64464712142944
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 151.97767066955566
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 151.63384222984314
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;"
+        }
+      ]
+    },
+    "imagenet_image_predict": {
+      "name": "imagenet_image_predict",
+      "table": "imagenet_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.369584083557129
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 17.439536094665527
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 17.401755332946777
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 17.402279138565063
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 59.86280536651611
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 44.39667248725891
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 61.0701847076416
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 59.46550679206848
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 61.080129623413086
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 5,
+          "failed_tasks": 2,
+          "success_rate": 0.7142857142857143,
+          "failure_rate": 0.2857142857142857,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 142.09375286102295
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 149.55001831054688
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 76.617262840271
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 167.03090167045593
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 166.98277115821838
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;"
+        }
+      ]
+    }
+  },
+  "new_queries_results": {
+    "slice_db_agent": {
+      "name": "slice_db_agent",
+      "table": "slice_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.8131897449493408
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 2.2928974628448486
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 2.1826956272125244
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 2.251305103302002
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 6.985536813735962
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 7.033243656158447
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 6.954058885574341
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 6.668427228927612
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 5.415368318557739
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 12.092718124389648
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 11.983425617218018
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 11.494006872177124
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 11.286181449890137
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 12.11792540550232
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 12.061639547348022
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 8.668718814849854
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 15.283051490783691
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 14.598129749298096
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 15.33858036994934
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 6.497371673583984
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 15.310749769210815
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 12.737640142440796
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 9.399009943008423
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 14.16698694229126
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 15.073097944259644
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 18.124920129776
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 20.842809915542603
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 20.417980670928955
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 19.75813317298889
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 21.005138397216797
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 20.999244689941406
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 6.8933491706848145
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 18.88816499710083
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 20.464097261428833
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 20.98071312904358
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 14.264551401138306
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 23.198602437973022
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 22.776986122131348
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 9.420631408691406
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 23.27450919151306
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 23.167898416519165
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 23.269079446792603
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 23.174306631088257
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 23.13846230506897
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 8.872519731521606
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 8.987922668457031
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 10.810791492462158
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 20.16394281387329
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 23.204834699630737
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 29.64380669593811
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 29.65845489501953
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 28.909139394760132
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 25.441267728805542
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 29.666731357574463
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 29.014959812164307
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 28.865936517715454
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 13.997293710708618
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 29.420013189315796
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 29.634662628173828
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 14.06662917137146
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 29.544691562652588
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 14.035735607147217
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 19.813904762268066
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 29.340171575546265
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 16.091476917266846
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 16.75304937362671
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 21.721464157104492
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 30.495555639266968
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 29.7535719871521
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 30.556750297546387
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 30.572433948516846
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 30.069063425064087
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 29.497371196746826
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 14.047575950622559
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 15.060250282287598
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 30.26024055480957
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 30.33664083480835
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 30.593602418899536
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 26.735392093658447
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 28.009014129638672
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "swarm_db_agent": {
+      "name": "swarm_db_agent",
+      "table": "swarm_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.9309332370758057
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 2.8492588996887207
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 2.9930686950683594
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 2.960876941680908
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 7.136455535888672
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 7.2443413734436035
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 7.252718687057495
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 6.4935548305511475
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 6.734939098358154
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 12.495990514755249
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 12.42489218711853
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 11.976852416992188
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 12.543820858001709
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 12.526138067245483
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 12.012898683547974
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 12.469573259353638
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 16.405734300613403
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 16.439921855926514
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 15.781480073928833
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 16.338180780410767
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 15.328413486480713
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 16.131232261657715
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 6.440784215927124
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 14.873933792114258
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 16.41588044166565
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 18.400431394577026
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 21.048686265945435
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 20.999990940093994
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 21.08853507041931
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 6.480936288833618
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 19.543192863464355
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 21.103782653808594
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 19.85994577407837
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 21.094249963760376
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 20.953344583511353
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 19.884864568710327
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 16.30606460571289
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 18.586704969406128
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 18.704428672790527
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 23.79490876197815
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 19.16524887084961
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 18.885587453842163
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 23.04529881477356
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 23.660977363586426
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 23.483728885650635
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 23.80580711364746
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 23.56974172592163
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 23.72087049484253
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 23.771171808242798
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 27.098379850387573
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 12.477841854095459
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 11.74997854232788
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 14.600327014923096
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 28.610650539398193
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 28.491565227508545
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 28.506771564483643
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 25.77034306526184
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 29.52049732208252
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 29.351090669631958
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 29.51375937461853
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 29.495078086853027
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 29.13280177116394
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 29.487978219985962
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 29.471426963806152
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 30.46642518043518
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 31.886277437210083
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 24.822211980819702
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 28.682170867919922
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 12.563549757003784
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 32.229037046432495
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 31.412240505218506
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 32.38445806503296
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 32.22934913635254
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 10.858383178710938
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 29.5631742477417
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 32.17265486717224
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 29.924333095550537
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 32.37863802909851
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 30.215417623519897
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 32.397276401519775
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "year_predict_db_agent": {
+      "name": "year_predict_db_agent",
+      "table": "year_predict_test",
+      "symbol": "cpu",
+      "max_safe_concurrency": 16,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6832718849182129
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6521570682525635
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.6970226764678955
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.6596622467041016
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6656522750854492
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.6806221008300781
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.675936222076416
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.6752808094024658
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.676060676574707
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6652212142944336
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.6707286834716797
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.6652634143829346
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.6679272651672363
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.6678922176361084
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.6747221946716309
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.6667759418487549
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6713409423828125
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.671159029006958
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.6720843315124512
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.6711313724517822
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.6836981773376465
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.6780655384063721
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.6815810203552246
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.6739325523376465
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.6825213432312012
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 11,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6851603984832764
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.6865131855010986
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.6813809871673584
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.6806085109710693
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.7073721885681152
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.6796936988830566
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.6791231632232666
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.6760284900665283
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.6792309284210205
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.6800665855407715
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.7086830139160156
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 13,
+          "total_tasks": 13,
+          "successful_tasks": 13,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.7255609035491943
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.7498042583465576
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.7262518405914307
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.7274842262268066
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.6788723468780518
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.7233493328094482
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.7259716987609863
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.7228860855102539
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.7242975234985352
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.7257664203643799
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.6688265800476074
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.6792311668395996
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.6758787631988525
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 15,
+          "total_tasks": 15,
+          "successful_tasks": 15,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.6971511840820312
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.6944987773895264
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.7294609546661377
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.7049551010131836
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.6933803558349609
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.7021980285644531
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.7300879955291748
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.7674977779388428
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.7114152908325195
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.7009239196777344
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.7073137760162354
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.714259147644043
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.710465669631958
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 0.7038986682891846
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 0.7026510238647461
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 16,
+          "total_tasks": 16,
+          "successful_tasks": 16,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 0.727616548538208
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 0.7319793701171875
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 0.72745680809021
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 0.7292876243591309
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 0.7542581558227539
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 0.7508113384246826
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 0.7342402935028076
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 0.7268526554107666
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 0.7281174659729004
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 0.7086625099182129
+            },
+            {
+              "task_id": 10,
+              "status": "success",
+              "latency": 0.698045015335083
+            },
+            {
+              "task_id": 11,
+              "status": "success",
+              "latency": 0.6945524215698242
+            },
+            {
+              "task_id": 12,
+              "status": "success",
+              "latency": 0.7075531482696533
+            },
+            {
+              "task_id": 13,
+              "status": "success",
+              "latency": 0.694124698638916
+            },
+            {
+              "task_id": 14,
+              "status": "success",
+              "latency": 0.6985552310943604
+            },
+            {
+              "task_id": 15,
+              "status": "success",
+              "latency": 0.7477030754089355
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "imdb_db_agent": {
+      "name": "imdb_db_agent",
+      "table": "imdb_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.226755142211914
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 30.45078992843628
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 30.452091217041016
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 30.452473878860474
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 48.25599646568298
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 48.25508666038513
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 48.25606417655945
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 48.25632071495056
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 45.25230145454407
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 6,
+          "failed_tasks": 1,
+          "success_rate": 0.8571428571428571,
+          "failure_rate": 0.14285714285714285,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 67.86083340644836
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 67.85912036895752
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 67.8606173992157
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 67.86055612564087
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 67.86108946800232
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 67.8604781627655
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "financial_phrasebank_db_agent": {
+      "name": "financial_phrasebank_db_agent",
+      "table": "financial_phrasebank_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 9,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 9.754538774490356
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 21.638218641281128
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 21.63744568824768
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 21.6376736164093
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 31.54953384399414
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 32.111488342285156
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 32.11164665222168
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 32.11150503158569
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 31.657665491104126
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 7,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 43.76722431182861
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 43.76662874221802
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 43.76575255393982
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 43.76705193519592
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 43.76633286476135
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 43.766931772232056
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 43.76654314994812
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 9,
+          "total_tasks": 9,
+          "successful_tasks": 9,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 53.262311697006226
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 54.48418593406677
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 54.48434400558472
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 54.48401975631714
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 54.48330760002136
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 54.483821630477905
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 54.48392415046692
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 54.484548568725586
+            },
+            {
+              "task_id": 8,
+              "status": "success",
+              "latency": 53.212646484375
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 11,
+          "total_tasks": 11,
+          "successful_tasks": 4,
+          "failed_tasks": 7,
+          "success_rate": 0.36363636363636365,
+          "failure_rate": 0.6363636363636364,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 30.08780312538147
+            },
+            {
+              "task_id": 1,
+              "status": "failed",
+              "error": "��O\u0019:predict error!\n"
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 30.955868244171143
+            },
+            {
+              "task_id": 3,
+              "status": "failed",
+              "error": "��K\u0019:predict error!\n"
+            },
+            {
+              "task_id": 4,
+              "status": "failed",
+              "error": "��K\u0019:predict error!\n"
+            },
+            {
+              "task_id": 5,
+              "status": "failed",
+              "error": "\u0010�K\u0019:predict error!\n"
+            },
+            {
+              "task_id": 6,
+              "status": "failed",
+              "error": "��6\u0007:predict error!\n"
+            },
+            {
+              "task_id": 7,
+              "status": "success",
+              "latency": 30.459211349487305
+            },
+            {
+              "task_id": 8,
+              "status": "failed",
+              "error": "и6\u0007:predict error!\n"
+            },
+            {
+              "task_id": 9,
+              "status": "success",
+              "latency": 30.955409288406372
+            },
+            {
+              "task_id": 10,
+              "status": "failed",
+              "error": "P�O\u0019:predict error!\n"
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "nlp_db_agent": {
+      "name": "nlp_db_agent",
+      "table": "nlp_vector_test",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.147869348526001
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 30.181450843811035
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 29.493382215499878
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 30.181313037872314
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 48.58933877944946
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 45.585044622421265
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 48.58942103385925
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 48.589194774627686
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 48.58795237541199
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 6,
+          "failed_tasks": 1,
+          "success_rate": 0.8571428571428571,
+          "failure_rate": 0.14285714285714285,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 67.99788427352905
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 67.99498724937439
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 67.99792861938477
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 67.99748682975769
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 67.99699783325195
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 67.99790906906128
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "cifar_db_agent": {
+      "name": "cifar_db_agent",
+      "table": "cifar_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 3,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 13.597767114639282
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 19.31510043144226
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 19.406843900680542
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 19.40627384185791
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 4,
+          "failed_tasks": 1,
+          "success_rate": 0.8,
+          "failure_rate": 0.2,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 71.89436292648315
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 55.33431792259216
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 66.75449419021606
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 70.8671989440918
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "stanford_dogs_db_agent": {
+      "name": "stanford_dogs_db_agent",
+      "table": "stanford_dogs_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 5,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 13.946438789367676
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 19.304441928863525
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 19.286819458007812
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 19.261532068252563
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 5,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 56.218308448791504
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 55.66217923164368
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 55.697594165802
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 55.255430459976196
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 39.13587975502014
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 7,
+          "total_tasks": 7,
+          "successful_tasks": 5,
+          "failed_tasks": 2,
+          "success_rate": 0.7142857142857143,
+          "failure_rate": 0.2857142857142857,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 142.89331197738647
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 142.05230045318604
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 141.5129017829895
+            },
+            {
+              "task_id": 5,
+              "status": "success",
+              "latency": 40.15695905685425
+            },
+            {
+              "task_id": 6,
+              "status": "success",
+              "latency": 140.14291715621948
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 1000) AS sub_table;"
+        }
+      ]
+    },
+    "imagenet_db_agent": {
+      "name": "imagenet_db_agent",
+      "table": "imagenet_image_vector_table",
+      "symbol": "gpu",
+      "max_safe_concurrency": 3,
+      "test_parameters": {
+        "row_count_per_task": 1000,
+        "query_times_per_task": 5,
+        "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 1000) AS sub_table;"
+      },
+      "results": [
+        {
+          "concurrency_level": 1,
+          "total_tasks": 1,
+          "successful_tasks": 1,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 11.971328496932983
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 3,
+          "total_tasks": 3,
+          "successful_tasks": 3,
+          "failed_tasks": 0,
+          "success_rate": 1.0,
+          "failure_rate": 0.0,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "success",
+              "latency": 18.044819593429565
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 18.18023443222046
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 18.064358711242676
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 1000) AS sub_table;"
+        },
+        {
+          "concurrency_level": 5,
+          "total_tasks": 5,
+          "successful_tasks": 4,
+          "failed_tasks": 1,
+          "success_rate": 0.8,
+          "failure_rate": 0.2,
+          "results": [
+            {
+              "task_id": 0,
+              "status": "failed",
+              "error": "Timeout or error: "
+            },
+            {
+              "task_id": 1,
+              "status": "success",
+              "latency": 64.87683486938477
+            },
+            {
+              "task_id": 2,
+              "status": "success",
+              "latency": 65.60534763336182
+            },
+            {
+              "task_id": 3,
+              "status": "success",
+              "latency": 64.90830326080322
+            },
+            {
+              "task_id": 4,
+              "status": "success",
+              "latency": 43.314404249191284
+            }
+          ],
+          "row_count_per_task": 1000,
+          "query_times_per_task": 5,
+          "sql_query": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 1000) AS sub_table;"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1501 @@
+{
+  "timestamp": "2026-02-05T11:34:36.558542",
+  "test_type": "concurrency_stress_test",
+  "max_safe_concurrency": 29,
+  "test_parameters": {
+    "row_count_per_task": 1000,
+    "query_times_per_task": 5,
+    "symbol": "cpu",
+    "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+  },
+  "results": [
+    {
+      "concurrency_level": 1,
+      "total_tasks": 1,
+      "successful_tasks": 1,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.9522044658660889
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 3,
+      "total_tasks": 3,
+      "successful_tasks": 3,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 2.064917802810669
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 2.2369070053100586
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 2.449310541152954
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 5,
+      "total_tasks": 5,
+      "successful_tasks": 5,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 5.579267501831055
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 6.670307874679565
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 6.5685715675354
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 6.411792993545532
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 6.292680978775024
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 7,
+      "total_tasks": 7,
+      "successful_tasks": 7,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 6.385185956954956
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 9.512362480163574
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 10.6782705783844
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 10.87751817703247
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 10.811236381530762
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 8.4327974319458
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 10.085995197296143
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 9,
+      "total_tasks": 9,
+      "successful_tasks": 9,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 14.968242168426514
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 7.760421514511108
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 15.901810646057129
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 10.18215823173523
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 13.214211702346802
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 15.81342363357544
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 15.84437084197998
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 9.575881719589233
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 15.879942178726196
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 11,
+      "total_tasks": 11,
+      "successful_tasks": 11,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 17.614274501800537
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 20.96291947364807
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 9.474746942520142
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 21.010533332824707
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 20.525938034057617
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 20.996082305908203
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 20.296053171157837
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 7.457779169082642
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 19.09667158126831
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 20.44571614265442
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 14.148702621459961
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 13,
+      "total_tasks": 13,
+      "successful_tasks": 13,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 25.098191499710083
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 8.146841287612915
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 19.045822620391846
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 25.69079279899597
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 20.506930351257324
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 25.711531400680542
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 24.190584182739258
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 16.9211585521698
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 25.745489358901978
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 24.96968388557434
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 24.917347192764282
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 24.806507110595703
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 21.893546104431152
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 15,
+      "total_tasks": 15,
+      "successful_tasks": 15,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 28.745481729507446
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 28.150097846984863
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 21.0958731174469
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 27.56727433204651
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 18.37666344642639
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 28.677769899368286
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 28.80633521080017
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 27.737481594085693
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 28.70845127105713
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 11.546669721603394
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 26.61324405670166
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 7.417384147644043
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 28.122979879379272
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 28.797005891799927
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 8.867770195007324
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 17,
+      "total_tasks": 17,
+      "successful_tasks": 17,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 32.91602945327759
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 34.45495319366455
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 34.69453763961792
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 25.37647795677185
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 11.521643161773682
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 34.82704305648804
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 29.89313554763794
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 34.82171440124512
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 34.38143992424011
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 29.966333627700806
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 31.084335327148438
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 19.899652242660522
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 33.493757247924805
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 34.67319130897522
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 34.27626013755798
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 34.5868136882782
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 10.43827223777771
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 19,
+      "total_tasks": 19,
+      "successful_tasks": 19,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 23.836366653442383
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 38.48489046096802
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 16.039032697677612
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 14.353537321090698
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 19.527833461761475
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 38.908003091812134
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 38.94863820075989
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 37.96876621246338
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 14.09946584701538
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 38.79199576377869
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 38.20558214187622
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 35.93258595466614
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 38.645081996917725
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 38.95620322227478
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 38.93055772781372
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 38.279078245162964
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 37.902464866638184
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 38.119319677352905
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 37.67791485786438
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 21,
+      "total_tasks": 21,
+      "successful_tasks": 21,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 30.844610452651978
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 42.09628629684448
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 31.03068470954895
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 30.182332515716553
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 42.49142408370972
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 42.547988414764404
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 30.513386487960815
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 30.30008101463318
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 42.51214003562927
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 42.20915365219116
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 42.279340982437134
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 40.54727005958557
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 30.603698253631592
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 41.683732748031616
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 30.68015146255493
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 40.917041063308716
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 42.462196588516235
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 39.95332384109497
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 42.47389888763428
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 42.41828799247742
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 37.68234395980835
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 23,
+      "total_tasks": 23,
+      "successful_tasks": 23,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 45.612868309020996
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 46.125383377075195
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 39.57205939292908
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 46.30814504623413
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 42.821595907211304
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 41.70584535598755
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 29.774744510650635
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 46.44949674606323
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 46.427401304244995
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 37.176326513290405
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 46.556514501571655
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 46.54077410697937
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 42.324928760528564
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 30.172992944717407
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 30.10172152519226
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 45.37149620056152
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 30.33519959449768
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 46.20435190200806
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 28.94637680053711
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 46.3984112739563
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 46.488805532455444
+        },
+        {
+          "task_id": 21,
+          "status": "success",
+          "latency": 29.850512504577637
+        },
+        {
+          "task_id": 22,
+          "status": "success",
+          "latency": 35.627158403396606
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 25,
+      "total_tasks": 25,
+      "successful_tasks": 25,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 49.630794525146484
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 48.0352418422699
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 51.06854009628296
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 28.8093478679657
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 27.745869398117065
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 28.590625047683716
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 27.66173505783081
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 39.7438325881958
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 51.445273876190186
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 44.40714120864868
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 51.46323895454407
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 28.82746696472168
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 48.39759373664856
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 50.141509771347046
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 51.21039152145386
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 51.359864711761475
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 29.192074060440063
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 51.400733947753906
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 51.16406512260437
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 28.627794981002808
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 45.01953363418579
+        },
+        {
+          "task_id": 21,
+          "status": "success",
+          "latency": 49.6428599357605
+        },
+        {
+          "task_id": 22,
+          "status": "success",
+          "latency": 51.4708366394043
+        },
+        {
+          "task_id": 23,
+          "status": "success",
+          "latency": 51.03381705284119
+        },
+        {
+          "task_id": 24,
+          "status": "success",
+          "latency": 51.341062784194946
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 27,
+      "total_tasks": 27,
+      "successful_tasks": 27,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 28.417253494262695
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 53.023778676986694
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 56.122966289520264
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 27.191890001296997
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 56.06891345977783
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 52.02875328063965
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 56.06283760070801
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 54.853551149368286
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 55.72177243232727
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 56.012678146362305
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 44.25609374046326
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 54.021538734436035
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 51.501760721206665
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 56.15299034118652
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 55.19733476638794
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 32.340975522994995
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 35.5158109664917
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 27.687808990478516
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 28.460471391677856
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 52.88490891456604
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 53.6415376663208
+        },
+        {
+          "task_id": 21,
+          "status": "success",
+          "latency": 55.82246208190918
+        },
+        {
+          "task_id": 22,
+          "status": "success",
+          "latency": 52.90427374839783
+        },
+        {
+          "task_id": 23,
+          "status": "success",
+          "latency": 28.575573444366455
+        },
+        {
+          "task_id": 24,
+          "status": "success",
+          "latency": 35.573015213012695
+        },
+        {
+          "task_id": 25,
+          "status": "success",
+          "latency": 54.59237766265869
+        },
+        {
+          "task_id": 26,
+          "status": "success",
+          "latency": 55.96583080291748
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 29,
+      "total_tasks": 29,
+      "successful_tasks": 29,
+      "failed_tasks": 0,
+      "success_rate": 1.0,
+      "failure_rate": 0.0,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 58.95234751701355
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 60.16248965263367
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 60.63570308685303
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 29.08078122138977
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 28.593732833862305
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 30.60641884803772
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 44.97351884841919
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 30.41644310951233
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 60.16933536529541
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 61.078344106674194
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 30.200143575668335
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 60.7414608001709
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 59.5469069480896
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 59.651718854904175
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 59.97094750404358
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 58.47922897338867
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 60.921249866485596
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 57.471062421798706
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 61.11169123649597
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 60.919533014297485
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 61.080655336380005
+        },
+        {
+          "task_id": 21,
+          "status": "success",
+          "latency": 58.84799408912659
+        },
+        {
+          "task_id": 22,
+          "status": "success",
+          "latency": 56.27607798576355
+        },
+        {
+          "task_id": 23,
+          "status": "success",
+          "latency": 53.34308409690857
+        },
+        {
+          "task_id": 24,
+          "status": "success",
+          "latency": 58.562652349472046
+        },
+        {
+          "task_id": 25,
+          "status": "success",
+          "latency": 30.557016134262085
+        },
+        {
+          "task_id": 26,
+          "status": "success",
+          "latency": 60.68641662597656
+        },
+        {
+          "task_id": 27,
+          "status": "success",
+          "latency": 61.09607481956482
+        },
+        {
+          "task_id": 28,
+          "status": "success",
+          "latency": 30.580440521240234
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    },
+    {
+      "concurrency_level": 31,
+      "total_tasks": 31,
+      "successful_tasks": 30,
+      "failed_tasks": 1,
+      "success_rate": 0.967741935483871,
+      "failure_rate": 0.03225806451612903,
+      "results": [
+        {
+          "task_id": 0,
+          "status": "failed",
+          "error": "Timeout or error: "
+        },
+        {
+          "task_id": 1,
+          "status": "success",
+          "latency": 56.56567716598511
+        },
+        {
+          "task_id": 2,
+          "status": "success",
+          "latency": 56.876633167266846
+        },
+        {
+          "task_id": 3,
+          "status": "success",
+          "latency": 65.14381146430969
+        },
+        {
+          "task_id": 4,
+          "status": "success",
+          "latency": 26.640480518341064
+        },
+        {
+          "task_id": 5,
+          "status": "success",
+          "latency": 65.26952505111694
+        },
+        {
+          "task_id": 6,
+          "status": "success",
+          "latency": 59.21272301673889
+        },
+        {
+          "task_id": 7,
+          "status": "success",
+          "latency": 66.09507393836975
+        },
+        {
+          "task_id": 8,
+          "status": "success",
+          "latency": 23.555680751800537
+        },
+        {
+          "task_id": 9,
+          "status": "success",
+          "latency": 60.99366116523743
+        },
+        {
+          "task_id": 10,
+          "status": "success",
+          "latency": 66.02216529846191
+        },
+        {
+          "task_id": 11,
+          "status": "success",
+          "latency": 64.86192083358765
+        },
+        {
+          "task_id": 12,
+          "status": "success",
+          "latency": 21.741142511367798
+        },
+        {
+          "task_id": 13,
+          "status": "success",
+          "latency": 66.10988879203796
+        },
+        {
+          "task_id": 14,
+          "status": "success",
+          "latency": 62.74119472503662
+        },
+        {
+          "task_id": 15,
+          "status": "success",
+          "latency": 65.50601434707642
+        },
+        {
+          "task_id": 16,
+          "status": "success",
+          "latency": 66.11594295501709
+        },
+        {
+          "task_id": 17,
+          "status": "success",
+          "latency": 34.9735906124115
+        },
+        {
+          "task_id": 18,
+          "status": "success",
+          "latency": 61.20834946632385
+        },
+        {
+          "task_id": 19,
+          "status": "success",
+          "latency": 61.521637201309204
+        },
+        {
+          "task_id": 20,
+          "status": "success",
+          "latency": 65.76668977737427
+        },
+        {
+          "task_id": 21,
+          "status": "success",
+          "latency": 25.891650915145874
+        },
+        {
+          "task_id": 22,
+          "status": "success",
+          "latency": 65.04470539093018
+        },
+        {
+          "task_id": 23,
+          "status": "success",
+          "latency": 60.63832640647888
+        },
+        {
+          "task_id": 24,
+          "status": "success",
+          "latency": 65.63604640960693
+        },
+        {
+          "task_id": 25,
+          "status": "success",
+          "latency": 28.08347749710083
+        },
+        {
+          "task_id": 26,
+          "status": "success",
+          "latency": 65.5708920955658
+        },
+        {
+          "task_id": 27,
+          "status": "success",
+          "latency": 64.46982383728027
+        },
+        {
+          "task_id": 28,
+          "status": "success",
+          "latency": 46.63515853881836
+        },
+        {
+          "task_id": 29,
+          "status": "success",
+          "latency": 65.61223340034485
+        },
+        {
+          "task_id": 30,
+          "status": "success",
+          "latency": 65.92585396766663
+        }
+      ],
+      "row_count_per_task": 1000,
+      "query_times_per_task": 5,
+      "sql_query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-02-04T12:37:55.519683",
+  "queries_used": "NEW_SQL_QUERIES (db_agent_single)",
+  "tests": [
+    {
+      "name": "imdb_db_agent",
+      "table": "imdb_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 4.749502658843994,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 6.2504658699035645,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 10.94146990776062,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 19.179909229278564,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    },
+    {
+      "name": "financial_phrasebank_db_agent",
+      "table": "financial_phrasebank_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 8.584354400634766,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 9.438053607940674,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 11.972236633300781,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 16.24278450012207,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    },
+    {
+      "name": "nlp_db_agent",
+      "table": "nlp_vector_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 4.6827027797698975,
+          "row_count": 1000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 1000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 6.2604289054870605,
+          "row_count": 2000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 2000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 11.021848440170288,
+          "row_count": 5000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 5000) AS sub_table;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 18.87097477912903,
+          "row_count": 10000,
+          "formatted_query": "select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 10000) AS sub_table;"
+        }
+      ],
+      "func_type": "nlp",
+      "column": "comment_vec"
+    }
+  ]
+}

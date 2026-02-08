@@ -1,0 +1,57 @@
+[
+    {
+        "count": 100,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 100;",
+        "total_time": 4.066153526306152
+    },
+    {
+        "count": 1000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 1000;",
+        "total_time": 31.57842707633972
+    },
+    {
+        "count": 2000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 2000;",
+        "total_time": 62.74976849555969
+    },
+    {
+        "count": 3000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 3000;",
+        "total_time": 89.45959401130676
+    },
+    {
+        "count": 4000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 4000;",
+        "total_time": 124.61965227127075
+    },
+    {
+        "count": 5000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 5000;",
+        "total_time": 154.56896686553955
+    },
+    {
+        "count": 6000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 6000;",
+        "total_time": 186.9499228000641
+    },
+    {
+        "count": 7000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 7000;",
+        "total_time": 217.04367661476135
+    },
+    {
+        "count": 8000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 8000;",
+        "total_time": 248.21119379997253
+    },
+    {
+        "count": 9000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 9000;",
+        "total_time": 275.92742896080017
+    },
+    {
+        "count": 10000,
+        "sql": "SELECT Resnet18Huggingface(data) FROM CIFAR10 limit 10000;",
+        "total_time": 301.5622446537018
+    }
+]

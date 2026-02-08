@@ -222,4 +222,21 @@ struct ModelAnalysisResult {
 // Function to analyze model characteristics: MAC, parameter count, and parameter size
 ModelAnalysisResult AnalyzeModelWithInference(const std::string& model_name);
 
+struct GpuStatus {
+    int id;
+    double util;        // 0-100
+    double mem_used;    // MiB
+    double mem_total;   // MiB
+};
+
+// Utility functions declared here for use across the module
+double estimate_cpu_flops();
+double get_gpu_flops();
+double get_cpu_mem_bandwidth();
+double get_gpu_mem_bandwidth();
+double get_cpu_load_factor();
+std::string exec_command(const char* cmd);
+std::string trim(const std::string& s);
+std::vector<GpuStatus> get_all_gpu_status();
+
 #endif

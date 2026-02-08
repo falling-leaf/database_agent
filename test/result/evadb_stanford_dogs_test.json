@@ -16,5 +16,115 @@
         "pre_time": 0.004443168640136719,
         "infer_time": 0,
         "post_time": 0
+    },
+    {
+        "count": 100,
+        "total_time": 18.666741371154785,
+        "scan_time": 15.722292423248291,
+        "load_model_time": 0.3925180435180664,
+        "pre_time": 0.4553039073944092,
+        "infer_time": 1.993262767791748,
+        "post_time": 0.10336422920227051,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 100;\n        "
+    },
+    {
+        "count": 1000,
+        "total_time": 12.813300371170044,
+        "scan_time": 6.3373236656188965,
+        "load_model_time": 0.3809168338775635,
+        "pre_time": 5.020519018173218,
+        "infer_time": 0.64959716796875,
+        "post_time": 0.4249436855316162,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 1000;\n        "
+    },
+    {
+        "count": 2000,
+        "total_time": 25.390793323516846,
+        "scan_time": 12.811210632324219,
+        "load_model_time": 0.3800520896911621,
+        "pre_time": 9.992286920547485,
+        "infer_time": 1.3463103771209717,
+        "post_time": 0.8609333038330078,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 2000;\n        "
+    },
+    {
+        "count": 3000,
+        "total_time": 37.36208724975586,
+        "scan_time": 18.740972757339478,
+        "load_model_time": 0.3812880516052246,
+        "pre_time": 14.935601472854614,
+        "infer_time": 2.012441396713257,
+        "post_time": 1.2917835712432861,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 3000;\n        "
+    },
+    {
+        "count": 4000,
+        "total_time": 49.18819308280945,
+        "scan_time": 24.86742329597473,
+        "load_model_time": 0.37707066535949707,
+        "pre_time": 19.58020305633545,
+        "infer_time": 2.651409387588501,
+        "post_time": 1.7120866775512695,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 4000;\n        "
+    },
+    {
+        "count": 5000,
+        "total_time": 60.79838848114014,
+        "scan_time": 30.690617322921753,
+        "load_model_time": 0.3683440685272217,
+        "pre_time": 24.278650045394897,
+        "infer_time": 3.3234920501708984,
+        "post_time": 2.137284994125366,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 5000;\n        "
+    },
+    {
+        "count": 6000,
+        "total_time": 72.58295178413391,
+        "scan_time": 36.389328718185425,
+        "load_model_time": 0.3786129951477051,
+        "pre_time": 29.30556011199951,
+        "infer_time": 3.9571268558502197,
+        "post_time": 2.55232310295105,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 6000;\n        "
+    },
+    {
+        "count": 7000,
+        "total_time": 84.46661639213562,
+        "scan_time": 42.81023836135864,
+        "load_model_time": 0.36727452278137207,
+        "pre_time": 33.666688680648804,
+        "infer_time": 4.630919456481934,
+        "post_time": 2.991495370864868,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 7000;\n        "
+    },
+    {
+        "count": 8000,
+        "total_time": 95.37335300445557,
+        "scan_time": 48.65826106071472,
+        "load_model_time": 0.3706643581390381,
+        "pre_time": 37.673041105270386,
+        "infer_time": 5.266241788864136,
+        "post_time": 3.405144691467285,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 8000;\n        "
+    },
+    {
+        "count": 9000,
+        "total_time": 107.91530132293701,
+        "scan_time": 55.18855929374695,
+        "load_model_time": 0.36802148818969727,
+        "pre_time": 42.509899377822876,
+        "infer_time": 5.990182399749756,
+        "post_time": 3.8586387634277344,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 9000;\n        "
+    },
+    {
+        "count": 10000,
+        "total_time": 119.46016311645508,
+        "scan_time": 61.33226680755615,
+        "load_model_time": 0.3720393180847168,
+        "pre_time": 46.8220853805542,
+        "infer_time": 6.644991397857666,
+        "post_time": 4.288780212402344,
+        "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 10000;\n        "
     }
 ]

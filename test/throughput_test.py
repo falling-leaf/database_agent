@@ -22,7 +22,8 @@ def single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql_que
         cur.execute("select register_process();")
         
         # Use the provided SQL query
-        sql = sql_query.format(row_count=row_count, symbol=symbol)
+        # The sql_query should already be formatted with all necessary parameters
+        sql = sql_query
         executed_rows = 0
         
         for i in range(query_times):
@@ -53,7 +54,7 @@ def run_throughput_test(concurrency_list, total_tasks_per_level, rows_per_query,
     :param concurrency_list: 并发数列表，例如 [1, 5, 10, 20, 50]
     :param total_tasks_per_level: 每个并发等级下总共要完成的任务数
     :param rows_per_query: 每次查询处理的数据行数
-    :param sql_query: SQL query to execute (with placeholders for {row_count} and {symbol})
+    :param sql_query: SQL query to execute (pre-formatted with all parameters)
     :param query_times: 每次查询重复执行的次数
     """
     print(f"{'Concurrency':<12} | {'Total Tasks':<12} | {'Total Time(s)':<15} | {'TPS':<10} | {'Avg Latency(s)':<15}")
@@ -67,6 +68,7 @@ def run_throughput_test(concurrency_list, total_tasks_per_level, rows_per_query,
         # 使用进程池模拟并发
         with ProcessPoolExecutor(max_workers=concurrency) as executor:
             # 提交任务
+            # Pass the pre-formatted SQL query without additional formatting
             futures = [executor.submit(single_task_worker, i, rows_per_query, query_times, 'cpu', sql_query) for i in range(total_tasks_per_level)]
             
             # 等待所有任务完成并收集结果
@@ -96,26 +98,161 @@ def run_throughput_test(concurrency_list, total_tasks_per_level, rows_per_query,
     
     return results_summary
 
-# Define SQL queries to test
-SERIES_SQL_QUERIES = [
+# Original SQL queries (predict_batch_float8) - 9 test cases across 3 types
+ORIGINAL_SQL_QUERIES = [
+    # Series tests (3) - use CPU
     {
         "name": "slice_predict",
-        "query": "select predict_batch_float8('slice', '{symbol}', data) over (rows between current row and 31 following) from slice_test limit {row_count};"
+        "table": "slice_test",
+        "model": "slice",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "cpu"  # series tests use cpu
     },
     {
-        "name": "db_agent_predict",
-        "query": "select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit {row_count}) AS sub_table;"
+        "name": "swarm_predict", 
+        "table": "swarm_test",
+        "model": "swarm",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "cpu"  # series tests use cpu
+    },
+    {
+        "name": "year_predict_test",
+        "table": "year_predict_test", 
+        "model": "year_predict",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "cpu"  # series tests use cpu
+    },
+    # NLP tests (3) - use GPU
+    {
+        "name": "imdb_vector_predict",
+        "table": "imdb_vector_test",
+        "model": "sst2_vec",
+        "column": "comment_vec",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    {
+        "name": "financial_phrasebank_predict",
+        "table": "financial_phrasebank_vector_test",
+        "model": "finance",
+        "column": "comment_vec", 
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    {
+        "name": "nlp_vector_predict",
+        "table": "nlp_vector_test",
+        "model": "sst2_vec",  # Using sst2_vec as placeholder since exact model isn't clear
+        "column": "comment_vec",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    # Image tests (3) - use GPU
+    {
+        "name": "cifar_image_predict",
+        "table": "cifar_image_vector_table",
+        "model": "googlenet_cifar10",
+        "column": "image_vector",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # image tests use gpu
+    },
+    {
+        "name": "stanford_dogs_image_predict",
+        "table": "stanford_dogs_image_vector_table", 
+        "model": "alexnet_stanford_dogs",
+        "column": "image_vector",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # image tests use gpu
+    },
+    {
+        "name": "imagenet_image_predict",
+        "table": "imagenet_image_vector_table",
+        "model": "defect_vec", 
+        "column": "image_vector",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};",
+        "device": "gpu"  # image tests use gpu
     }
 ]
 
-IMAGE_SQL_QUERIES = [
+# New SQL queries based on the commented examples (db_agent_single) - 9 test cases across 3 types
+NEW_SQL_QUERIES = [
+    # Series tests using db_agent_single (3)
     {
-        "name": "googlenet_predict",
-        "query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit {row_count};"
+        "name": "slice_db_agent",
+        "table": "slice_test",
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "cpu"  # series tests use cpu
     },
     {
-        "name": "db_agent_image_classification",
-        "query": "select db_agent_batch('image_classification', sub_table.image_vector) over (rows between current row and 31 following) FROM (SELECT * FROM cifar_image_vector_table) AS sub_table limit {row_count};"
+        "name": "swarm_db_agent", 
+        "table": "swarm_test",
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "cpu"  # series tests use cpu
+    },
+    {
+        "name": "year_predict_db_agent",
+        "table": "year_predict_test", 
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "cpu"  # series tests use cpu
+    },
+    # NLP tests using db_agent_single (3)
+    {
+        "name": "imdb_db_agent",
+        "table": "imdb_vector_test",
+        "func_type": "nlp",
+        "column": "comment_vec",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    {
+        "name": "financial_phrasebank_db_agent",
+        "table": "financial_phrasebank_vector_test",
+        "func_type": "nlp",
+        "column": "comment_vec", 
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    {
+        "name": "nlp_db_agent",
+        "table": "nlp_vector_test",
+        "func_type": "nlp",
+        "column": "comment_vec",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # nlp tests use gpu
+    },
+    # Image tests using db_agent_single (3)
+    {
+        "name": "cifar_db_agent",
+        "table": "cifar_image_vector_table",
+        "func_type": "image_classification",
+        "column": "image_vector",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # image tests use gpu
+    },
+    {
+        "name": "stanford_dogs_db_agent",
+        "table": "stanford_dogs_image_vector_table", 
+        "func_type": "image_classification",
+        "column": "image_vector",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # image tests use gpu
+    },
+    {
+        "name": "imagenet_db_agent",
+        "table": "imagenet_image_vector_table",
+        "func_type": "image_classification", 
+        "column": "image_vector",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;",
+        "device": "gpu"  # image tests use gpu
     }
 ]
 
@@ -126,14 +263,67 @@ def run_all_throughput_tests():
     TOTAL_TASKS = 128
     ROWS_PER_QUERY = 1000
 
-    for sql_info in SERIES_SQL_QUERIES:
-        print(f"\n{'='*60}")
+    # Test original queries (predict_batch_float8)
+    print("="*80)
+    print("TESTING ORIGINAL QUERIES (predict_batch_float8)")
+    print("="*80)
+    
+    for sql_info in ORIGINAL_SQL_QUERIES:
+        print(f"\n{'='*80}")
         print(f"Testing SQL: {sql_info['name']}")
+        print(f"Table: {sql_info['table']}")
+        print(f"Model: {sql_info['model'] if 'model' in sql_info else sql_info.get('func_type', 'N/A')}")
+        print(f"Device: {sql_info['device']}")
         print(f"Query: {sql_info['query']}")
         print(f"Starting Throughput Test: Rows per query = {ROWS_PER_QUERY}")
-        print(f"{'='*60}")
+        print(f"{'='*80}")
         
-        run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY, sql_info['query'], query_times=1)
+        # Format the query with actual values
+        if 'model' in sql_info:
+            # For original queries with model
+            formatted_query = sql_info['query'].format(
+                model=sql_info['model'],
+                symbol=sql_info['device'],
+                column=sql_info['column'],
+                table=sql_info['table'],
+                row_count=ROWS_PER_QUERY
+            )
+        else:
+            # For NEW queries with func_type (though this shouldn't happen in ORIGINAL_SQL_QUERIES)
+            formatted_query = sql_info['query'].format(
+                func_type=sql_info['func_type'],
+                column=sql_info['column'],
+                table=sql_info['table']
+            ).format(row_count=ROWS_PER_QUERY)  # Handle the double brace for row_count
+        
+        run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY, formatted_query, query_times=1)
+
+    # Test new queries (db_agent_single)
+    print("\n" + "="*80)
+    print("TESTING NEW QUERIES (db_agent_single)")
+    print("="*80)
+    
+    for sql_info in NEW_SQL_QUERIES:
+        print(f"\n{'='*80}")
+        print(f"Testing SQL: {sql_info['name']}")
+        print(f"Table: {sql_info['table']}")
+        print(f"Function Type: {sql_info['func_type']}")
+        print(f"Device: {sql_info['device']}")
+        print(f"Query: {sql_info['query']}")
+        print(f"Starting Throughput Test: Rows per query = {ROWS_PER_QUERY}")
+        print(f"{'='*80}")
+        
+        # Format the query with actual values
+        # For NEW queries with func_type
+        formatted_query_template = sql_info['query'].format(
+            func_type=sql_info['func_type'],
+            column=sql_info['column'],
+            table=sql_info['table']
+        )
+        # Replace the row_count placeholder - note: the template uses {{row_count}} which becomes {row_count} after first format
+        formatted_query = formatted_query_template.format(row_count=ROWS_PER_QUERY)
+        
+        run_throughput_test(CONCURRENCY_LEVELS, TOTAL_TASKS, ROWS_PER_QUERY, formatted_query, query_times=1)
 
 if __name__ == "__main__":
     run_all_throughput_tests()
