@@ -9,6 +9,7 @@
 #include "myfunc.h"
 #include "vector.h"
 #include "cpu_load_predictor.h"
+#include "gpu_load_predictor.h"
 
 #include <stdbool.h>
 #include <string>

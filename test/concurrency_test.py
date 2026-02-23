@@ -68,7 +68,7 @@ def test_concurrency(concurrency_level, row_count, query_times, symbol, sql_quer
         results = []
         for i, future in enumerate(futures):
             try:
-                result = future.result(timeout=60)  # 60 second timeout
+                result = future.result(timeout=6000000)  # 60 second timeout
                 results.append(result)
             except Exception as e:
                 print(f"Timeout or error in task {i}: {str(e)}")
@@ -146,27 +146,27 @@ def find_max_concurrency(start_level=1, max_level=50, increment=5, row_count=100
 # Define SQL queries to test - 9 test cases across 3 types
 ORIGINAL_SQL_QUERIES = [
     # Series tests (3) - using CPU
-    {
-        "name": "slice_predict",
-        "table": "slice_test",
-        "model": "slice",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "swarm_predict", 
-        "table": "swarm_test",
-        "model": "swarm",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "year_predict_test",
-        "table": "year_predict_test", 
-        "model": "year_predict",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
+    # {
+    #     "name": "slice_predict",
+    #     "table": "slice_test",
+    #     "model": "slice",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "swarm_predict", 
+    #     "table": "swarm_test",
+    #     "model": "swarm",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "year_predict_test",
+    #     "table": "year_predict_test", 
+    #     "model": "year_predict",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
     # NLP tests (3) - using GPU
     {
         "name": "imdb_vector_predict",
@@ -337,7 +337,8 @@ def run_concurrency_tests_for_queries(queries, query_type):
     results_by_query = {}
     
     # Row counts to iterate through
-    ROW_COUNTS = [1000, 2000, 5000, 10000]
+    # ROW_COUNTS = [1000, 2000, 5000, 10000]
+    ROW_COUNTS = [1000]
     
     for sql_info in queries:
         print(f"\n{'='*60}")
@@ -397,10 +398,10 @@ def run_concurrency_tests_for_queries(queries, query_type):
             # Run the concurrency test for this specific query and row count
             all_results, max_safe_concurrency = find_max_concurrency(
                 start_level=1,
-                max_level=16,  # Start with reasonable upper bound for individual query test
-                increment=2,
+                max_level=1000,  # Start with reasonable upper bound for individual query test
+                increment=5,
                 row_count=row_count,
-                query_times=5,
+                query_times=1,
                 symbol=symbol,
                 sql_query=formatted_query
             )

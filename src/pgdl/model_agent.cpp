@@ -20,6 +20,8 @@
 
 #define ONLY_FOR_IMAGE_PREDICT true
 #define ADD_OPTIMIZATION_LOGIC true
+#define CPU_SAMPLE_BUTTON false
+#define GPU_SAMPLE_BUTTON false
 #define WINDOW_SIZE 32
 #define SAMPLE_SIZE 10
 
@@ -40,6 +42,9 @@ extern MemoryManager memory_manager;
 
 // Global CPU load predictor instance
 static CPULoadPredictor cpu_load_predictor;
+
+// Global GPU load predictor instance
+static GPULoadPredictor gpu_load_predictor;
 
 // Global variables to track ExecutionAgent timing
 static std::chrono::high_resolution_clock::time_point execution_start_time;
@@ -754,6 +759,113 @@ std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
+// Function to collect GPU load and ExecutionAgent runtime data
+void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, ModelAnalysisResult analysis_result) {
+    // Get GPU metrics
+    double cuda_cores = 0.0;
+    double gpu_freq = 0.0;
+    double util = 0.0;
+    double mem_used = 0.0;
+    double mem_total = 0.0;
+    
+    try {
+        // Get GPU status information
+        std::string gpu_util_str = exec_command("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | head -c 100");
+        util = std::stod(trim(gpu_util_str));
+        
+        std::string gpu_mem_used_str = exec_command("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -c 100");
+        mem_used = std::stod(trim(gpu_mem_used_str));
+        
+        std::string gpu_mem_total_str = exec_command("nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -c 100");
+        mem_total = std::stod(trim(gpu_mem_total_str));
+        
+        // Get GPU FLOPS and frequency information
+        std::string gpu_cap = exec_command("nvidia-smi --id=0 --query-gpu=compute_cap --format=csv,noheader,nounits | head -c 100");
+        gpu_cap = trim(gpu_cap);
+        
+        if (gpu_cap == "8.0") {
+            cuda_cores = 6912;
+        } else if (gpu_cap == "7.5") {
+            cuda_cores = 4608;
+        } else if (gpu_cap == "7.0") {
+            cuda_cores = 5120;
+        } else if (gpu_cap == "8.6") {
+            cuda_cores = 10496;
+        } else {
+            cuda_cores = 2048;
+        }
+
+        std::string gpu_clocks = exec_command("nvidia-smi --id=0 --query-gpu=clocks.max.sm --format=csv,noheader,nounits | head -c 100");
+        gpu_freq = std::stod(trim(gpu_clocks));
+    } catch (...) {
+        // If GPU information is not available, set default values
+        elog(INFO, "nvidia-smi command failed, set default values");
+        cuda_cores = 0.0;
+        gpu_freq = 0.0;
+        util = 0.0;
+        mem_used = 0.0;
+        mem_total = 1.0;  // Avoid division by zero
+    }
+    
+    // Get ExecutionAgent runtime measurement
+    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
+    
+    // Store the collected data to database via SPI
+    SPIConnector spi_connector;
+    if (!spi_connector.Connect()) {
+        elog(WARNING, "Failed to connect to SPI for storing GPU load data");
+        return;
+    }
+    
+    // Insert the collected data
+    // CREATE TABLE IF NOT EXISTS gpu_load_training_data (
+    //     id SERIAL PRIMARY KEY,
+    //     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    //     cuda_cores DOUBLE PRECISION,
+    //     gpu_freq DOUBLE PRECISION,
+    //     util DOUBLE PRECISION,
+    //     mem_used DOUBLE PRECISION,
+    //     mem_total DOUBLE PRECISION,
+    //     execution_runtime_us BIGINT,
+    //     data_shape_1 BIGINT,
+    //     data_shape_2 BIGINT,
+    //     data_shape_3 BIGINT,
+    //     data_shape_4 BIGINT,
+    //     model_mac_count BIGINT,
+    //     model_param_count BIGINT,
+    //     model_param_size BIGINT
+    // );
+    std::string insert_sql = "INSERT INTO gpu_load_training_data (cuda_cores, gpu_freq, util, mem_used, mem_total, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)";
+    SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 13);
+    
+    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cuda_cores)) ||
+        !sql_wrapper.Bind(2, FLOAT8OID, Float8GetDatum(gpu_freq)) ||
+        !sql_wrapper.Bind(3, FLOAT8OID, Float8GetDatum(util)) ||
+        !sql_wrapper.Bind(4, FLOAT8OID, Float8GetDatum(mem_used)) ||
+        !sql_wrapper.Bind(5, FLOAT8OID, Float8GetDatum(mem_total)) ||
+        !sql_wrapper.Bind(6, INT8OID, Int64GetDatum(execution_runtime_us)) ||
+        !sql_wrapper.Bind(7, INT8OID, Int64GetDatum(shape0)) ||
+        !sql_wrapper.Bind(8, INT8OID, Int64GetDatum(shape1)) ||
+        !sql_wrapper.Bind(9, INT8OID, Int64GetDatum(shape2)) ||
+        !sql_wrapper.Bind(10, INT8OID, Int64GetDatum(shape3)) ||
+        !sql_wrapper.Bind(11, INT8OID, Int64GetDatum(analysis_result.mac_count)) ||
+        !sql_wrapper.Bind(12, INT8OID, Int64GetDatum(analysis_result.param_count)) ||
+        !sql_wrapper.Bind(13, INT8OID, Int64GetDatum(analysis_result.param_size_bytes))) {
+        elog(WARNING, "Failed to bind parameters for inserting GPU load data");
+        return;
+    }
+    
+    if (!sql_wrapper.Execute()) {
+        elog(WARNING, "Failed to insert GPU load data into database");
+        return;
+    }
+    
+    elog(INFO, "Successfully stored GPU load data: cuda_cores=%.1f, freq=%.1f MHz, util=%.1f%%, mem_used=%.1f MiB, mem_total=%.1f MiB, runtime=%lld us, shapes=[%d,%d,%d,%d], model_mac=%lld, model_param=%lld, model_size=%zu", 
+         cuda_cores, gpu_freq, util, mem_used, mem_total, execution_runtime_us, 
+         shape0, shape1, shape2, shape3, 
+         analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+}
+
 // Function to collect CPU load and ExecutionAgent runtime data
 void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, ModelAnalysisResult analysis_result) {
     // Get CPU load average
@@ -1006,9 +1118,8 @@ std::vector<GpuStatus> get_all_gpu_status() {
 }
 
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
+    // if (false) {
     if (ADD_OPTIMIZATION_LOGIC && (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1 || memory_manager.is_last_call == 1)) {
-    // once for all
-    // if (memory_manager.current_func_call == WINDOW_SIZE - 1 || (memory_manager.current_func_call < WINDOW_SIZE - 1 && memory_manager.is_last_call == 1)) {
         bool enable_dynamic_cost = true; 
         if (enable_dynamic_cost) {
             elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
@@ -1097,12 +1208,12 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                 (double)analysis_result.param_count,
                 (double)analysis_result.param_size_bytes
             };
-            double cpu_dynamic_multiplier = cpu_load_predictor.Predict(workload, cpu_load, cpu_cores);
+            double cpu_dynamic_cost = cpu_load_predictor.Predict(workload, cpu_load, cpu_cores);
             
-            elog(INFO, "Model-based CPU dynamic multiplier: %.3f (load=%.3f, cores=%d)", 
-                 cpu_dynamic_multiplier, cpu_load, cpu_cores);
+            elog(INFO, "Model-based CPU dynamic cost: %.3f (load=%.3f, cores=%d)", 
+                 cpu_dynamic_cost, cpu_load, cpu_cores);
 
-            double cpu_cost = cpu_cost_static * cpu_dynamic_multiplier;
+            double cpu_cost = cpu_dynamic_cost;
 
             // --- GPU 动态 Cost 计算与多卡评估 ---
             double min_gpu_cost = std::numeric_limits<double>::max();
@@ -1127,17 +1238,76 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                                             (analysis_result.param_size_bytes / gpu_bandwidth) + 
                                             (analysis_result.mac_count / current_gpu_flops) * num_rows;
 
-                    // 动态公平性修正：利用率越高，等待时间呈指数级上升 (排队论模型)
-                    // 修正系数 = 1 / (1 - utilization%)，防止利用率 100% 导致除零，取 util max 0.99
-                    double gpu_dynamic_multiplier = 1.0 / (1.0 - (std::min(util, 99.0) / 100.0));
+                    // 使用 GPU 负载预测器获取动态乘数
+                    std::vector<double> workload = {
+                        (double)result0,
+                        (double)result1,
+                        (double)result2,
+                        (double)result3,
+                        (double)analysis_result.mac_count,
+                        (double)analysis_result.param_count,
+                        (double)analysis_result.param_size_bytes
+                    };
                     
-                    // 显存占用惩罚：若剩余显存不足以放下模型参数，增加巨大惩罚项
-                    double vram_penalty = 1.0;
-                    if ((mem_total - mem_used) < (analysis_result.param_size_bytes / (1024.0 * 1024.0))) {
-                        vram_penalty = 100.0; // 显著增加 Cost 避免 OOM
+                    // 尝试加载或训练 GPU 负载预测模型
+                    static bool gpu_model_tried_loading = false;
+                    if (!gpu_model_tried_loading) {
+                        if (!gpu_load_predictor.LoadModel("/home/why/gpu_load_model.pt")) {
+                            elog(INFO, "GPU Model file not found, attempting to train new model from database data");
+                            if (gpu_load_predictor.TrainModel()) {
+                                gpu_load_predictor.SaveModel("/home/why/gpu_load_model.pt");
+                                elog(INFO, "New GPU model trained and saved to /home/why/gpu_load_model.pt");
+                            } else {
+                                elog(WARNING, "Failed to train GPU model, will use fallback logic");
+                            }
+                        }
+                        gpu_model_tried_loading = true;
                     }
+                    
+                    // 获取特定GPU的计算能力和频率信息
+                    double cuda_cores = 0.0;
+                    double gpu_freq = 0.0;
+                    try {
+                        // Get GPU compute capability for the specific GPU ID
+                        std::string gpu_cap_cmd = "nvidia-smi --id=" + std::to_string(idx) + " --query-gpu=compute_cap --format=csv,noheader,nounits";
+                        std::string gpu_cap = exec_command(gpu_cap_cmd.c_str());
+                        gpu_cap = trim(gpu_cap);
+                        
+                        if (gpu_cap == "8.0") {
+                            cuda_cores = 6912;
+                        } else if (gpu_cap == "7.5") {
+                            cuda_cores = 4608;
+                        } else if (gpu_cap == "7.0") {
+                            cuda_cores = 5120;
+                        } else if (gpu_cap == "8.6") {
+                            cuda_cores = 10496;
+                        } else {
+                            cuda_cores = 2048; // Default value
+                        }
 
-                    double current_gpu_total_cost = gpu_cost_static * gpu_dynamic_multiplier * vram_penalty;
+                        // Get GPU max SM clock frequency for the specific GPU ID
+                        std::string gpu_freq_cmd = "nvidia-smi --id=" + std::to_string(idx) + " --query-gpu=clocks.max.sm --format=csv,noheader,nounits";
+                        std::string gpu_clocks = exec_command(gpu_freq_cmd.c_str());
+                        gpu_freq = std::stod(trim(gpu_clocks));
+                    } catch (...) {
+                        // If GPU information is not available for this specific GPU, set default values
+                        cuda_cores = 2048;  // Default CUDA cores
+                        gpu_freq = 1500.0;  // Default frequency in MHz
+                    }
+                    
+                    // 构造GPU资源向量: {cuda_cores, gpu_freq, util, mem_used, mem_total}
+                    std::vector<double> gpu_resource = {
+                        cuda_cores,           // cuda_cores - 特定GPU的CUDA核心数
+                        gpu_freq,             // gpu_freq - 特定GPU的频率
+                        util,                 // util - 当前GPU利用率
+                        mem_used,             // mem_used - 已使用的显存
+                        mem_total             // mem_total - 总显存
+                    };
+                    
+                    double predicted_runtime = gpu_load_predictor.Predict(workload, gpu_resource);
+                    elog(INFO, "predicted_runtime: %.2e", predicted_runtime);
+
+                    double current_gpu_total_cost = predicted_runtime;
                     // elog(INFO, "current_gpu_total_cost: %.2e", current_gpu_total_cost);
                     if (current_gpu_total_cost < min_gpu_cost) {
                         min_gpu_cost = current_gpu_total_cost;
@@ -1148,10 +1318,8 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 
             // 2. 最终决策
             double final_gpu_cost = (best_gpu_id == -1) ? std::numeric_limits<double>::max() : min_gpu_cost;
-            
-            elog(INFO, "Dynamic Analysis: CPU_Cost=%.2e (LoadFactor=%.2f), Best_GPU(%d)_Cost=%.2e", 
-                    cpu_cost, cpu_dynamic_multiplier, best_gpu_id, final_gpu_cost);
-
+            elog(INFO, "cpu_cost: %.2e", cpu_cost);
+            elog(INFO, "final_gpu_cost: %.2e", final_gpu_cost);
             if (final_gpu_cost < cpu_cost) {
                 std::string gpu_str = "gpu:" + std::to_string(best_gpu_id);
                 MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -1214,6 +1382,11 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 // clear all the tasks
 AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
+    if (CPU_SAMPLE_BUTTON) {
+        task->cuda = "cpu";
+    } else if (GPU_SAMPLE_BUTTON) {
+        task->cuda = "gpu";
+    }
     elog(INFO, "Execution task: %s, %s, %ld, %ld", task->model, task->cuda, task->input_start_index, task->input_end_index);
     
     if (task->input_start_index >= task->input_end_index) {
@@ -1248,10 +1421,6 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
         StartExecutionAgentTiming();
 
     // 执行推理
-    // infer_batch_internal 会将结果填入 state->current_state.outs
-    // elog(INFO, "state->current_state.ins: %d", list_length(state->current_state.ins));
-    // elog(INFO, "state->current_state.model: %s", state->current_state.model);
-    // elog(INFO, "state->current_state.cuda: %s", state->current_state.cuda);
 
 
     infer_batch_internal(&state->current_state, true);
@@ -1279,7 +1448,10 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
             }
             ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
             elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
-            CollectCPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
+            if (task->cuda == NULL || strcmp(task->cuda, "cpu") == 0)
+                CollectCPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
+            else if (strcmp(task->cuda, "gpu") == 0)
+                CollectGPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
         }
     }
 
