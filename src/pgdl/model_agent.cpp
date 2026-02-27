@@ -19,7 +19,12 @@
 #include <algorithm>
 
 #define ONLY_FOR_IMAGE_PREDICT true
+
 #define ADD_OPTIMIZATION_LOGIC true
+
+#define ALWAYS_TRAINING true
+
+#define SAMPLE_BUTTON false
 #define CPU_SAMPLE_BUTTON false
 #define GPU_SAMPLE_BUTTON false
 #define WINDOW_SIZE 32
@@ -621,6 +626,7 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         if (is_imagenet) {
             result_str = "resnet18_resnet18_imagenet";
         }
+        elog(INFO, "SelectModel: %s", result_str.c_str());
         return result_str;
     } else {
         throw std::runtime_error("SelectModel: invalid task type");
@@ -760,7 +766,7 @@ std::string trim(const std::string& s) {
 }
 
 // Function to collect GPU load and ExecutionAgent runtime data
-void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, ModelAnalysisResult analysis_result) {
+void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result) {
     // Get GPU metrics
     double cuda_cores = 0.0;
     double gpu_freq = 0.0;
@@ -806,9 +812,6 @@ void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3
         mem_used = 0.0;
         mem_total = 1.0;  // Avoid division by zero
     }
-    
-    // Get ExecutionAgent runtime measurement
-    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
     
     // Store the collected data to database via SPI
     SPIConnector spi_connector;
@@ -867,7 +870,7 @@ void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3
 }
 
 // Function to collect CPU load and ExecutionAgent runtime data
-void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, ModelAnalysisResult analysis_result) {
+void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result) {
     // Get CPU load average
     double cpu_load = 0.0;
     int cpu_cores = 1;
@@ -878,9 +881,6 @@ void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3
         cpu_load = 0.5; 
         cpu_cores = 1; 
     }
-    
-    // Get ExecutionAgent runtime measurement
-    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
     
     // Store the collected data to database via SPI
     SPIConnector spi_connector;
@@ -953,7 +953,7 @@ double estimate_cpu_flops() {
                 size_t colon_pos = line.find(":");
                 if (colon_pos != std::string::npos) {
                     model_name = line.substr(colon_pos + 2);
-                    elog(INFO, "Detected CPU model: %s", model_name.c_str());
+                    // elog(INFO, "Detected CPU model: %s", model_name.c_str());
                     // 仅获取第一个CPU型号后继续循环，不立即跳出
                     reading_state += 1;
                 }
@@ -961,7 +961,7 @@ double estimate_cpu_flops() {
                 size_t colon_pos = line.find(":");
                 if (colon_pos != std::string::npos) {
                     cpu_mhz = std::stod(line.substr(colon_pos + 2));
-                    elog(INFO, "Detected CPU frequency: %.2f MHz", cpu_mhz);
+                    // elog(INFO, "Detected CPU frequency: %.2f MHz", cpu_mhz);
                     // 获取频率后也不跳出，继续读取直到文件结束
                     reading_state += 1;
                 }
@@ -1021,7 +1021,7 @@ double get_gpu_flops() {
         double gpu_freq = std::stod(gpu_clocks);
 
         double result = cuda_cores * gpu_freq * 1e6 * 2.0;
-        elog(INFO, "Calculated GPU FLOPS: %.2e", result);
+        // elog(INFO, "Calculated GPU FLOPS: %.2e", result);
         return result;
     } catch (const std::exception& e) {
         elog(INFO, "Warning: Could not get GPU FLOPs, using default 10 TFLOPS. Error: %s", e.what());
@@ -1048,7 +1048,7 @@ double get_cpu_mem_bandwidth() {
             }
         }
         double avg_speed = std::accumulate(speeds.begin(), speeds.end(), 0.0) / speeds.size();
-        elog(INFO, "Average memory bandwidth: %.2f MT/s", avg_speed);
+        // elog(INFO, "Average memory bandwidth: %.2f MT/s", avg_speed);
         // TODO: 假设双通道64位总线
         double bandwidth_GBs = (avg_speed * 2 * 64 / 8) / 1000;
         return bandwidth_GBs * 1e9; // Convert to bytes/sec
@@ -1122,7 +1122,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
     if (ADD_OPTIMIZATION_LOGIC && (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1 || memory_manager.is_last_call == 1)) {
         bool enable_dynamic_cost = true; 
         if (enable_dynamic_cost) {
-            elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
+            // elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
 
             // 1. 基础信息提取 (利用现有工具函数)
             double cpu_flops = estimate_cpu_flops();
@@ -1169,7 +1169,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             // Try to load the model from .pt file if not already loaded
             static bool model_tried_loading = false;
             if (!model_tried_loading) {
-                if (!cpu_load_predictor.LoadModel("/home/why/cpu_load_model.pt")) {
+                if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !cpu_load_predictor.LoadModel("/home/why/cpu_load_model.pt"))) {
                     elog(INFO, "Model file not found, attempting to train new model from database data");
                     if (cpu_load_predictor.TrainModel()) {
                         cpu_load_predictor.SaveModel("/home/why/cpu_load_model.pt");
@@ -1198,7 +1198,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                 result0 = GET_MVEC_SHAPE_VAL(input, 0);
                 result1 = GET_MVEC_SHAPE_VAL(input, 1);
             }
-            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            elog(INFO, "ModelAnalysisResult: %lld, %lld, %lld", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
             std::vector<double> workload = {
                 (double)result0,
                 (double)result1,
@@ -1210,8 +1210,8 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             };
             double cpu_dynamic_cost = cpu_load_predictor.Predict(workload, cpu_load, cpu_cores);
             
-            elog(INFO, "Model-based CPU dynamic cost: %.3f (load=%.3f, cores=%d)", 
-                 cpu_dynamic_cost, cpu_load, cpu_cores);
+            // elog(INFO, "Model-based CPU dynamic cost: %.3f (load=%.3f, cores=%d)", 
+            //      cpu_dynamic_cost, cpu_load, cpu_cores);
 
             double cpu_cost = cpu_dynamic_cost;
 
@@ -1249,19 +1249,14 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                         (double)analysis_result.param_size_bytes
                     };
                     
-                    // 尝试加载或训练 GPU 负载预测模型
-                    static bool gpu_model_tried_loading = false;
-                    if (!gpu_model_tried_loading) {
-                        if (!gpu_load_predictor.LoadModel("/home/why/gpu_load_model.pt")) {
-                            elog(INFO, "GPU Model file not found, attempting to train new model from database data");
-                            if (gpu_load_predictor.TrainModel()) {
-                                gpu_load_predictor.SaveModel("/home/why/gpu_load_model.pt");
-                                elog(INFO, "New GPU model trained and saved to /home/why/gpu_load_model.pt");
-                            } else {
-                                elog(WARNING, "Failed to train GPU model, will use fallback logic");
-                            }
+                    if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !gpu_load_predictor.LoadModel("/home/why/gpu_load_model.pt"))) {
+                        elog(INFO, "GPU Model file not found, attempting to train new model from database data");
+                        if (gpu_load_predictor.TrainModel()) {
+                            gpu_load_predictor.SaveModel("/home/why/gpu_load_model.pt");
+                            elog(INFO, "New GPU model trained and saved to /home/why/gpu_load_model.pt");
+                        } else {
+                            elog(WARNING, "Failed to train GPU model, will use fallback logic");
                         }
-                        gpu_model_tried_loading = true;
                     }
                     
                     // 获取特定GPU的计算能力和频率信息
@@ -1305,7 +1300,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                     };
                     
                     double predicted_runtime = gpu_load_predictor.Predict(workload, gpu_resource);
-                    elog(INFO, "predicted_runtime: %.2e", predicted_runtime);
+                    // elog(INFO, "predicted_runtime: %.2e", predicted_runtime);
 
                     double current_gpu_total_cost = predicted_runtime;
                     // elog(INFO, "current_gpu_total_cost: %.2e", current_gpu_total_cost);
@@ -1314,12 +1309,13 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                         best_gpu_id = idx;
                     }
                 }
+                break;
             }
 
             // 2. 最终决策
-            double final_gpu_cost = (best_gpu_id == -1) ? std::numeric_limits<double>::max() : min_gpu_cost;
+            double final_gpu_cost = ((best_gpu_id == -1) ? std::numeric_limits<double>::max() : min_gpu_cost);
             elog(INFO, "cpu_cost: %.2e", cpu_cost);
-            elog(INFO, "final_gpu_cost: %.2e", final_gpu_cost);
+            elog(INFO, "gpu_cost: %.2e", final_gpu_cost);
             if (final_gpu_cost < cpu_cost) {
                 std::string gpu_str = "gpu:" + std::to_string(best_gpu_id);
                 MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -1353,7 +1349,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             Task* task = (Task*)list_nth(state->task_list, 0);
             
             ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
-            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            elog(INFO, "ModelAnalysisResult: %lld, %lld, %lld", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
             int num_rows = WINDOW_SIZE;
             double latency = 1e-4;
             double gpu_cost = (analysis_result.param_size_bytes / cpu_bandwidth) + (analysis_result.param_size_bytes / gpu_bandwidth) + latency + (analysis_result.mac_count / gpu_flops) * num_rows;
@@ -1389,6 +1385,9 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     }
     elog(INFO, "Execution task: %s, %s, %ld, %ld", task->model, task->cuda, task->input_start_index, task->input_end_index);
     
+    if (ADD_OPTIMIZATION_LOGIC)
+        StartExecutionAgentTiming();
+
     if (task->input_start_index >= task->input_end_index) {
         ereport(ERROR, (errmsg("task input range error")));
         return AgentAction::FAILURE;
@@ -1417,16 +1416,13 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     elog(INFO, "Constructed batch size: %d. Starting inference...", list_length(state->current_state.ins));
 
     // Start timing for ExecutionAgent
-    if (ADD_OPTIMIZATION_LOGIC)
-        StartExecutionAgentTiming();
-
-    // 执行推理
-
 
     infer_batch_internal(&state->current_state, true);
 
+    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
+
     // Collect CPU load and runtime data after execution
-    if (ADD_OPTIMIZATION_LOGIC && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
+    if (SAMPLE_BUTTON && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
         if (!data_cleaning)
             data_cleaning = true;
         else {
@@ -1447,11 +1443,11 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
                 result1 = GET_MVEC_SHAPE_VAL(input, 1);
             }
             ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
-            elog(INFO, "ModelAnalysisResult: %d, %d, %d", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
+            elog(INFO, "ModelAnalysisResult: %lld, %lld, %lld", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
             if (task->cuda == NULL || strcmp(task->cuda, "cpu") == 0)
-                CollectCPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
+                CollectCPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result);
             else if (strcmp(task->cuda, "gpu") == 0)
-                CollectGPULoadAndRuntimeData(result0, result1, result2, result3, analysis_result);
+                CollectGPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result);
         }
     }
 

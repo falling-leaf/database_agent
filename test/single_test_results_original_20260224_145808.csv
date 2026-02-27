@@ -1,0 +1,4 @@
+Test Name,Table,Model/FuncType,Column,Latency_1000,Latency_2000,Latency_5000,Latency_10000
+imdb_vector_predict,imdb_vector_test,sst2_vec,comment_vec,4.4447081089019775,5.949000835418701,10.774274826049805,18.83525252342224
+financial_phrasebank_predict,financial_phrasebank_vector_test,finance,comment_vec,6.04592227935791,6.8878819942474365,9.586236238479614,14.003594636917114
+nlp_vector_predict,nlp_vector_test,sst2_vec,comment_vec,4.3941004276275635,5.946080684661865,10.777617931365967,18.846342086791992

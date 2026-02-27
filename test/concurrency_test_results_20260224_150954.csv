@@ -1,0 +1,7 @@
+Test Type,Query Name,Row Count,Concurrency Level,Total Tasks,Successful Tasks,Failed Tasks,Success Rate,Failure Rate,Symbol (Device)
+ORIGINAL,slice_predict,1000,1,1,1,0,1.0000,0.0000,cpu
+ORIGINAL,slice_predict,1000,21,21,21,0,1.0000,0.0000,cpu
+ORIGINAL,slice_predict,1000,41,41,41,0,1.0000,0.0000,cpu
+ORIGINAL,slice_predict,1000,61,61,61,0,1.0000,0.0000,cpu
+ORIGINAL,slice_predict,1000,81,81,81,0,1.0000,0.0000,cpu
+ORIGINAL,slice_predict,1000,101,101,100,1,0.9901,0.0099,cpu

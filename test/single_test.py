@@ -111,27 +111,27 @@ def run_single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql
 # Define SQL queries to test - 9 test cases across 3 types
 SQL_QUERIES = [
     # Series tests (3)
-    {
-        "name": "slice_predict",
-        "table": "slice_test",
-        "model": "slice",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "swarm_predict", 
-        "table": "swarm_test",
-        "model": "swarm",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "year_predict_test",
-        "table": "year_predict_test", 
-        "model": "year_predict",
-        "column": "data",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
+    # {
+    #     "name": "slice_predict",
+    #     "table": "slice_test",
+    #     "model": "slice",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "swarm_predict", 
+    #     "table": "swarm_test",
+    #     "model": "swarm",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "year_predict_test",
+    #     "table": "year_predict_test", 
+    #     "model": "year_predict",
+    #     "column": "data",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
     # NLP tests (3)
     {
         "name": "imdb_vector_predict",
@@ -155,53 +155,53 @@ SQL_QUERIES = [
         "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
     },
     # Image tests (3)
-    {
-        "name": "cifar_image_predict",
-        "table": "cifar_image_vector_table",
-        "model": "googlenet_cifar10",
-        "column": "image_vector",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "stanford_dogs_image_predict",
-        "table": "stanford_dogs_image_vector_table", 
-        "model": "alexnet_stanford_dogs",
-        "column": "image_vector",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "imagenet_image_predict",
-        "table": "imagenet_image_vector_table",
-        "model": "defect_vec", 
-        "column": "image_vector",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    }
+    # {
+    #     "name": "cifar_image_predict",
+    #     "table": "cifar_image_vector_table",
+    #     "model": "googlenet_cifar10",
+    #     "column": "image_vector",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "stanford_dogs_image_predict",
+    #     "table": "stanford_dogs_image_vector_table", 
+    #     "model": "alexnet_stanford_dogs",
+    #     "column": "image_vector",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "imagenet_image_predict",
+    #     "table": "imagenet_image_vector_table",
+    #     "model": "defect_vec", 
+    #     "column": "image_vector",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # }
 ]
 
 # New SQL queries based on the commented examples
 NEW_SQL_QUERIES = [
     # Series tests using db_agent_single (3)
-    {
-        "name": "slice_db_agent",
-        "table": "slice_test",
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "swarm_db_agent", 
-        "table": "swarm_test",
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "year_predict_db_agent",
-        "table": "year_predict_test", 
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
+    # {
+    #     "name": "slice_db_agent",
+    #     "table": "slice_test",
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "swarm_db_agent", 
+    #     "table": "swarm_test",
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "year_predict_db_agent",
+    #     "table": "year_predict_test", 
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
     # # NLP tests using db_agent_single (3)
     {
         "name": "imdb_db_agent",
@@ -225,27 +225,27 @@ NEW_SQL_QUERIES = [
         "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
     },
     # Image tests using db_agent_single (3)
-    {
-        "name": "cifar_db_agent",
-        "table": "cifar_image_vector_table",
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "stanford_dogs_db_agent",
-        "table": "stanford_dogs_image_vector_table", 
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "imagenet_db_agent",
-        "table": "imagenet_image_vector_table",
-        "func_type": "image_classification", 
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    }
+    # {
+    #     "name": "cifar_db_agent",
+    #     "table": "cifar_image_vector_table",
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "stanford_dogs_db_agent",
+    #     "table": "stanford_dogs_image_vector_table", 
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "imagenet_db_agent",
+    #     "table": "imagenet_image_vector_table",
+    #     "func_type": "image_classification", 
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # }
 ]
 
 import json

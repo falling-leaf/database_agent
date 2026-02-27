@@ -1,0 +1,5213 @@
+{
+  "timestamp": "2026-02-24T22:18:18.176623",
+  "test_type": "optimized_concurrency_stress_test_both_query_types",
+  "original_queries_results": {
+    "imdb_vector_predict": {
+      "name": "imdb_vector_predict",
+      "table": "imdb_vector_test",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 12,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 4.613884449005127
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 0,
+              "failed_tasks": 33,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "�\u0016�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "�\u0016�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "`\u0011?\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": " \"�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "�!�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "�3�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "p%�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "p�%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "��%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "�\u0018�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "�#�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "`�E\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "@3�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": "�*%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "`r�\u0010:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "`\"&\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "�E&\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "�1%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "failed",
+                  "error": "p?%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 23,
+                  "status": "failed",
+                  "error": "0�\u0010:predict error!\n"
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "failed",
+                  "error": "�)�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "�1&\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "�\u000f�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "�#�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "failed",
+                  "error": "�\u000e�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 30,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "`8�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": "\u0010q@\u0014:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 17,
+              "total_tasks": 17,
+              "successful_tasks": 0,
+              "failed_tasks": 17,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 9,
+              "total_tasks": 9,
+              "successful_tasks": 9,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 18.98103141784668
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 21.465574026107788
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 21.404460191726685
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 21.40532898902893
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 21.40690279006958
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 21.404651880264282
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 21.46687364578247
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 21.406983137130737
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 21.40606117248535
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 13,
+              "total_tasks": 13,
+              "successful_tasks": 7,
+              "failed_tasks": 6,
+              "success_rate": 0.5384615384615384,
+              "failure_rate": 0.46153846153846156,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "�L�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 18.620104551315308
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 18.437743425369263
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 19.01456594467163
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 19.01528787612915
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "`��\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "���\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "���\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 18.619168281555176
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 19.014383792877197
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "��\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 18.739166975021362
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 11,
+              "total_tasks": 11,
+              "successful_tasks": 11,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 25.210245847702026
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 25.210230112075806
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 25.70260262489319
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 25.70545983314514
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 25.67105007171631
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 25.798039197921753
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 25.704079627990723
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 25.79861354827881
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 25.209664821624756
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 25.704545974731445
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 25.79776120185852
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 12,
+              "total_tasks": 12,
+              "successful_tasks": 12,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 28.323440313339233
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 28.331892013549805
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 28.329954385757446
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 27.425233602523804
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 28.282065868377686
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 28.33064079284668
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 27.0686194896698
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 28.33126950263977
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 28.329291343688965
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 28.330236434936523
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 28.331020832061768
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 28.329120874404907
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from imdb_vector_test limit 1000;"
+            }
+          ]
+        }
+      }
+    },
+    "financial_phrasebank_predict": {
+      "name": "financial_phrasebank_predict",
+      "table": "financial_phrasebank_vector_test",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 16,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 6.234442710876465
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 4,
+              "failed_tasks": 29,
+              "success_rate": 0.12121212121212122,
+              "failure_rate": 0.8787878787878788,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 26.032761096954346
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "��\r\u000e:predict error!\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "0�\r\u000e:predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "�fe\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "�{�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 26.0321364402771
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "���\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "@\u0013e\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "`T�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "@�m\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "�\u0014�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "p@k\u0012:predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "0�\r\u000e:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "�s�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "�a�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": " ܹ\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "��\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "���\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 23.345961093902588
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "௻\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 26.39515519142151
+                },
+                {
+                  "task_id": 23,
+                  "status": "failed",
+                  "error": " s\u000b\u0016:predict error!\n"
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "`_�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "failed",
+                  "error": "�]e\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "0�\u0007\u0016:predict error!\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "\u0010��\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "@y\u000b\u0016:predict error!\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "failed",
+                  "error": "@��\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 30,
+                  "status": "failed",
+                  "error": "P\n�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "`\u0012\b\u0016:predict error!\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": "�Bk\u0012:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 17,
+              "total_tasks": 17,
+              "successful_tasks": 6,
+              "failed_tasks": 11,
+              "success_rate": 0.35294117647058826,
+              "failure_rate": 0.6470588235294118,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "�f�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 20.592366218566895
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 20.568525791168213
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 20.99414587020874
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": " k�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 20.958740711212158
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "�b�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "Pi�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "�g�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 20.544228553771973
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": " h�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "Ph�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "�f�\u0018:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 20.993480920791626
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "pr�\u0018:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 9,
+              "total_tasks": 9,
+              "successful_tasks": 9,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 19.41021490097046
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 19.41025996208191
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 19.376708984375
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 19.37736439704895
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 19.377680778503418
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 19.37661337852478
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 19.376993417739868
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 19.376681089401245
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 19.377068996429443
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 13,
+              "total_tasks": 13,
+              "successful_tasks": 13,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 24.792088508605957
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 24.793267726898193
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 24.79140830039978
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 24.792734146118164
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 24.189863443374634
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 24.795021057128906
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 24.79444646835327
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 23.820212841033936
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 24.18526005744934
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 24.793721675872803
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 24.79406714439392
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 24.79437232017517
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 12.643547296524048
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 15,
+              "total_tasks": 15,
+              "successful_tasks": 15,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 28.645291090011597
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 28.461254835128784
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 28.051921129226685
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 28.461807012557983
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 28.644980907440186
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 23.162747383117676
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 28.64472508430481
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 28.643120050430298
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 28.460080862045288
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 28.460241317749023
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 28.460172414779663
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 28.460044145584106
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 27.395998239517212
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 28.64402413368225
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 28.556925535202026
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 16,
+              "total_tasks": 16,
+              "successful_tasks": 16,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 30.294681549072266
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 28.184000968933105
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 30.296205520629883
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 30.296414613723755
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 30.29670000076294
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 24.656111478805542
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 30.295458555221558
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 30.37951374053955
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 30.37981390953064
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 30.414623975753784
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 30.295526027679443
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 30.41455078125
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 30.379231452941895
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 30.293869495391846
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 30.292034149169922
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 30.295049905776978
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following) from financial_phrasebank_vector_test limit 1000;"
+            }
+          ]
+        }
+      }
+    },
+    "nlp_vector_predict": {
+      "name": "nlp_vector_predict",
+      "table": "nlp_vector_test",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 12,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 4.695478916168213
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 0,
+              "failed_tasks": 33,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "�?�\b:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "\u0010�;\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "�#%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "��K\f:predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "�\u0016�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "P\u001a�\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "0\r�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": " Ͳ\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "�t�\f:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "�-�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "\u0010�;\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "�\u001f�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "�1;\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "��6\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "��A\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": "�(%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "�v�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "`�<\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "@�I\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "���\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "failed",
+                  "error": "�?%\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 23,
+                  "status": "failed",
+                  "error": "`)8\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "�\u0011�\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "failed",
+                  "error": "\u0010�@\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "�\u0015�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "�)�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "failed",
+                  "error": "p�;\u0014:predict error!\n"
+                },
+                {
+                  "task_id": 30,
+                  "status": "failed",
+                  "error": "�\u0015�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "\u00106\u001e\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": "\u0010\u0015�\u0007:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 17,
+              "total_tasks": 17,
+              "successful_tasks": 0,
+              "failed_tasks": 17,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 9,
+              "total_tasks": 9,
+              "successful_tasks": 9,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 21.645791053771973
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 21.64589214324951
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 21.64429521560669
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 20.576967239379883
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 20.577770709991455
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 21.64339017868042
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 21.643799304962158
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 21.672693729400635
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 21.640650987625122
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 13,
+              "total_tasks": 13,
+              "successful_tasks": 6,
+              "failed_tasks": 7,
+              "success_rate": 0.46153846153846156,
+              "failure_rate": 0.5384615384615384,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "Pk�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "Ћ�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 14.944091081619263
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "P��\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 17.202842950820923
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 17.200860500335693
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "0q�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 17.201919317245483
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 17.201836109161377
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "\u0010�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 17.20214056968689
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "�;�\u0017:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 11,
+              "total_tasks": 11,
+              "successful_tasks": 11,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 26.034448862075806
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 26.034446477890015
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 26.03036618232727
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 26.03403329849243
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 22.95814061164856
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 26.033048391342163
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 26.033247232437134
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 26.03282642364502
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 26.033610343933105
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 26.02872896194458
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 26.033452033996582
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            },
+            {
+              "concurrency_level": 12,
+              "total_tasks": 12,
+              "successful_tasks": 12,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 28.190942764282227
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 28.189757347106934
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 28.190240383148193
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 28.18955636024475
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 26.68032479286194
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 28.189780712127686
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 28.190070390701294
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 27.635712146759033
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 27.014644384384155
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 28.190277338027954
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 28.188947677612305
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 28.186230659484863
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following) from nlp_vector_test limit 1000;"
+            }
+          ]
+        }
+      }
+    },
+    "cifar_image_predict": {
+      "name": "cifar_image_predict",
+      "table": "cifar_image_vector_table",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 21,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 4.998859405517578
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 16,
+              "failed_tasks": 17,
+              "success_rate": 0.48484848484848486,
+              "failure_rate": 0.5151515151515151,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "@�,\t:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "�#8\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 156.8094720840454
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 158.04395461082458
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "pϼ\r:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 56.246986865997314
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 69.35811591148376
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "0.�\b:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "�ּ\r:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "�.j\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "��T\b:predict error!\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "��X\b:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 163.1330714225769
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 118.14809846878052
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "0�*\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "`X*\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 163.40851187705994
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 163.8667049407959
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "�|,\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "�ͣ\n:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": " ��\u0011:predict error!\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": " �P\b:predict error!\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 163.15795588493347
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 76.47292685508728
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "П,\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 156.31708765029907
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 47.394190073013306
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "p\u0014-\t:predict error!\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 90.01429390907288
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 163.923912525177
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 161.21986269950867
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 163.8672275543213
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": " ߼\r:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 17,
+              "total_tasks": 17,
+              "successful_tasks": 17,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 77.81194281578064
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 170.92226314544678
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 141.94208765029907
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 171.14453768730164
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 122.52693104743958
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 54.46301865577698
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 171.50013041496277
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 102.29919576644897
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 166.1868782043457
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 101.06467151641846
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 81.78636360168457
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 169.51960062980652
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 164.52986574172974
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 171.47539567947388
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 118.2411642074585
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 171.5055227279663
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 171.47690320014954
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 25,
+              "total_tasks": 25,
+              "successful_tasks": 15,
+              "failed_tasks": 10,
+              "success_rate": 0.6,
+              "failure_rate": 0.4,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 152.3799331188202
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 147.23807621002197
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "p,-\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": " ��\u0011:predict error!\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "ps3\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "��8\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 155.6112027168274
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 65.62676692008972
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "�V+\u0016:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 155.31336045265198
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 115.68009233474731
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 56.16187357902527
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 152.4743664264679
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 51.79781198501587
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 155.47801566123962
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 155.65395212173462
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "�Ҽ\r:predict error!\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 154.43678832054138
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "��-\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "\u0010ؼ\r:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "�\u0018-\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 149.29428029060364
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 155.11458897590637
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 145.43088054656982
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "p�*\u0015:predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 21,
+              "total_tasks": 21,
+              "successful_tasks": 21,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 224.25254249572754
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 224.78965973854065
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 224.51908683776855
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 223.43538427352905
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 224.34041571617126
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 170.34594416618347
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 216.8588263988495
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 223.77111053466797
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 183.48222851753235
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 159.2402126789093
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 224.33865690231323
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 160.39856886863708
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 224.7207431793213
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 159.44595408439636
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 224.76477360725403
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 159.71601700782776
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 159.37805700302124
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 218.3280291557312
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 189.33025002479553
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 160.3643834590912
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 158.19445657730103
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 23,
+              "total_tasks": 23,
+              "successful_tasks": 19,
+              "failed_tasks": 4,
+              "success_rate": 0.8260869565217391,
+              "failure_rate": 0.17391304347826086,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 199.58821392059326
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 120.57946419715881
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 191.98099160194397
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 174.95818853378296
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 198.96535515785217
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "`�4\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 195.55610847473145
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 200.3099241256714
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 190.59226036071777
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 94.54896283149719
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 200.13399386405945
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 72.98972630500793
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 62.741822719573975
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 113.61034989356995
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 198.96024084091187
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 200.08710265159607
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "`Ҽ\r:predict error!\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 198.26215624809265
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 62.39217448234558
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "\u00104s\b:predict error!\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 200.2026813030243
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "�\u0002-\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 194.33826637268066
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 22,
+              "total_tasks": 22,
+              "successful_tasks": 12,
+              "failed_tasks": 10,
+              "success_rate": 0.5454545454545454,
+              "failure_rate": 0.45454545454545453,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "��j\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "��H\b:predict error!\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "�\u000e�\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 113.21051120758057
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "`>k\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 124.43229627609253
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 119.39873480796814
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "��2\u0015:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 54.241090059280396
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 74.22817301750183
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 103.34307479858398
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "P\rS\b:predict error!\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "�6�\u0011:predict error!\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "��N\b:predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 122.81810760498047
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "��j\u0006:predict error!\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 123.5382490158081
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 124.76006126403809
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 124.61602640151978
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 54.80364990234375
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "P�H\u001a:predict error!\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 124.75996279716492
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 15 following) from cifar_image_vector_table limit 1000;"
+            }
+          ]
+        }
+      }
+    },
+    "stanford_dogs_image_predict": {
+      "name": "stanford_dogs_image_predict",
+      "table": "stanford_dogs_image_vector_table",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 38,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 5.9029152393341064
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 33,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 364.2475666999817
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 238.81899738311768
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 237.8743541240692
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 218.94125699996948
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 370.03309631347656
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 238.07372450828552
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 364.3162429332733
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 239.74521327018738
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 367.8101317882538
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 234.65761280059814
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 346.5044720172882
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 368.87046337127686
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 365.04089856147766
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 368.7162802219391
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 238.7070243358612
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 270.7222707271576
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 361.69876861572266
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 369.9104733467102
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 364.84631848335266
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 238.46007990837097
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 279.11321568489075
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 363.1200969219208
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 369.995103597641
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 369.41867423057556
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 346.92282366752625
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 369.8055565357208
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 236.8933970928192
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 239.94157028198242
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 361.7027904987335
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 370.00453758239746
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 364.3190176486969
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 370.0528953075409
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 369.9908037185669
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 65,
+              "total_tasks": 65,
+              "successful_tasks": 0,
+              "failed_tasks": 65,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 23,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 30,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 33,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 34,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 35,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 36,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 37,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 38,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 39,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 40,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 41,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 42,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 43,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 44,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 45,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 46,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 47,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 48,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 49,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 50,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 51,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 52,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 53,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 54,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 55,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 56,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 57,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 58,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 59,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 60,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 61,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 62,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 63,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                },
+                {
+                  "task_id": 64,
+                  "status": "failed",
+                  "error": "server closed the connection unexpectedly\n\tThis probably means the server terminated abnormally\n\tbefore or while processing the request.\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 49,
+              "total_tasks": 49,
+              "successful_tasks": 0,
+              "failed_tasks": 49,
+              "success_rate": 0.0,
+              "failure_rate": 1.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 2,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 3,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 12,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 16,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 20,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 21,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 22,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 23,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 30,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 33,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 34,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 35,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 36,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 37,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 38,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 39,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 40,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 41,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 42,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 43,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 44,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 45,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 46,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 47,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                },
+                {
+                  "task_id": 48,
+                  "status": "failed",
+                  "error": "connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  the database system is in recovery mode\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 41,
+              "total_tasks": 41,
+              "successful_tasks": 32,
+              "failed_tasks": 9,
+              "success_rate": 0.7804878048780488,
+              "failure_rate": 0.21951219512195122,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 345.75926899909973
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 347.12292432785034
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 350.74614930152893
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 356.46139645576477
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 348.97151279449463
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 351.21574091911316
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 347.91894936561584
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 342.8709201812744
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 350.73462295532227
+                },
+                {
+                  "task_id": 9,
+                  "status": "failed",
+                  "error": "`�t\f:predict error!\n"
+                },
+                {
+                  "task_id": 10,
+                  "status": "failed",
+                  "error": "��t\f:predict error!\n"
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 347.01762199401855
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 356.11441683769226
+                },
+                {
+                  "task_id": 13,
+                  "status": "failed",
+                  "error": " �t\f:predict error!\n"
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 356.5221781730652
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 354.87496614456177
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 356.7489769458771
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 349.7724575996399
+                },
+                {
+                  "task_id": 18,
+                  "status": "failed",
+                  "error": "`�&\u0002:predict error!\n"
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 356.19504380226135
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 354.4322507381439
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 354.86475229263306
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 349.03046441078186
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 353.09578251838684
+                },
+                {
+                  "task_id": 24,
+                  "status": "failed",
+                  "error": "`�&\u0002:predict error!\n"
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 345.08193135261536
+                },
+                {
+                  "task_id": 26,
+                  "status": "failed",
+                  "error": "��t\f:predict error!\n"
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 348.1846618652344
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 347.6783969402313
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 356.6113796234131
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 356.65056848526
+                },
+                {
+                  "task_id": 31,
+                  "status": "failed",
+                  "error": "\u0010\u0006�\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 350.31585574150085
+                },
+                {
+                  "task_id": 33,
+                  "status": "success",
+                  "latency": 347.55381441116333
+                },
+                {
+                  "task_id": 34,
+                  "status": "success",
+                  "latency": 349.13382148742676
+                },
+                {
+                  "task_id": 35,
+                  "status": "success",
+                  "latency": 355.589528799057
+                },
+                {
+                  "task_id": 36,
+                  "status": "success",
+                  "latency": 356.6723906993866
+                },
+                {
+                  "task_id": 37,
+                  "status": "failed",
+                  "error": "@�\u0005\b:predict error!\n"
+                },
+                {
+                  "task_id": 38,
+                  "status": "success",
+                  "latency": 349.67944860458374
+                },
+                {
+                  "task_id": 39,
+                  "status": "success",
+                  "latency": 348.48990988731384
+                },
+                {
+                  "task_id": 40,
+                  "status": "failed",
+                  "error": ":predict error!\n"
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 37,
+              "total_tasks": 37,
+              "successful_tasks": 37,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 412.9114501476288
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 256.8891613483429
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 256.5072772502899
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 260.53054118156433
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 411.44121170043945
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 410.14735674858093
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 412.79372215270996
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 399.948096036911
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 259.8586242198944
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 412.35182547569275
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 259.8093204498291
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 413.56817054748535
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 258.3486166000366
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 257.45290541648865
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 261.4483165740967
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 409.9008619785309
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 402.01223731040955
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 412.19002771377563
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 261.3375337123871
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 415.1467537879944
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 413.13158440589905
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 289.07688903808594
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 415.12304615974426
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 414.792441368103
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 414.326034784317
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 414.4913680553436
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 409.71003890037537
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 257.1851694583893
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 402.9664695262909
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 390.23178720474243
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 415.02025532722473
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 397.2938234806061
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 414.7513301372528
+                },
+                {
+                  "task_id": 33,
+                  "status": "success",
+                  "latency": 413.0703251361847
+                },
+                {
+                  "task_id": 34,
+                  "status": "success",
+                  "latency": 260.78673338890076
+                },
+                {
+                  "task_id": 35,
+                  "status": "success",
+                  "latency": 409.3035144805908
+                },
+                {
+                  "task_id": 36,
+                  "status": "success",
+                  "latency": 411.6166994571686
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 39,
+              "total_tasks": 39,
+              "successful_tasks": 30,
+              "failed_tasks": 9,
+              "success_rate": 0.7692307692307693,
+              "failure_rate": 0.23076923076923078,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 316.37963914871216
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 321.2458744049072
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 330.87969946861267
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 329.16220712661743
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 305.9823114871979
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 307.1772630214691
+                },
+                {
+                  "task_id": 6,
+                  "status": "failed",
+                  "error": "��\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 7,
+                  "status": "failed",
+                  "error": "�et\f:predict error!\n"
+                },
+                {
+                  "task_id": 8,
+                  "status": "failed",
+                  "error": "��_\f:predict error!\n"
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 305.270400762558
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 331.4479913711548
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 329.11910676956177
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 305.3736844062805
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 310.5419921875
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "0܄\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 308.117369890213
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 324.89144682884216
+                },
+                {
+                  "task_id": 17,
+                  "status": "failed",
+                  "error": "��\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 310.7679340839386
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 331.5065965652466
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 305.81951427459717
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 309.297087430954
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 304.88489413261414
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 329.9049699306488
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 330.60172939300537
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 331.2689609527588
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 310.4742736816406
+                },
+                {
+                  "task_id": 27,
+                  "status": "failed",
+                  "error": "��\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "��\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 302.0318398475647
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 331.3596251010895
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 300.49692249298096
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 329.02309465408325
+                },
+                {
+                  "task_id": 33,
+                  "status": "success",
+                  "latency": 309.9266834259033
+                },
+                {
+                  "task_id": 34,
+                  "status": "failed",
+                  "error": "`�\u0005\b:predict error!\n"
+                },
+                {
+                  "task_id": 35,
+                  "status": "success",
+                  "latency": 331.48451256752014
+                },
+                {
+                  "task_id": 36,
+                  "status": "failed",
+                  "error": "��\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 37,
+                  "status": "success",
+                  "latency": 330.60226106643677
+                },
+                {
+                  "task_id": 38,
+                  "status": "success",
+                  "latency": 319.1915776729584
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 38,
+              "total_tasks": 38,
+              "successful_tasks": 38,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 408.43362760543823
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 331.1568350791931
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 322.957400560379
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 405.88355350494385
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 412.70757722854614
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 419.94967007637024
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 332.83343720436096
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 331.23979353904724
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 353.99149990081787
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 334.0543918609619
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 323.569283246994
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 403.47074270248413
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 334.0132067203522
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 330.74339962005615
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 334.416868686676
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 417.82478857040405
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 335.1953103542328
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 413.72778701782227
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 335.61258268356323
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 329.52512097358704
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 414.6194579601288
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 417.79516768455505
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 417.44285464286804
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 333.233274936676
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 420.01315689086914
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 371.87971687316895
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 407.7014002799988
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 416.96645283699036
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 419.7219431400299
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 411.62577509880066
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 420.0110948085785
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 416.03799986839294
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 415.7525498867035
+                },
+                {
+                  "task_id": 33,
+                  "status": "success",
+                  "latency": 419.9793405532837
+                },
+                {
+                  "task_id": 34,
+                  "status": "success",
+                  "latency": 420.03863644599915
+                },
+                {
+                  "task_id": 35,
+                  "status": "success",
+                  "latency": 332.3368580341339
+                },
+                {
+                  "task_id": 36,
+                  "status": "success",
+                  "latency": 334.5909912586212
+                },
+                {
+                  "task_id": 37,
+                  "status": "success",
+                  "latency": 417.5170156955719
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 15 following) from stanford_dogs_image_vector_table limit 1000;"
+            }
+          ]
+        }
+      }
+    },
+    "imagenet_image_predict": {
+      "name": "imagenet_image_predict",
+      "table": "imagenet_image_vector_table",
+      "symbol": "gpu",
+      "results_by_row_count": {
+        "1000": {
+          "max_safe_concurrency": 32,
+          "test_parameters": {
+            "row_count_per_task": 1000,
+            "query_times_per_task": 1,
+            "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+          },
+          "results": [
+            {
+              "concurrency_level": 1,
+              "total_tasks": 1,
+              "successful_tasks": 1,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 4.031205415725708
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 33,
+              "total_tasks": 33,
+              "successful_tasks": 29,
+              "failed_tasks": 4,
+              "success_rate": 0.8787878787878788,
+              "failure_rate": 0.12121212121212122,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "failed",
+                  "error": "�\u0011�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 172.43503189086914
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 129.74428939819336
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 153.59183955192566
+                },
+                {
+                  "task_id": 4,
+                  "status": "failed",
+                  "error": " \u0013�\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 295.70955896377563
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 299.81348061561584
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 299.52593302726746
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 130.32763576507568
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 197.34566593170166
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 300.1306240558624
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 298.42214465141296
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 297.0191731452942
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 151.93894696235657
+                },
+                {
+                  "task_id": 14,
+                  "status": "failed",
+                  "error": "���\u000f:predict error!\n"
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 299.4521074295044
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 300.0130715370178
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 289.4768970012665
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 285.319527387619
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 169.3466408252716
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 75.99528503417969
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 113.81914830207825
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 284.41111731529236
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 86.37511324882507
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 292.8590998649597
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 298.9709005355835
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 263.66376876831055
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 233.48399448394775
+                },
+                {
+                  "task_id": 28,
+                  "status": "failed",
+                  "error": "@��\u0007:predict error!\n"
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 242.51059889793396
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 212.9721827507019
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 299.9740397930145
+                },
+                {
+                  "task_id": 32,
+                  "status": "success",
+                  "latency": 289.91697239875793
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 17,
+              "total_tasks": 17,
+              "successful_tasks": 17,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 159.34739065170288
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 152.86077761650085
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 159.2417688369751
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 159.10903668403625
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 158.5719714164734
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 159.37152910232544
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 83.92482805252075
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 76.29990196228027
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 53.28714561462402
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 130.04838061332703
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 91.2935779094696
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 43.81802153587341
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 158.5348014831543
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 147.58992099761963
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 98.26927256584167
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 69.04938411712646
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 140.13338899612427
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 25,
+              "total_tasks": 25,
+              "successful_tasks": 25,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 245.11605882644653
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 249.2791793346405
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 264.8691635131836
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 262.0627157688141
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 254.4022777080536
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 264.7136845588684
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 264.1716368198395
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 252.71388006210327
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 253.32601189613342
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 263.7042090892792
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 262.0229835510254
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 264.88711404800415
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 264.6951971054077
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 264.4245810508728
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 263.42759251594543
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 246.27572512626648
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 253.88160753250122
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 264.8052136898041
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 251.4361069202423
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 251.71730422973633
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 253.48125839233398
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 261.4203975200653
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 261.39059042930603
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 260.73724389076233
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 253.85515713691711
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 29,
+              "total_tasks": 29,
+              "successful_tasks": 29,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 236.28215217590332
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 307.1202042102814
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 309.0631010532379
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 222.19967103004456
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 267.60097074508667
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 310.64115381240845
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 308.0554404258728
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 310.5879874229431
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 310.68290519714355
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 310.75603127479553
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 255.687735080719
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 310.7833616733551
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 222.5752398967743
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 192.77361607551575
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 233.37494039535522
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 235.5805733203888
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 234.4945752620697
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 230.4075162410736
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 307.91272044181824
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 259.99485540390015
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 208.64453792572021
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 300.93623900413513
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 185.03533411026
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 306.9051580429077
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 309.0931603908539
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 310.7802016735077
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 309.1571877002716
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 275.6732668876648
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 219.42048382759094
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 31,
+              "total_tasks": 31,
+              "successful_tasks": 31,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 320.9058749675751
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 195.80083632469177
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 229.9245297908783
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 276.35463309288025
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 257.4260663986206
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 322.15664863586426
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 321.89922165870667
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 319.60179901123047
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 318.93639087677
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 142.9019591808319
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 202.59460878372192
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 319.7008059024811
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 322.00275921821594
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 253.74045991897583
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 315.8191478252411
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 217.85202598571777
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 319.93507385253906
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 321.9786283969879
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 321.6353659629822
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 320.31135153770447
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 322.09284591674805
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 248.878267288208
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 154.98377966880798
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 290.40102458000183
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 126.62388682365417
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 157.9288845062256
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 174.74250626564026
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 178.76667523384094
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 321.1440460681915
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 189.80795550346375
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 208.36737203598022
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            },
+            {
+              "concurrency_level": 32,
+              "total_tasks": 32,
+              "successful_tasks": 32,
+              "failed_tasks": 0,
+              "success_rate": 1.0,
+              "failure_rate": 0.0,
+              "results": [
+                {
+                  "task_id": 0,
+                  "status": "success",
+                  "latency": 341.6755995750427
+                },
+                {
+                  "task_id": 1,
+                  "status": "success",
+                  "latency": 229.82685208320618
+                },
+                {
+                  "task_id": 2,
+                  "status": "success",
+                  "latency": 341.495343208313
+                },
+                {
+                  "task_id": 3,
+                  "status": "success",
+                  "latency": 340.9848780632019
+                },
+                {
+                  "task_id": 4,
+                  "status": "success",
+                  "latency": 227.2623519897461
+                },
+                {
+                  "task_id": 5,
+                  "status": "success",
+                  "latency": 341.86897373199463
+                },
+                {
+                  "task_id": 6,
+                  "status": "success",
+                  "latency": 229.2602937221527
+                },
+                {
+                  "task_id": 7,
+                  "status": "success",
+                  "latency": 340.360857963562
+                },
+                {
+                  "task_id": 8,
+                  "status": "success",
+                  "latency": 340.9925928115845
+                },
+                {
+                  "task_id": 9,
+                  "status": "success",
+                  "latency": 336.85650157928467
+                },
+                {
+                  "task_id": 10,
+                  "status": "success",
+                  "latency": 228.9775812625885
+                },
+                {
+                  "task_id": 11,
+                  "status": "success",
+                  "latency": 318.7287197113037
+                },
+                {
+                  "task_id": 12,
+                  "status": "success",
+                  "latency": 339.1003453731537
+                },
+                {
+                  "task_id": 13,
+                  "status": "success",
+                  "latency": 260.8975703716278
+                },
+                {
+                  "task_id": 14,
+                  "status": "success",
+                  "latency": 263.39306354522705
+                },
+                {
+                  "task_id": 15,
+                  "status": "success",
+                  "latency": 336.1061625480652
+                },
+                {
+                  "task_id": 16,
+                  "status": "success",
+                  "latency": 341.10252118110657
+                },
+                {
+                  "task_id": 17,
+                  "status": "success",
+                  "latency": 328.5110523700714
+                },
+                {
+                  "task_id": 18,
+                  "status": "success",
+                  "latency": 338.2421729564667
+                },
+                {
+                  "task_id": 19,
+                  "status": "success",
+                  "latency": 249.76399397850037
+                },
+                {
+                  "task_id": 20,
+                  "status": "success",
+                  "latency": 228.39829754829407
+                },
+                {
+                  "task_id": 21,
+                  "status": "success",
+                  "latency": 339.1885483264923
+                },
+                {
+                  "task_id": 22,
+                  "status": "success",
+                  "latency": 327.30644822120667
+                },
+                {
+                  "task_id": 23,
+                  "status": "success",
+                  "latency": 306.81682991981506
+                },
+                {
+                  "task_id": 24,
+                  "status": "success",
+                  "latency": 275.58064436912537
+                },
+                {
+                  "task_id": 25,
+                  "status": "success",
+                  "latency": 227.3092610836029
+                },
+                {
+                  "task_id": 26,
+                  "status": "success",
+                  "latency": 230.63501715660095
+                },
+                {
+                  "task_id": 27,
+                  "status": "success",
+                  "latency": 341.7165675163269
+                },
+                {
+                  "task_id": 28,
+                  "status": "success",
+                  "latency": 229.64337015151978
+                },
+                {
+                  "task_id": 29,
+                  "status": "success",
+                  "latency": 341.87088346481323
+                },
+                {
+                  "task_id": 30,
+                  "status": "success",
+                  "latency": 226.09192872047424
+                },
+                {
+                  "task_id": 31,
+                  "status": "success",
+                  "latency": 229.74855709075928
+                }
+              ],
+              "row_count_per_task": 1000,
+              "query_times_per_task": 1,
+              "sql_query": "select predict_batch_float8('defect_vec', 'gpu', image_vector) over (rows between current row and 15 following) from imagenet_image_vector_table limit 1000;"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "new_queries_results": {}
+}

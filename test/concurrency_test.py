@@ -7,6 +7,7 @@ import csv
 from collections import defaultdict
 from datetime import datetime
 
+
 def run_single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql_query=None):
     """
     单个进程执行的任务单元
@@ -49,6 +50,7 @@ def run_single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql
     except Exception as e:
         print(f"Error in task {task_id}: {str(e)}")
         return {"task_id": task_id, "status": "failed", "error": str(e)}
+
 
 def test_concurrency(concurrency_level, row_count, query_times, symbol, sql_query):
     """
@@ -98,50 +100,155 @@ def test_concurrency(concurrency_level, row_count, query_times, symbol, sql_quer
     
     return test_result
 
-def find_max_concurrency(start_level=1, max_level=50, increment=5, row_count=1000, query_times=10, symbol='cpu', sql_query=None):
+
+def find_exact_max_concurrency(start_level, end_level, row_count, query_times, symbol, sql_query):
     """
-    Find the maximum concurrency level that can run without failures
+    使用二分法精确找到最大安全并发数
+    在[start_level, end_level]范围内查找临界点
     """
-    print(f"Starting concurrency stress test from {start_level} to {max_level} with increment {increment}")
+    print(f"Starting binary search in range [{start_level}, {end_level}]")
     
     all_results = []
-    max_safe_concurrency = start_level - 1  # Start with the level before the test begins
     
-    for concurrency_level in range(start_level, max_level + 1, increment):
-        test_result = test_concurrency(concurrency_level, row_count, query_times, symbol, sql_query)
-        all_results.append(test_result)
-        
-        # If there are failures, we've exceeded the safe limit
-        if test_result["failed_tasks"] > 0:
-            print(f"Failures detected at concurrency level {concurrency_level}. Maximum safe level appears to be {max_safe_concurrency}.")
-            break
-        else:
-            # Update max safe concurrency if this level succeeded completely
-            max_safe_concurrency = concurrency_level
-        
-        # Small delay between tests to allow system to recover
-        time.sleep(2)
-    
-    # If we reached max_level without failures, do binary search to find exact limit
-    if all(result["failed_tasks"] == 0 for result in all_results[-1:]):  # Last test passed
-        print(f"All tests up to {max_level} passed. Performing binary search to find exact limit.")
-        low = max_safe_concurrency
-        high = max_level
-        
-        while low < high:
-            mid = (low + high + 1) // 2
-            test_result = test_concurrency(mid, row_count, query_times, symbol, sql_query)
+    while start_level <= end_level:
+        if start_level == end_level:
+            # 只有一个值需要测试
+            test_result = test_concurrency(start_level, row_count, query_times, symbol, sql_query)
             all_results.append(test_result)
             
             if test_result["failed_tasks"] == 0:
-                low = mid  # This level works
-                max_safe_concurrency = mid
+                # 当前并发数成功，这是最大安全值
+                return all_results, start_level
             else:
-                high = mid - 1  # This level fails, try lower
-            
-            time.sleep(1)  # Brief pause between binary search steps
+                # 当前并发数失败，需要返回上一个成功的值
+                # 在此实现中，如果start_level=end_level还失败，则说明应该返回更小的值
+                # 我们需要从之前的记录中找最后一个成功的值
+                # 这里需要一种方式追踪最后的成功值
+                return all_results, start_level - 1  # 假设前一个值是成功的
+        
+        mid = (start_level + end_level) // 2
+        test_result = test_concurrency(mid, row_count, query_times, symbol, sql_query)
+        all_results.append(test_result)
+        
+        if test_result["failed_tasks"] == 0:
+            # 当前并发数成功，尝试更高
+            start_level = mid + 1
+        else:
+            # 当前并发数失败，尝试更低
+            end_level = mid - 1
+        
+        # 小延迟以允许系统恢复
+        time.sleep(1)
     
-    return all_results, max_safe_concurrency
+    # 循环结束后，start_level > end_level
+    # 此时end_level应该是最大的成功值
+    return all_results, end_level
+
+
+def find_max_concurrency_with_precision(initial_step=32, binary_search_start=1, max_level=1000, row_count=1000, query_times=1, symbol='cpu', sql_query=None):
+    """
+    Find the maximum concurrency level that can run without failures
+    使用大步长快速定位，然后使用二分法精确查找
+    """
+    print(f"Starting precision concurrency stress test with initial step: {initial_step}")
+    print(f"Range: [{binary_search_start}, {max_level}]")
+    
+    all_results = []
+    
+    # 第一阶段：大步长搜索，快速找到第一个出现错误的并发数
+    print("\nPhase 1: Coarse-grained search with large steps...")
+    current_level = binary_search_start
+    last_successful_level = binary_search_start - 1
+    
+    while current_level <= max_level:
+        test_result = test_concurrency(current_level, row_count, query_times, symbol, sql_query)
+        all_results.append(test_result)
+        
+        if test_result["failed_tasks"] == 0:
+            # 当前并发数成功
+            last_successful_level = current_level
+            current_level += initial_step
+        else:
+            # 发现失败，停止大步长搜索
+            print(f"Failures detected at concurrency level {current_level}.")
+            break
+    
+    print(f"After coarse search: last successful level = {last_successful_level}, first failed level = {current_level}")
+    
+    # 根据测试结果确定二分法的范围
+    if last_successful_level == max_level:
+        # 如果最高并发级别也成功了，直接返回
+        print(f"All tests up to max level {max_level} passed.")
+        return all_results, max_level
+    elif last_successful_level == binary_search_start - 1:
+        # 如果第一个级别就失败了
+        print(f"First level tested ({binary_search_start}) failed.")
+        if binary_search_start == 1:
+            # 如果从1开始就失败，说明系统无法处理任何并发
+            return all_results, 0
+        else:
+            # 在binary_search_start之前还有其他可能的值，使用二分法在[1, binary_search_start-1]之间查找
+            binary_results, precise_level = find_exact_max_concurrency(1, binary_search_start - 1, row_count, query_times, symbol, sql_query)
+            all_results.extend(binary_results)
+            return all_results, precise_level
+    else:
+        # 在[last_successful_level, current_level]之间使用二分法精确查找
+        print(f"Phase 2: Binary search in range [{last_successful_level + 1}, {min(current_level, max_level)}]")
+        binary_results, precise_level = find_exact_max_concurrency(last_successful_level + 1, min(current_level, max_level), row_count, query_times, symbol, sql_query)
+        all_results.extend(binary_results)
+        return all_results, precise_level
+
+
+def find_max_concurrency_optimized(start_level=1, max_level=1000, coarse_step=32, row_count=1000, query_times=1, symbol='cpu', sql_query=None):
+    """
+    优化的并发查找函数，结合粗粒度搜索和二分查找
+    """
+    print(f"Starting optimized concurrency test: start={start_level}, max={max_level}, coarse_step={coarse_step}")
+    
+    all_results = []
+    
+    # Step 1: Coarse-grained search to find the approximate boundary
+    print(f"Step 1: Coarse search with step size {coarse_step}")
+    current_level = start_level
+    last_success_level = start_level - 1
+    
+    while current_level <= max_level:
+        test_result = test_concurrency(current_level, row_count, query_times, symbol, sql_query)
+        all_results.append(test_result)
+        
+        if test_result["failed_tasks"] == 0:
+            last_success_level = current_level
+            current_level += coarse_step
+        else:
+            print(f"Coarse search: Found failure at level {current_level}, last success was {last_success_level}")
+            break
+    
+    # Determine the exact boundary using binary search in the narrowed range
+    if last_success_level >= max_level:
+        # All levels up to max_level worked
+        return all_results, max_level
+    elif last_success_level < start_level:
+        # Even the start level failed
+        return all_results, 0 if start_level == 1 else -1  # Return -1 to indicate start_level itself failed
+    else:
+        # Perform binary search between last_success_level and current_level
+        # Since last_success_level worked but current_level failed, search in [last_success_level+1, current_level-1]
+        if current_level - last_success_level == 1:
+            # Adjacent values: last_success_level works, current_level fails
+            return all_results, last_success_level
+        else:
+            print(f"Step 2: Binary search between {last_success_level + 1} and {current_level - 1}")
+            binary_results, precise_level = find_exact_max_concurrency(
+                last_success_level + 1, 
+                current_level - 1, 
+                row_count, 
+                query_times, 
+                symbol, 
+                sql_query
+            )
+            all_results.extend(binary_results)
+            return all_results, precise_level
+
 
 # Define SQL queries to test - 9 test cases across 3 types
 ORIGINAL_SQL_QUERIES = [
@@ -216,72 +323,73 @@ ORIGINAL_SQL_QUERIES = [
 # New SQL queries based on the commented examples using db_agent_single
 NEW_SQL_QUERIES = [
     # Series tests using db_agent_single (3) - using CPU
-    {
-        "name": "slice_db_agent",
-        "table": "slice_test",
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "swarm_db_agent", 
-        "table": "swarm_test",
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "year_predict_db_agent",
-        "table": "year_predict_test", 
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
+    # {
+    #     "name": "slice_db_agent",
+    #     "table": "slice_test",
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "swarm_db_agent", 
+    #     "table": "swarm_test",
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "year_predict_db_agent",
+    #     "table": "year_predict_test", 
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
     # NLP tests using db_agent_single (3) - using GPU
-    {
-        "name": "imdb_db_agent",
-        "table": "imdb_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "financial_phrasebank_db_agent",
-        "table": "financial_phrasebank_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec", 
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "nlp_db_agent",
-        "table": "nlp_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    # Image tests using db_agent_single (3) - using GPU
-    {
-        "name": "cifar_db_agent",
-        "table": "cifar_image_vector_table",
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "stanford_dogs_db_agent",
-        "table": "stanford_dogs_image_vector_table", 
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "imagenet_db_agent",
-        "table": "imagenet_image_vector_table",
-        "func_type": "image_classification", 
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    }
+    # {
+    #     "name": "imdb_db_agent",
+    #     "table": "imdb_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "financial_phrasebank_db_agent",
+    #     "table": "financial_phrasebank_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec", 
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "nlp_db_agent",
+    #     "table": "nlp_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # # Image tests using db_agent_single (3) - using GPU
+    # {
+    #     "name": "cifar_db_agent",
+    #     "table": "cifar_image_vector_table",
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "stanford_dogs_db_agent",
+    #     "table": "stanford_dogs_image_vector_table", 
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "imagenet_db_agent",
+    #     "table": "imagenet_image_vector_table",
+    #     "func_type": "image_classification", 
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # }
 ]
+
 
 def run_concurrency_test():
     """
@@ -290,7 +398,7 @@ def run_concurrency_test():
     # Test both original and new queries
     all_test_results = {}
     
-    print("Starting Concurrency Stress Tests for Both Original and New Queries")
+    print("Starting Optimized Concurrency Stress Tests for Both Original and New Queries")
     print("="*80)
     
     # Test original queries
@@ -307,19 +415,19 @@ def run_concurrency_test():
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     all_results_dict = {
         "timestamp": datetime.now().isoformat(),
-        "test_type": "concurrency_stress_test_both_query_types",
+        "test_type": "optimized_concurrency_stress_test_both_query_types",
         "original_queries_results": original_results,
         "new_queries_results": new_results
     }
     
     # Print summary
     print("="*80)
-    print("CONCURRENCY STRESS TEST SUMMARY")
+    print("OPTIMIZED CONCURRENCY STRESS TEST SUMMARY")
     print("="*80)
     print(f"Timestamp: {all_results_dict['timestamp']}")
     
     # Write results to file
-    filename = f"concurrency_test_results_{timestamp}.json"
+    filename = f"optimized_concurrency_test_results_{timestamp}.json"
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(all_results_dict, f, indent=2, ensure_ascii=False)
     
@@ -329,6 +437,7 @@ def run_concurrency_test():
     json_to_csv(filename, filename.replace('.json', '.csv'))
     
     return all_test_results
+
 
 def run_concurrency_tests_for_queries(queries, query_type):
     """
@@ -395,11 +504,11 @@ def run_concurrency_tests_for_queries(queries, query_type):
             print(f"  Query: {formatted_query}")
             print(f"  Device: {symbol}")
             
-            # Run the concurrency test for this specific query and row count
-            all_results, max_safe_concurrency = find_max_concurrency(
+            # Run the optimized concurrency test for this specific query and row count
+            all_results, max_safe_concurrency = find_max_concurrency_optimized(
                 start_level=1,
                 max_level=1000,  # Start with reasonable upper bound for individual query test
-                increment=5,
+                coarse_step=32,  # Use 32 as initial step size
                 row_count=row_count,
                 query_times=1,
                 symbol=symbol,
@@ -411,7 +520,7 @@ def run_concurrency_tests_for_queries(queries, query_type):
                 "max_safe_concurrency": max_safe_concurrency,
                 "test_parameters": {
                     "row_count_per_task": row_count,
-                    "query_times_per_task": 5,
+                    "query_times_per_task": 1,
                     "sql_query": formatted_query
                 },
                 "results": all_results
@@ -427,6 +536,7 @@ def run_concurrency_tests_for_queries(queries, query_type):
     
     return results_by_query
 
+
 def json_to_csv(json_file_path, csv_file_path):
     """
     Convert JSON test results to CSV format.
@@ -441,7 +551,7 @@ def json_to_csv(json_file_path, csv_file_path):
     
     # Prepare header for concurrency test results
     header = ['Test Type', 'Query Name', 'Row Count', 'Concurrency Level', 'Total Tasks', 'Successful Tasks', 'Failed Tasks', 
-              'Success Rate', 'Failure Rate', 'Symbol (Device)']
+              'Success Rate', 'Failure Rate', 'Symbol (Device)', 'Max Safe Concurrency']
     
     # Prepare rows
     rows = []
@@ -464,7 +574,8 @@ def json_to_csv(json_file_path, csv_file_path):
                                 result['failed_tasks'],
                                 f"{result['success_rate']:.4f}",
                                 f"{result['failure_rate']:.4f}",
-                                query_data.get('symbol', 'N/A')  # Device symbol
+                                query_data.get('symbol', 'N/A'),  # Device symbol
+                                row_count_data.get('max_safe_concurrency', 'N/A')  # Max safe concurrency
                             ]
                             rows.append(row)
         
@@ -484,26 +595,10 @@ def json_to_csv(json_file_path, csv_file_path):
                                 result['failed_tasks'],
                                 f"{result['success_rate']:.4f}",
                                 f"{result['failure_rate']:.4f}",
-                                query_data.get('symbol', 'N/A')  # Device symbol
+                                query_data.get('symbol', 'N/A'),  # Device symbol
+                                row_count_data.get('max_safe_concurrency', 'N/A')  # Max safe concurrency
                             ]
                             rows.append(row)
-    else:
-        # Handle legacy format or other format that has direct 'results'
-        if 'results' in data:
-            for result in data['results']:
-                row = [
-                    'LEGACY',  # Test Type
-                    'N/A',  # Query Name
-                    'N/A',  # Row Count
-                    result['concurrency_level'],
-                    result['total_tasks'],
-                    result['successful_tasks'],
-                    result['failed_tasks'],
-                    f"{result['success_rate']:.4f}",
-                    f"{result['failure_rate']:.4f}",
-                    'N/A'  # Device symbol
-                ]
-                rows.append(row)
     
     # Write to CSV
     with open(csv_file_path, 'w', newline='', encoding='utf-8') as csvfile:
@@ -511,8 +606,7 @@ def json_to_csv(json_file_path, csv_file_path):
         writer.writerow(header)
         writer.writerows(rows)
     
-    print(f"Successfully converted {json_file_path} to {csv_file_path}")
-    print(f"Processed {len(rows)} concurrency test result entries")
+    print(f"CSV results saved to: {csv_file_path}")
 
 
 if __name__ == "__main__":

@@ -269,7 +269,7 @@ bool CPULoadPredictor::TrainModel() {
     // 使用较小的学习率和梯度裁剪
     torch::optim::Adam opt(model_->parameters(), torch::optim::AdamOptions(1e-4));
 
-    for (int epoch = 0; epoch < 50; ++epoch) {
+    for (int epoch = 0; epoch < 100; ++epoch) {
         opt.zero_grad();
         auto total_loss = torch::zeros({});
 
@@ -306,7 +306,7 @@ bool CPULoadPredictor::TrainModel() {
         double loss_val = total_loss.item<double>();
         
         // 每10个epoch或首尾epoch打印
-        if (epoch % 10 == 0 || epoch == 49) {
+        if (epoch % 10 == 0 || epoch == 499) {
             elog(INFO, "Epoch %d | Loss %.6f", epoch, loss_val);
         }
         

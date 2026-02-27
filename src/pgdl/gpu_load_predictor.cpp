@@ -270,7 +270,7 @@ bool GPULoadPredictor::TrainModel() {
 
     int64_t N = targets.size();
 
-    for (int epoch = 0; epoch < 50; ++epoch) {
+    for (int epoch = 0; epoch < 100; ++epoch) {
         opt.zero_grad();
         auto total_loss = torch::zeros({});
 
@@ -297,7 +297,7 @@ bool GPULoadPredictor::TrainModel() {
         torch::nn::utils::clip_grad_norm_(model_->parameters(), 1.0);
         opt.step();
 
-        if (epoch % 10 == 0 || epoch == 49) {
+        if (epoch % 10 == 0 || epoch == 99) {
             elog(INFO, "GPU Epoch %d | Loss %.6f",
                  epoch, total_loss.item<double>());
         }
