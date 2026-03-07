@@ -1,6 +1,7 @@
 #include "cpu_load_predictor.h"
 #include <algorithm>
 #include <cmath>
+#include <cfloat>
 
 extern "C" {
 #include "executor/spi.h"
@@ -12,34 +13,22 @@ extern "C" {
 #include "miscadmin.h"
 }
 
-/* ================= RuntimeModel ================= */
-
 CPULoadPredictor::RuntimeModelImpl::RuntimeModelImpl()
-    : hidden_dim_(32) {
+    : hidden_dim_(64) {
 
-    // workload: 7 dims
-    w_fc1 = register_module("w_fc1", torch::nn::Linear(7, 32));
-    w_fc2 = register_module("w_fc2", torch::nn::Linear(32, 16));
+    w_fc1 = register_module("w_fc1", torch::nn::Linear(7, 64));
+    w_fc2 = register_module("w_fc2", torch::nn::Linear(64, 32));
 
-    // GRU: (workload_embed + resource) -> state
-    gru = register_module(
-        "gru",
-        torch::nn::GRU(torch::nn::GRUOptions(16 + 2, hidden_dim_).batch_first(true))
-    );
+    r_fc1 = register_module("r_fc1", torch::nn::Linear(2, 32));
+    r_fc2 = register_module("r_fc2", torch::nn::Linear(32, 16));
 
-    // runtime head
-    y_fc1 = register_module("y_fc1",
-        torch::nn::Linear(hidden_dim_ + 16 + 2, 16));
-    y_fc2 = register_module("y_fc2", torch::nn::Linear(16, 1));
+    mlp = register_module("mlp", torch::nn::Linear(32 + 16, 16));
+    output = register_module("output", torch::nn::Linear(16, 1));
 
-    dropout = register_module("dropout", torch::nn::Dropout(0.1));
-    
-    // 初始化权重
     InitializeWeights();
 }
 
 void CPULoadPredictor::RuntimeModelImpl::InitializeWeights() {
-    // Xavier/Glorot 初始化
     for (auto& module : modules(/*include_self=*/false)) {
         if (auto* linear = module->as<torch::nn::Linear>()) {
             torch::nn::init::xavier_uniform_(linear->weight);
@@ -52,30 +41,18 @@ void CPULoadPredictor::RuntimeModelImpl::InitializeWeights() {
 
 torch::Tensor CPULoadPredictor::RuntimeModelImpl::forward(
     torch::Tensor workload_x,
-    torch::Tensor resource_x,
-    torch::Tensor prev_state,
-    torch::Tensor& next_state
+    torch::Tensor resource_x
 ) {
-    // ---- workload encoder ----
     auto w = torch::relu(w_fc1(workload_x));
-    w = dropout(w);
-    w = torch::relu(w_fc2(w));   // [B,16]
+    w = torch::relu(w_fc2(w));
 
-    // ---- state transition ----
-    auto gru_input = torch::cat({w, resource_x}, 1).unsqueeze(1);
-    auto gru_out = gru->forward(gru_input, prev_state);
-    auto state_seq = std::get<0>(gru_out);      // [B,1,H]
-    next_state = std::get<1>(gru_out);          // [1,B,H]
-    auto state_t = state_seq.squeeze(1);        // [B,H]
+    auto r = torch::relu(r_fc1(resource_x));
+    r = torch::relu(r_fc2(r));
 
-    // ---- runtime prediction ----
-    auto y_in = torch::cat({state_t, w, resource_x}, 1);
-    auto y = torch::relu(y_fc1(y_in));
-    y = dropout(y);
-    return y_fc2(y);
+    auto combined = torch::cat({w, r}, 1);
+    auto y = torch::relu(mlp(combined));
+    return output(y);
 }
-
-/* ================= CPULoadPredictor ================= */
 
 CPULoadPredictor::CPULoadPredictor()
     : model_loaded_(false),
@@ -102,7 +79,7 @@ bool CPULoadPredictor::ExtractTrainingData(
         "data_shape_1, data_shape_2, data_shape_3, data_shape_4, "
         "model_mac_count, model_param_count, model_param_size, "
         "cpu_load, cpu_cores, execution_runtime_us "
-        "FROM cpu_load_training_data "
+        "FROM stanford_dogs_cpu_load_training_data "
         "ORDER BY id";
 
     if (SPI_execute(sql, true, 0) != SPI_OK_SELECT) {
@@ -114,6 +91,12 @@ bool CPULoadPredictor::ExtractTrainingData(
     resources.clear();
     targets.clear();
 
+    double min_runtime = DBL_MAX;
+    double max_runtime = 0.0;
+    double sum_runtime = 0.0;
+    int skipped_count = 0;
+    int total_count = 0;
+
     for (uint64 i = 0; i < SPI_processed; ++i) {
         HeapTuple tuple = SPI_tuptable->vals[i];
         TupleDesc desc = SPI_tuptable->tupdesc;
@@ -121,8 +104,7 @@ bool CPULoadPredictor::ExtractTrainingData(
 
         std::vector<double> w(7);
         for (int j = 0; j < 7; ++j) {
-            w[j] = DatumGetFloat8(SPI_getbinval(tuple, desc, j + 1, &isnull));
-            // 检查 NaN/Inf
+            w[j] = DatumGetInt32(SPI_getbinval(tuple, desc, j + 1, &isnull));
             if (std::isnan(w[j]) || std::isinf(w[j])) {
                 elog(WARNING, "Invalid workload value at row %lu, col %d", i, j);
                 w[j] = 0.0;
@@ -131,28 +113,54 @@ bool CPULoadPredictor::ExtractTrainingData(
 
         double cpu_load = DatumGetFloat8(SPI_getbinval(tuple, desc, 8, &isnull));
         int cpu_cores = DatumGetInt32(SPI_getbinval(tuple, desc, 9, &isnull));
-        double runtime = DatumGetFloat8(SPI_getbinval(tuple, desc, 10, &isnull));
+        double runtime = DatumGetInt32(SPI_getbinval(tuple, desc, 10, &isnull));
+        // elog(INFO, "workload: %f, %f, %f, %f, %f, %f, %f, cpu_load: %f, cpu_cores: %d, runtime: %f", 
+        //      w[0], w[1], w[2], w[3], w[4], w[5], w[6], cpu_load, cpu_cores, runtime);
 
-        // 检查有效性
+        total_count++;
+        
         if (std::isnan(cpu_load) || std::isinf(cpu_load)) cpu_load = 0.5;
-        if (std::isnan(runtime) || std::isinf(runtime) || runtime <= 0) {
-            elog(WARNING, "Invalid runtime at row %lu: %f", i, runtime);
-            continue;  // 跳过无效样本
+        
+        if (std::isnan(runtime) || std::isinf(runtime)) {
+            elog(WARNING, "Row %lu: runtime is NaN or Inf (%f), skipping", i, runtime);
+            skipped_count++;
+            continue;
+        }
+        
+        if (runtime == 0) {
+            elog(WARNING, "Row %lu: runtime is exactly 0, this is suspicious! cpu_load=%f, cpu_cores=%d", 
+                 i, cpu_load, cpu_cores);
+            skipped_count++;
+            continue;
+        }
+        
+        if (runtime < 0) {
+            elog(WARNING, "Row %lu: runtime is negative (%f), skipping", i, runtime);
+            skipped_count++;
+            continue;
         }
 
         workloads.push_back(w);
         resources.push_back({cpu_load, (double)cpu_cores});
         targets.push_back(runtime);
+        
+        if (runtime < min_runtime) min_runtime = runtime;
+        if (runtime > max_runtime) max_runtime = runtime;
+        sum_runtime += runtime;
     }
 
     SPI_finish();
     
+    elog(INFO, "Total rows in table: %d, Skipped: %d, Valid: %zu", 
+         total_count, skipped_count, targets.size());
+    
     if (targets.empty()) {
-        elog(ERROR, "No valid training data found");
+        elog(ERROR, "No valid training data found after filtering");
         return false;
     }
     
-    elog(INFO, "Extracted %zu valid training samples", targets.size());
+    elog(INFO, "Runtime stats: min=%.6f, max=%.6f, mean=%.6f", 
+         min_runtime, max_runtime, sum_runtime / targets.size());
     return true;
 }
 
@@ -162,8 +170,12 @@ void CPULoadPredictor::ComputeNormalizationParams(
     const std::vector<double>& targets
 ) {
     size_t N = targets.size();
+    elog(INFO, "target sample: %f", targets[0]);
     
-    // 计算 workload 的均值和标准差
+    double min_target = DBL_MAX;
+    double max_target = 0.0;
+    double sum_target = 0.0;
+    
     for (size_t j = 0; j < 7; ++j) {
         double sum = 0.0, sum_sq = 0.0;
         for (size_t i = 0; i < N; ++i) {
@@ -172,10 +184,9 @@ void CPULoadPredictor::ComputeNormalizationParams(
         }
         workload_mean_[j] = sum / N;
         double variance = (sum_sq / N) - (workload_mean_[j] * workload_mean_[j]);
-        workload_std_[j] = std::sqrt(std::max(variance, 1e-8));  // 防止除零
+        workload_std_[j] = std::sqrt(std::max(variance, 1e-8));
     }
     
-    // 计算 resource 的均值和标准差
     for (size_t j = 0; j < 2; ++j) {
         double sum = 0.0, sum_sq = 0.0;
         for (size_t i = 0; i < N; ++i) {
@@ -187,19 +198,21 @@ void CPULoadPredictor::ComputeNormalizationParams(
         resource_std_[j] = std::sqrt(std::max(variance, 1e-8));
     }
     
-    // 计算 target 的均值和标准差
     double sum = 0.0, sum_sq = 0.0;
     for (double val : targets) {
         sum += val;
         sum_sq += val * val;
+        if (val < min_target) min_target = val;
+        if (val > max_target) max_target = val;
     }
     target_mean_ = sum / N;
     double variance = (sum_sq / N) - (target_mean_ * target_mean_);
     target_std_ = std::sqrt(std::max(variance, 1e-8));
     
     elog(INFO, "Normalization params computed:");
-    elog(INFO, "  Target: mean=%.2f, std=%.2f", target_mean_, target_std_);
-    elog(INFO, "  Workload[0]: mean=%.2f, std=%.2f", workload_mean_[0], workload_std_[0]);
+    elog(INFO, "  Target: min=%.6f, max=%.6f, mean=%.6f, std=%.6f", 
+         min_target, max_target, target_mean_, target_std_);
+    elog(INFO, "  Workload[0]: mean=%.6f, std=%.6f", workload_mean_[0], workload_std_[0]);
 }
 
 torch::Tensor CPULoadPredictor::NormalizeWorkload(const std::vector<std::vector<double>>& data) {
@@ -248,49 +261,36 @@ bool CPULoadPredictor::TrainModel() {
 
     int64_t N = targets.size();
     
-    // 计算归一化参数
     ComputeNormalizationParams(workloads, resources, targets);
     
-    // 归一化数据
     auto W = NormalizeWorkload(workloads);
     auto R = NormalizeResource(resources);
     auto Y = NormalizeTarget(targets);
 
-    // 检查归一化后的数据
     if (torch::isnan(W).any().item<bool>() || torch::isnan(R).any().item<bool>() || torch::isnan(Y).any().item<bool>()) {
         elog(ERROR, "NaN detected in normalized data");
         return false;
     }
 
-    // 重置模型（每个样本独立，不使用序列状态）
     model_ = RuntimeModel();
     model_->train();
     
-    // 使用较小的学习率和梯度裁剪
-    torch::optim::Adam opt(model_->parameters(), torch::optim::AdamOptions(1e-4));
+    torch::optim::Adam opt(model_->parameters(), torch::optim::AdamOptions(1e-3));
 
-    for (int epoch = 0; epoch < 100; ++epoch) {
+    bool converged = false;
+    int final_epoch = 0;
+    
+    for (int epoch = 0; epoch < 200; ++epoch) {
         opt.zero_grad();
         auto total_loss = torch::zeros({});
 
-        // 每个样本重置状态（视为独立预测）
         for (int64_t i = 0; i < N; ++i) {
-            auto state = torch::zeros({1, 1, model_->hidden_dim()});
-            
-            torch::Tensor next_state;
-            auto pred = model_->forward(
-                W[i].unsqueeze(0),
-                R[i].unsqueeze(0),
-                state,
-                next_state
-            );
+            auto pred = model_->forward(W[i].unsqueeze(0), R[i].unsqueeze(0));
             total_loss += torch::mse_loss(pred, Y[i].unsqueeze(0));
         }
 
-        // 平均损失
         total_loss = total_loss / N;
         
-        // 检查损失是否有效
         if (torch::isnan(total_loss).item<bool>() || torch::isinf(total_loss).item<bool>()) {
             elog(ERROR, "NaN/Inf loss at epoch %d, stopping training", epoch);
             return false;
@@ -298,23 +298,26 @@ bool CPULoadPredictor::TrainModel() {
 
         total_loss.backward();
         
-        // 梯度裁剪（防止梯度爆炸）
         torch::nn::utils::clip_grad_norm_(model_->parameters(), 1.0);
         
         opt.step();
 
         double loss_val = total_loss.item<double>();
         
-        // 每10个epoch或首尾epoch打印
-        if (epoch % 10 == 0 || epoch == 499) {
+        if (epoch % 20 == 0 || epoch == 99) {
             elog(INFO, "Epoch %d | Loss %.6f", epoch, loss_val);
         }
         
-        // Early stopping（如果损失足够小）
-        if (loss_val < 1e-6) {
+        if (loss_val < 1e-8) {
             elog(INFO, "Converged at epoch %d", epoch);
+            converged = true;
+            final_epoch = epoch;
             break;
         }
+    }
+
+    if (!converged) {
+        elog(WARNING, "Training did not fully converge, final loss may be high");
     }
 
     model_loaded_ = true;
@@ -332,7 +335,6 @@ double CPULoadPredictor::Predict(
     torch::NoGradGuard guard;
     model_->eval();
 
-    // 归一化输入
     std::vector<float> w_norm(7);
     for (size_t i = 0; i < 7; ++i) {
         w_norm[i] = (workload[i] - workload_mean_[i]) / workload_std_[i];
@@ -345,13 +347,8 @@ double CPULoadPredictor::Predict(
     auto W = torch::tensor(w_norm, torch::kFloat32).unsqueeze(0);
     auto R = torch::tensor(r_norm, torch::kFloat32).unsqueeze(0);
 
-    // 使用零状态（无状态预测）
-    auto state = torch::zeros({1, 1, model_->hidden_dim()});
-
-    torch::Tensor next_state;
-    auto y_norm = model_->forward(W, R, state, next_state);
+    auto y_norm = model_->forward(W, R);
     
-    // 反归一化
     double y = y_norm.item<double>() * target_std_ + target_mean_;
 
     return std::max(0.0, y);
@@ -366,7 +363,6 @@ bool CPULoadPredictor::SaveModel(const std::string& model_path) {
     try {
         torch::serialize::OutputArchive archive;
         
-        // 保存归一化参数
         archive.write("workload_mean", torch::tensor(workload_mean_));
         archive.write("workload_std", torch::tensor(workload_std_));
         archive.write("resource_mean", torch::tensor(resource_mean_));
@@ -374,7 +370,6 @@ bool CPULoadPredictor::SaveModel(const std::string& model_path) {
         archive.write("target_mean", torch::tensor(target_mean_));
         archive.write("target_std", torch::tensor(target_std_));
         
-        // 保存模型参数
         auto named_params = model_->named_parameters(/*recurse=*/true);
         for (const auto& pair : named_params) {
             archive.write(pair.key(), pair.value());
@@ -401,13 +396,11 @@ bool CPULoadPredictor::SaveModel(const std::string& model_path) {
 
 bool CPULoadPredictor::LoadModel(const std::string& model_path) {
     try {
-        // 重新初始化模型
         model_ = RuntimeModel();
         
         torch::serialize::InputArchive archive;
         archive.load_from(model_path);
         
-        // 加载归一化参数
         torch::Tensor w_mean, w_std, r_mean, r_std, t_mean, t_std;
         archive.read("workload_mean", w_mean);
         archive.read("workload_std", w_std);
@@ -432,7 +425,6 @@ bool CPULoadPredictor::LoadModel(const std::string& model_path) {
         target_mean_ = t_mean.item<double>();
         target_std_ = t_std.item<double>();
         
-        // 加载模型参数
         auto named_params = model_->named_parameters(/*recurse=*/true);
         for (const auto& pair : named_params) {
             torch::Tensor tensor;
@@ -455,11 +447,9 @@ bool CPULoadPredictor::LoadModel(const std::string& model_path) {
         return true;
         
     } catch (const c10::Error& e) {
-        // elog(ERROR, "CPULoadPredictor: Failed to load model - %s", e.what());
         model_loaded_ = false;
         return false;
     } catch (const std::exception& e) {
-        // elog(ERROR, "CPULoadPredictor: Failed to load model - %s", e.what());
         model_loaded_ = false;
         return false;
     }

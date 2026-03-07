@@ -220,6 +220,20 @@ struct ModelAnalysisResult {
     size_t param_size_bytes;  // Total size of parameters in bytes
 };
 
+// Data structures to hold collected metrics
+struct CpuLoadData {
+    double cpu_load;
+    int cpu_cores;
+};
+
+struct GpuLoadData {
+    double cuda_cores;
+    double gpu_freq;
+    double util;
+    double mem_used;
+    double mem_total;
+};
+
 // Function to analyze model characteristics: MAC, parameter count, and parameter size
 ModelAnalysisResult AnalyzeModelWithInference(const std::string& model_name);
 
@@ -239,5 +253,11 @@ double get_cpu_load_factor();
 std::string exec_command(const char* cmd);
 std::string trim(const std::string& s);
 std::vector<GpuStatus> get_all_gpu_status();
+
+// Function declarations for CPU/GPU load collection
+GpuLoadData CollectGPULoadData();
+CpuLoadData CollectCPULoadData();
+void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, GpuLoadData gpu_data);
+void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, CpuLoadData cpu_data);
 
 #endif

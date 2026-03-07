@@ -253,27 +253,27 @@ def find_max_concurrency_optimized(start_level=1, max_level=1000, coarse_step=32
 # Define SQL queries to test - 9 test cases across 3 types
 ORIGINAL_SQL_QUERIES = [
     # Series tests (3) - using CPU
-    # {
-    #     "name": "slice_predict",
-    #     "table": "slice_test",
-    #     "model": "slice",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
-    # {
-    #     "name": "swarm_predict", 
-    #     "table": "swarm_test",
-    #     "model": "swarm",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
-    # {
-    #     "name": "year_predict_test",
-    #     "table": "year_predict_test", 
-    #     "model": "year_predict",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
+    {
+        "name": "slice_predict",
+        "table": "slice_test",
+        "model": "slice",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
+    {
+        "name": "swarm_predict", 
+        "table": "swarm_test",
+        "model": "swarm",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
+    {
+        "name": "year_predict_test",
+        "table": "year_predict_test", 
+        "model": "year_predict",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
     # NLP tests (3) - using GPU
     {
         "name": "imdb_vector_predict",

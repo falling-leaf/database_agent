@@ -22,10 +22,11 @@
 
 #define ADD_OPTIMIZATION_LOGIC true
 
-#define ALWAYS_TRAINING true
+#define ALWAYS_TRAINING false
+#define ONCE_AND_FOR_ALL true
 
 #define SAMPLE_BUTTON false
-#define CPU_SAMPLE_BUTTON false
+#define CPU_SAMPLE_BUTTON true
 #define GPU_SAMPLE_BUTTON false
 #define WINDOW_SIZE 32
 #define SAMPLE_SIZE 10
@@ -55,6 +56,10 @@ static GPULoadPredictor gpu_load_predictor;
 static std::chrono::high_resolution_clock::time_point execution_start_time;
 static bool execution_timing_active = false;
 static bool data_cleaning = false;
+
+// 0代表使用gpu，1代表使用cpu
+static int using_gpu = 0;
+static int gpu_id = 0;
 
 // Function to start ExecutionAgent timing
 void StartExecutionAgentTiming() {
@@ -765,87 +770,83 @@ std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
-// Function to collect GPU load and ExecutionAgent runtime data
-void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result) {
-    // Get GPU metrics
-    double cuda_cores = 0.0;
-    double gpu_freq = 0.0;
-    double util = 0.0;
-    double mem_used = 0.0;
-    double mem_total = 0.0;
+
+// Function to collect GPU metrics (data collection only, no DB insertion)
+GpuLoadData CollectGPULoadData() {
+    GpuLoadData gpu_data;
+    gpu_data.cuda_cores = 0.0;
+    gpu_data.gpu_freq = 0.0;
+    gpu_data.util = 0.0;
+    gpu_data.mem_used = 0.0;
+    gpu_data.mem_total = 1.0;
     
     try {
-        // Get GPU status information
         std::string gpu_util_str = exec_command("nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | head -c 100");
-        util = std::stod(trim(gpu_util_str));
+        gpu_data.util = std::stod(trim(gpu_util_str));
         
         std::string gpu_mem_used_str = exec_command("nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -c 100");
-        mem_used = std::stod(trim(gpu_mem_used_str));
+        gpu_data.mem_used = std::stod(trim(gpu_mem_used_str));
         
         std::string gpu_mem_total_str = exec_command("nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -c 100");
-        mem_total = std::stod(trim(gpu_mem_total_str));
+        gpu_data.mem_total = std::stod(trim(gpu_mem_total_str));
         
-        // Get GPU FLOPS and frequency information
         std::string gpu_cap = exec_command("nvidia-smi --id=0 --query-gpu=compute_cap --format=csv,noheader,nounits | head -c 100");
         gpu_cap = trim(gpu_cap);
         
         if (gpu_cap == "8.0") {
-            cuda_cores = 6912;
+            gpu_data.cuda_cores = 6912;
         } else if (gpu_cap == "7.5") {
-            cuda_cores = 4608;
+            gpu_data.cuda_cores = 4608;
         } else if (gpu_cap == "7.0") {
-            cuda_cores = 5120;
+            gpu_data.cuda_cores = 5120;
         } else if (gpu_cap == "8.6") {
-            cuda_cores = 10496;
+            gpu_data.cuda_cores = 10496;
         } else {
-            cuda_cores = 2048;
+            gpu_data.cuda_cores = 2048;
         }
 
         std::string gpu_clocks = exec_command("nvidia-smi --id=0 --query-gpu=clocks.max.sm --format=csv,noheader,nounits | head -c 100");
-        gpu_freq = std::stod(trim(gpu_clocks));
+        gpu_data.gpu_freq = std::stod(trim(gpu_clocks));
     } catch (...) {
-        // If GPU information is not available, set default values
         elog(INFO, "nvidia-smi command failed, set default values");
-        cuda_cores = 0.0;
-        gpu_freq = 0.0;
-        util = 0.0;
-        mem_used = 0.0;
-        mem_total = 1.0;  // Avoid division by zero
     }
     
-    // Store the collected data to database via SPI
+    return gpu_data;
+}
+
+// Function to collect CPU metrics (data collection only, no DB insertion)
+CpuLoadData CollectCPULoadData() {
+    CpuLoadData cpu_data;
+    cpu_data.cpu_load = 0.0;
+    cpu_data.cpu_cores = 1;
+    
+    try {
+        cpu_data.cpu_load = std::stod(exec_command("cat /proc/loadavg | awk '{print $1}'"));
+        cpu_data.cpu_cores = std::stoi(exec_command("nproc"));
+    } catch (...) { 
+        cpu_data.cpu_load = 0.5; 
+        cpu_data.cpu_cores = 1; 
+    }
+    
+    return cpu_data;
+}
+
+// Function to store GPU load and runtime data to database
+void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, GpuLoadData gpu_data) {
     SPIConnector spi_connector;
     if (!spi_connector.Connect()) {
         elog(WARNING, "Failed to connect to SPI for storing GPU load data");
         return;
     }
     
-    // Insert the collected data
-    // CREATE TABLE IF NOT EXISTS gpu_load_training_data (
-    //     id SERIAL PRIMARY KEY,
-    //     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    //     cuda_cores DOUBLE PRECISION,
-    //     gpu_freq DOUBLE PRECISION,
-    //     util DOUBLE PRECISION,
-    //     mem_used DOUBLE PRECISION,
-    //     mem_total DOUBLE PRECISION,
-    //     execution_runtime_us BIGINT,
-    //     data_shape_1 BIGINT,
-    //     data_shape_2 BIGINT,
-    //     data_shape_3 BIGINT,
-    //     data_shape_4 BIGINT,
-    //     model_mac_count BIGINT,
-    //     model_param_count BIGINT,
-    //     model_param_size BIGINT
-    // );
-    std::string insert_sql = "INSERT INTO gpu_load_training_data (cuda_cores, gpu_freq, util, mem_used, mem_total, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)";
+    std::string insert_sql = "INSERT INTO stanford_dogs_gpu_load_training_data (cuda_cores, gpu_freq, util, mem_used, mem_total, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)";
     SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 13);
     
-    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cuda_cores)) ||
-        !sql_wrapper.Bind(2, FLOAT8OID, Float8GetDatum(gpu_freq)) ||
-        !sql_wrapper.Bind(3, FLOAT8OID, Float8GetDatum(util)) ||
-        !sql_wrapper.Bind(4, FLOAT8OID, Float8GetDatum(mem_used)) ||
-        !sql_wrapper.Bind(5, FLOAT8OID, Float8GetDatum(mem_total)) ||
+    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(gpu_data.cuda_cores)) ||
+        !sql_wrapper.Bind(2, FLOAT8OID, Float8GetDatum(gpu_data.gpu_freq)) ||
+        !sql_wrapper.Bind(3, FLOAT8OID, Float8GetDatum(gpu_data.util)) ||
+        !sql_wrapper.Bind(4, FLOAT8OID, Float8GetDatum(gpu_data.mem_used)) ||
+        !sql_wrapper.Bind(5, FLOAT8OID, Float8GetDatum(gpu_data.mem_total)) ||
         !sql_wrapper.Bind(6, INT8OID, Int64GetDatum(execution_runtime_us)) ||
         !sql_wrapper.Bind(7, INT8OID, Int64GetDatum(shape0)) ||
         !sql_wrapper.Bind(8, INT8OID, Int64GetDatum(shape1)) ||
@@ -864,58 +865,31 @@ void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3
     }
     
     elog(INFO, "Successfully stored GPU load data: cuda_cores=%.1f, freq=%.1f MHz, util=%.1f%%, mem_used=%.1f MiB, mem_total=%.1f MiB, runtime=%lld us, shapes=[%d,%d,%d,%d], model_mac=%lld, model_param=%lld, model_size=%zu", 
-         cuda_cores, gpu_freq, util, mem_used, mem_total, execution_runtime_us, 
+         gpu_data.cuda_cores, gpu_data.gpu_freq, gpu_data.util, gpu_data.mem_used, gpu_data.mem_total, execution_runtime_us, 
          shape0, shape1, shape2, shape3, 
          analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
 }
 
-// Function to collect CPU load and ExecutionAgent runtime data
-void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result) {
-    // Get CPU load average
-    double cpu_load = 0.0;
-    int cpu_cores = 1;
-    try {
-        cpu_load = std::stod(exec_command("cat /proc/loadavg | awk '{print $1}'"));
-        cpu_cores = std::stoi(exec_command("nproc"));
-    } catch (...) { 
-        cpu_load = 0.5; 
-        cpu_cores = 1; 
-    }
-    
-    // Store the collected data to database via SPI
+// Function to store CPU load and runtime data to database
+void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, CpuLoadData cpu_data) {
     SPIConnector spi_connector;
     if (!spi_connector.Connect()) {
         elog(WARNING, "Failed to connect to SPI for storing CPU load data");
         return;
     }
-    // Calculate normalized load factor (similar to the current dynamic multiplier logic)
-    double normalized_load_factor = (cpu_load / (double)cpu_cores) + 1.0;
-    double threshold = 1.2 + 0.1 * std::log2((double)cpu_cores);
     
-    if ((cpu_load / (double)cpu_cores) + 1.0 > threshold) {
-        normalized_load_factor = ((cpu_load / (double)cpu_cores) + 1.0) * std::exp(5.0 * (((cpu_load / (double)cpu_cores) + 1.0) - threshold));
+    double normalized_load_factor = (cpu_data.cpu_load / (double)cpu_data.cpu_cores) + 1.0;
+    double threshold = 1.2 + 0.1 * std::log2((double)cpu_data.cpu_cores);
+    
+    if ((cpu_data.cpu_load / (double)cpu_data.cpu_cores) + 1.0 > threshold) {
+        normalized_load_factor = ((cpu_data.cpu_load / (double)cpu_data.cpu_cores) + 1.0) * std::exp(5.0 * (((cpu_data.cpu_load / (double)cpu_data.cpu_cores) + 1.0) - threshold));
     }
     
-    // Insert the collected data
-    // CREATE TABLE IF NOT EXISTS cpu_load_training_data (
-    //     id SERIAL PRIMARY KEY,
-    //     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    //     cpu_load DOUBLE PRECISION,
-    //     cpu_cores INTEGER,
-    //     execution_runtime_us BIGINT,
-    //     data_shape_1 BIGINT,
-    //     data_shape_2 BIGINT,
-    //     data_shape_3 BIGINT,
-    //     data_shape_4 BIGINT,
-    //     model_mac_count BIGINT,
-    //     model_param_count BIGINT,
-    //     model_param_size BIGINT
-    //     )
-    std::string insert_sql = "INSERT INTO cpu_load_training_data (cpu_load, cpu_cores, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+    std::string insert_sql = "INSERT INTO stanford_dogs_cpu_load_training_data (cpu_load, cpu_cores, execution_runtime_us, data_shape_1, data_shape_2, data_shape_3, data_shape_4, model_mac_count, model_param_count, model_param_size) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
     SPISqlWrapper sql_wrapper(spi_connector, insert_sql, 10);
     
-    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cpu_load)) ||
-        !sql_wrapper.Bind(2, INT4OID, Int32GetDatum(cpu_cores)) ||
+    if (!sql_wrapper.Bind(1, FLOAT8OID, Float8GetDatum(cpu_data.cpu_load)) ||
+        !sql_wrapper.Bind(2, INT4OID, Int32GetDatum(cpu_data.cpu_cores)) ||
         !sql_wrapper.Bind(3, INT8OID, Int64GetDatum(execution_runtime_us)) ||
         !sql_wrapper.Bind(4, INT8OID, Int64GetDatum(shape0)) ||
         !sql_wrapper.Bind(5, INT8OID, Int64GetDatum(shape1)) ||
@@ -934,7 +908,7 @@ void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3
     }
     
     elog(INFO, "Successfully stored CPU load data: load=%.3f, cores=%d, runtime=%lld us, shapes=[%d,%d,%d,%d], model_mac=%lld, model_param=%lld, model_size=%zu", 
-         cpu_load, cpu_cores, execution_runtime_us, shape0, shape1, shape2, shape3, 
+         cpu_data.cpu_load, cpu_data.cpu_cores, execution_runtime_us, shape0, shape1, shape2, shape3, 
          analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
 }
 
@@ -1120,6 +1094,17 @@ std::vector<GpuStatus> get_all_gpu_status() {
 AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
     // if (false) {
     if (ADD_OPTIMIZATION_LOGIC && (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1 || memory_manager.is_last_call == 1)) {
+        if (ONCE_AND_FOR_ALL && (memory_manager.current_func_call > WINDOW_SIZE - 1)) {
+            Task* task = (Task*)list_nth(state->task_list, 0);
+            if (using_gpu == 0) {
+                task->cuda = pstrdup("cpu");
+            } else if (using_gpu == 1) {
+                std::string gpu_str = "gpu:" + std::to_string(gpu_id);
+                task->cuda = pstrdup(gpu_str.c_str());
+            }
+            state->last_action = AgentAction::OPTIMIZATION;
+            return AgentAction::SCHEDULE;
+        }
         bool enable_dynamic_cost = true; 
         if (enable_dynamic_cost) {
             // elog(INFO, "OptimizationAgent::Execute - Using Dynamic Cost Model");
@@ -1320,6 +1305,9 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                 std::string gpu_str = "gpu:" + std::to_string(best_gpu_id);
                 MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                 task->cuda = pstrdup(gpu_str.c_str());
+                using_gpu = 1;
+                gpu_id = best_gpu_id;
+                
                 MemoryContextSwitchTo(old_ctx);
                 
                 // 记录选择的 GPU ID 供后续调度使用
@@ -1328,6 +1316,7 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             } else {
                 MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                 task->cuda = pstrdup("cpu");
+                using_gpu = 0;
                 MemoryContextSwitchTo(old_ctx);
                 elog(INFO, "Decision: Switch to CPU");
             }
@@ -1385,7 +1374,7 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     }
     elog(INFO, "Execution task: %s, %s, %ld, %ld", task->model, task->cuda, task->input_start_index, task->input_end_index);
     
-    if (ADD_OPTIMIZATION_LOGIC)
+    if (SAMPLE_BUTTON)
         StartExecutionAgentTiming();
 
     if (task->input_start_index >= task->input_end_index) {
@@ -1417,12 +1406,22 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
 
     // Start timing for ExecutionAgent
 
-    infer_batch_internal(&state->current_state, true);
+    // Collect CPU/GPU load data before inference
+    GpuLoadData gpu_data;
+    CpuLoadData cpu_data;
+    if (SAMPLE_BUTTON && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
+        if (task->cuda == NULL || strcmp(task->cuda, "cpu") == 0) {
+            cpu_data = CollectCPULoadData();
+        } else if (strcmp(task->cuda, "gpu") == 0) {
+            gpu_data = CollectGPULoadData();
+        }
+    }
 
-    long long execution_runtime_us = GetExecutionAgentRuntimeUs();
+    infer_batch_internal(&state->current_state, true);
 
     // Collect CPU load and runtime data after execution
     if (SAMPLE_BUTTON && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
+        long long execution_runtime_us = GetExecutionAgentRuntimeUs();
         if (!data_cleaning)
             data_cleaning = true;
         else {
@@ -1445,9 +1444,9 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
             ModelAnalysisResult  analysis_result = AnalyzeModelWithInference(task->model);
             elog(INFO, "ModelAnalysisResult: %lld, %lld, %lld", analysis_result.mac_count, analysis_result.param_count, analysis_result.param_size_bytes);
             if (task->cuda == NULL || strcmp(task->cuda, "cpu") == 0)
-                CollectCPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result);
+                CollectCPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result, cpu_data);
             else if (strcmp(task->cuda, "gpu") == 0)
-                CollectGPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result);
+                CollectGPULoadAndRuntimeData(result0, result1, result2, result3, execution_runtime_us, analysis_result, gpu_data);
         }
     }
 

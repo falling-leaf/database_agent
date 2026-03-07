@@ -19,7 +19,6 @@ public:
     bool LoadModel(const std::string& model_path);
     bool SaveModel(const std::string& model_path);
 
-    // 预测 execution_runtime_us
     double Predict(
         const std::vector<double>& workload,
         const std::vector<double>& gpu_resource
@@ -51,8 +50,6 @@ private:
     torch::Tensor NormalizeResource(const std::vector<std::vector<double>>& data);
     torch::Tensor NormalizeTarget(const std::vector<double>& data);
 
-    /* ================= Runtime Model ================= */
-
     class RuntimeModelImpl : public torch::nn::Module {
     public:
         RuntimeModelImpl();
@@ -60,26 +57,20 @@ private:
 
         torch::Tensor forward(
             torch::Tensor workload_x,
-            torch::Tensor resource_x,
-            torch::Tensor prev_state,
-            torch::Tensor& next_state
+            torch::Tensor resource_x
         );
 
         int hidden_dim() const { return hidden_dim_; }
 
     private:
-        // workload encoder (7)
         torch::nn::Linear w_fc1{nullptr};
         torch::nn::Linear w_fc2{nullptr};
 
-        // GRU: workload_embed + gpu_resource(5)
-        torch::nn::GRU gru{nullptr};
+        torch::nn::Linear r_fc1{nullptr};
+        torch::nn::Linear r_fc2{nullptr};
 
-        // runtime head
-        torch::nn::Linear y_fc1{nullptr};
-        torch::nn::Linear y_fc2{nullptr};
-
-        torch::nn::Dropout dropout{nullptr};
+        torch::nn::Linear mlp{nullptr};
+        torch::nn::Linear output{nullptr};
 
         int hidden_dim_;
     };

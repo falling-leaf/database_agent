@@ -16,66 +16,66 @@ NEW_SQL_QUERIES = [
         "table": "slice_test",
         "func_type": "series",
         "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 3200) AS sub_table;"
     },
-    {
-        "name": "swarm_db_agent", 
-        "table": "swarm_test",
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    {
-        "name": "year_predict_db_agent",
-        "table": "year_predict_test", 
-        "func_type": "series",
-        "column": "data",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    # # NLP tests using db_agent_single (3)
-    {
-        "name": "imdb_db_agent",
-        "table": "imdb_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    {
-        "name": "financial_phrasebank_db_agent",
-        "table": "financial_phrasebank_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec", 
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    {
-        "name": "nlp_db_agent",
-        "table": "nlp_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    # Image tests using db_agent_single (3)
-    {
-        "name": "cifar_db_agent",
-        "table": "cifar_image_vector_table",
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    {
-        "name": "stanford_dogs_db_agent",
-        "table": "stanford_dogs_image_vector_table", 
-        "func_type": "image_classification",
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    },
-    {
-        "name": "imagenet_db_agent",
-        "table": "imagenet_image_vector_table",
-        "func_type": "image_classification", 
-        "column": "image_vector",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
-    }
+    # {
+    #     "name": "swarm_db_agent", 
+    #     "table": "swarm_test",
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # {
+    #     "name": "year_predict_db_agent",
+    #     "table": "year_predict_test", 
+    #     "func_type": "series",
+    #     "column": "data",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # # # NLP tests using db_agent_single (3)
+    # {
+    #     "name": "imdb_db_agent",
+    #     "table": "imdb_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # {
+    #     "name": "financial_phrasebank_db_agent",
+    #     "table": "financial_phrasebank_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec", 
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # {
+    #     "name": "nlp_db_agent",
+    #     "table": "nlp_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # # Image tests using db_agent_single (3)
+    # {
+    #     "name": "cifar_db_agent",
+    #     "table": "cifar_image_vector_table",
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # {
+    #     "name": "stanford_dogs_db_agent",
+    #     "table": "stanford_dogs_image_vector_table", 
+    #     "func_type": "image_classification",
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # },
+    # {
+    #     "name": "imagenet_db_agent",
+    #     "table": "imagenet_image_vector_table",
+    #     "func_type": "image_classification", 
+    #     "column": "image_vector",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit 5000) AS sub_table;"
+    # }
 ]
 
 

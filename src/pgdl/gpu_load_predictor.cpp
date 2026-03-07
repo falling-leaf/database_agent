@@ -1,6 +1,7 @@
 #include "gpu_load_predictor.h"
 #include <algorithm>
 #include <cmath>
+#include <cfloat>
 
 extern "C" {
 #include "executor/spi.h"
@@ -12,36 +13,23 @@ extern "C" {
 #include "miscadmin.h"
 }
 
-/* ================= RuntimeModel ================= */
-
 GPULoadPredictor::RuntimeModelImpl::RuntimeModelImpl()
-    : hidden_dim_(32) {
+    : hidden_dim_(64) {
 
-    // workload: 7 dims
-    w_fc1 = register_module("w_fc1", torch::nn::Linear(7, 32));
-    w_fc2 = register_module("w_fc2", torch::nn::Linear(32, 16));
+    w_fc1 = register_module("w_fc1", torch::nn::Linear(7, 64));
+    w_fc2 = register_module("w_fc2", torch::nn::Linear(64, 32));
 
-    // GRU: (workload_embed + gpu_resource(5))
-    gru = register_module(
-        "gru",
-        torch::nn::GRU(
-            torch::nn::GRUOptions(16 + 5, hidden_dim_).batch_first(true))
-    );
+    r_fc1 = register_module("r_fc1", torch::nn::Linear(5, 32));
+    r_fc2 = register_module("r_fc2", torch::nn::Linear(32, 16));
 
-    // runtime head
-    y_fc1 = register_module(
-        "y_fc1",
-        torch::nn::Linear(hidden_dim_ + 16 + 5, 16)
-    );
-    y_fc2 = register_module("y_fc2", torch::nn::Linear(16, 1));
-
-    dropout = register_module("dropout", torch::nn::Dropout(0.1));
+    mlp = register_module("mlp", torch::nn::Linear(32 + 16, 16));
+    output = register_module("output", torch::nn::Linear(16, 1));
 
     InitializeWeights();
 }
 
 void GPULoadPredictor::RuntimeModelImpl::InitializeWeights() {
-    for (auto& module : modules(false)) {
+    for (auto& module : modules(/*include_self=*/false)) {
         if (auto* linear = module->as<torch::nn::Linear>()) {
             torch::nn::init::xavier_uniform_(linear->weight);
             if (linear->bias.defined()) {
@@ -53,30 +41,18 @@ void GPULoadPredictor::RuntimeModelImpl::InitializeWeights() {
 
 torch::Tensor GPULoadPredictor::RuntimeModelImpl::forward(
     torch::Tensor workload_x,
-    torch::Tensor resource_x,
-    torch::Tensor prev_state,
-    torch::Tensor& next_state
+    torch::Tensor resource_x
 ) {
-    // ---- workload encoder ----
     auto w = torch::relu(w_fc1(workload_x));
-    w = dropout(w);
-    w = torch::relu(w_fc2(w));   // [B,16]
+    w = torch::relu(w_fc2(w));
 
-    // ---- state transition ----
-    auto gru_input = torch::cat({w, resource_x}, 1).unsqueeze(1);
-    auto gru_out = gru->forward(gru_input, prev_state);
-    auto state_seq = std::get<0>(gru_out);   // [B,1,H]
-    next_state = std::get<1>(gru_out);       // [1,B,H]
-    auto state_t = state_seq.squeeze(1);     // [B,H]
+    auto r = torch::relu(r_fc1(resource_x));
+    r = torch::relu(r_fc2(r));
 
-    // ---- runtime prediction ----
-    auto y_in = torch::cat({state_t, w, resource_x}, 1);
-    auto y = torch::relu(y_fc1(y_in));
-    y = dropout(y);
-    return y_fc2(y);
+    auto combined = torch::cat({w, r}, 1);
+    auto y = torch::relu(mlp(combined));
+    return output(y);
 }
-
-/* ================= GPULoadPredictor ================= */
 
 GPULoadPredictor::GPULoadPredictor()
     : model_loaded_(false),
@@ -89,8 +65,6 @@ GPULoadPredictor::GPULoadPredictor()
       target_std_(1.0) {}
 
 GPULoadPredictor::~GPULoadPredictor() {}
-
-/* ---------- ExtractTrainingData ---------- */
 
 bool GPULoadPredictor::ExtractTrainingData(
     std::vector<std::vector<double>>& workloads,
@@ -106,7 +80,7 @@ bool GPULoadPredictor::ExtractTrainingData(
         "model_mac_count, model_param_count, model_param_size, "
         "cuda_cores, gpu_freq, util, mem_used, mem_total, "
         "execution_runtime_us "
-        "FROM gpu_load_training_data "
+        "FROM stanford_dogs_gpu_load_training_data "
         "ORDER BY id";
 
     if (SPI_execute(sql, true, 0) != SPI_OK_SELECT) {
@@ -118,6 +92,10 @@ bool GPULoadPredictor::ExtractTrainingData(
     resources.clear();
     targets.clear();
 
+    double min_runtime = DBL_MAX;
+    double max_runtime = 0.0;
+    double sum_runtime = 0.0;
+
     for (uint64 i = 0; i < SPI_processed; ++i) {
         HeapTuple tuple = SPI_tuptable->vals[i];
         TupleDesc desc = SPI_tuptable->tupdesc;
@@ -125,7 +103,7 @@ bool GPULoadPredictor::ExtractTrainingData(
 
         std::vector<double> w(7);
         for (int j = 0; j < 7; ++j) {
-            w[j] = DatumGetFloat8(SPI_getbinval(tuple, desc, j + 1, &isnull));
+            w[j] = DatumGetInt32(SPI_getbinval(tuple, desc, j + 1, &isnull));
             if (std::isnan(w[j]) || std::isinf(w[j])) {
                 elog(WARNING, "Invalid workload value at row %lu, col %d", i, j);
                 w[j] = 0.0;
@@ -142,7 +120,7 @@ bool GPULoadPredictor::ExtractTrainingData(
         }
 
         double runtime =
-            DatumGetFloat8(SPI_getbinval(tuple, desc, 13, &isnull));
+            DatumGetInt32(SPI_getbinval(tuple, desc, 13, &isnull));
 
         if (std::isnan(runtime) || std::isinf(runtime) || runtime <= 0) {
             elog(WARNING, "Invalid runtime at row %lu: %f", i, runtime);
@@ -152,6 +130,10 @@ bool GPULoadPredictor::ExtractTrainingData(
         workloads.push_back(w);
         resources.push_back(r);
         targets.push_back(runtime);
+        
+        if (runtime < min_runtime) min_runtime = runtime;
+        if (runtime > max_runtime) max_runtime = runtime;
+        sum_runtime += runtime;
     }
 
     SPI_finish();
@@ -162,10 +144,10 @@ bool GPULoadPredictor::ExtractTrainingData(
     }
 
     elog(INFO, "Extracted %zu valid GPU training samples", targets.size());
+    elog(INFO, "Runtime stats: min=%.6f, max=%.6f, mean=%.6f", 
+         min_runtime, max_runtime, sum_runtime / targets.size());
     return true;
 }
-
-/* ---------- Normalization ---------- */
 
 void GPULoadPredictor::ComputeNormalizationParams(
     const std::vector<std::vector<double>>& workloads,
@@ -174,6 +156,9 @@ void GPULoadPredictor::ComputeNormalizationParams(
 ) {
     size_t N = targets.size();
 
+    double min_target = DBL_MAX;
+    double max_target = 0.0;
+    
     for (size_t j = 0; j < 7; ++j) {
         double sum = 0.0, sum_sq = 0.0;
         for (size_t i = 0; i < N; ++i) {
@@ -181,8 +166,8 @@ void GPULoadPredictor::ComputeNormalizationParams(
             sum_sq += workloads[i][j] * workloads[i][j];
         }
         workload_mean_[j] = sum / N;
-        double var = sum_sq / N - workload_mean_[j] * workload_mean_[j];
-        workload_std_[j] = std::sqrt(std::max(var, 1e-8));
+        double variance = (sum_sq / N) - (workload_mean_[j] * workload_mean_[j]);
+        workload_std_[j] = std::sqrt(std::max(variance, 1e-8));
     }
 
     for (size_t j = 0; j < 5; ++j) {
@@ -192,62 +177,62 @@ void GPULoadPredictor::ComputeNormalizationParams(
             sum_sq += resources[i][j] * resources[i][j];
         }
         resource_mean_[j] = sum / N;
-        double var = sum_sq / N - resource_mean_[j] * resource_mean_[j];
-        resource_std_[j] = std::sqrt(std::max(var, 1e-8));
+        double variance = (sum_sq / N) - (resource_mean_[j] * resource_mean_[j]);
+        resource_std_[j] = std::sqrt(std::max(variance, 1e-8));
     }
 
     double sum = 0.0, sum_sq = 0.0;
     for (double v : targets) {
         sum += v;
         sum_sq += v * v;
+        if (v < min_target) min_target = v;
+        if (v > max_target) max_target = v;
     }
     target_mean_ = sum / N;
-    double var = sum_sq / N - target_mean_ * target_mean_;
-    target_std_ = std::sqrt(std::max(var, 1e-8));
+    double variance = (sum_sq / N) - (target_mean_ * target_mean_);
+    target_std_ = std::sqrt(std::max(variance, 1e-8));
 }
 
 torch::Tensor GPULoadPredictor::NormalizeWorkload(
     const std::vector<std::vector<double>>& data
 ) {
     size_t N = data.size();
-    auto t = torch::zeros({(int64_t)N, 7}, torch::kFloat32);
-    auto acc = t.accessor<float, 2>();
+    auto tensor = torch::zeros({(int64_t)N, 7}, torch::kFloat32);
+    auto accessor = tensor.accessor<float, 2>();
 
     for (size_t i = 0; i < N; ++i)
         for (size_t j = 0; j < 7; ++j)
-            acc[i][j] = (data[i][j] - workload_mean_[j]) / workload_std_[j];
+            accessor[i][j] = (data[i][j] - workload_mean_[j]) / workload_std_[j];
 
-    return t;
+    return tensor;
 }
 
 torch::Tensor GPULoadPredictor::NormalizeResource(
     const std::vector<std::vector<double>>& data
 ) {
     size_t N = data.size();
-    auto t = torch::zeros({(int64_t)N, 5}, torch::kFloat32);
-    auto acc = t.accessor<float, 2>();
+    auto tensor = torch::zeros({(int64_t)N, 5}, torch::kFloat32);
+    auto accessor = tensor.accessor<float, 2>();
 
     for (size_t i = 0; i < N; ++i)
         for (size_t j = 0; j < 5; ++j)
-            acc[i][j] = (data[i][j] - resource_mean_[j]) / resource_std_[j];
+            accessor[i][j] = (data[i][j] - resource_mean_[j]) / resource_std_[j];
 
-    return t;
+    return tensor;
 }
 
 torch::Tensor GPULoadPredictor::NormalizeTarget(
     const std::vector<double>& data
 ) {
     size_t N = data.size();
-    auto t = torch::zeros({(int64_t)N, 1}, torch::kFloat32);
-    auto acc = t.accessor<float, 2>();
+    auto tensor = torch::zeros({(int64_t)N, 1}, torch::kFloat32);
+    auto accessor = tensor.accessor<float, 2>();
 
     for (size_t i = 0; i < N; ++i)
-        acc[i][0] = (data[i] - target_mean_) / target_std_;
+        accessor[i][0] = (data[i] - target_mean_) / target_std_;
 
-    return t;
+    return tensor;
 }
-
-/* ---------- TrainModel ---------- */
 
 bool GPULoadPredictor::TrainModel() {
     std::vector<std::vector<double>> workloads, resources;
@@ -256,58 +241,72 @@ bool GPULoadPredictor::TrainModel() {
     if (!ExtractTrainingData(workloads, resources, targets))
         return false;
 
+    int64_t N = targets.size();
+
     ComputeNormalizationParams(workloads, resources, targets);
 
     auto W = NormalizeWorkload(workloads);
     auto R = NormalizeResource(resources);
     auto Y = NormalizeTarget(targets);
 
+    if (torch::isnan(W).any().item<bool>() || torch::isnan(R).any().item<bool>() || torch::isnan(Y).any().item<bool>()) {
+        elog(ERROR, "NaN detected in normalized data");
+        return false;
+    }
+
     model_ = RuntimeModel();
     model_->train();
 
     torch::optim::Adam opt(model_->parameters(),
-        torch::optim::AdamOptions(1e-4));
+        torch::optim::AdamOptions(1e-3));
 
-    int64_t N = targets.size();
+    bool converged = false;
+    int final_epoch = 0;
 
-    for (int epoch = 0; epoch < 100; ++epoch) {
+    for (int epoch = 0; epoch < 200; ++epoch) {
         opt.zero_grad();
         auto total_loss = torch::zeros({});
 
         for (int64_t i = 0; i < N; ++i) {
-            auto state = torch::zeros({1, 1, model_->hidden_dim()});
-            torch::Tensor next_state;
-
-            auto pred = model_->forward(
-                W[i].unsqueeze(0),
-                R[i].unsqueeze(0),
-                state,
-                next_state
-            );
-
+            auto pred = model_->forward(W[i].unsqueeze(0), R[i].unsqueeze(0));
             total_loss += torch::mse_loss(pred, Y[i].unsqueeze(0));
         }
 
         total_loss = total_loss / N;
 
-        if (torch::isnan(total_loss).item<bool>())
+        if (torch::isnan(total_loss).item<bool>() || torch::isinf(total_loss).item<bool>()) {
+            elog(ERROR, "NaN/Inf loss at epoch %d, stopping training", epoch);
             return false;
+        }
 
         total_loss.backward();
+
         torch::nn::utils::clip_grad_norm_(model_->parameters(), 1.0);
+
         opt.step();
 
-        if (epoch % 10 == 0 || epoch == 99) {
+        double loss_val = total_loss.item<double>();
+
+        if (epoch % 20 == 0 || epoch == 99) {
             elog(INFO, "GPU Epoch %d | Loss %.6f",
                  epoch, total_loss.item<double>());
         }
+
+        if (loss_val < 1e-8) {
+            elog(INFO, "GPU Converged at epoch %d", epoch);
+            converged = true;
+            final_epoch = epoch;
+            break;
+        }
+    }
+
+    if (!converged) {
+        elog(WARNING, "GPU Training did not fully converge, final loss may be high");
     }
 
     model_loaded_ = true;
     return true;
 }
-
-/* ---------- Predict ---------- */
 
 double GPULoadPredictor::Predict(
     const std::vector<double>& workload,
@@ -325,19 +324,14 @@ double GPULoadPredictor::Predict(
     for (int i = 0; i < 5; ++i)
         r_norm[i] = (gpu_resource[i] - resource_mean_[i]) / resource_std_[i];
 
-    auto W = torch::tensor(w_norm).unsqueeze(0);
-    auto R = torch::tensor(r_norm).unsqueeze(0);
+    auto W = torch::tensor(w_norm, torch::kFloat32).unsqueeze(0);
+    auto R = torch::tensor(r_norm, torch::kFloat32).unsqueeze(0);
 
-    auto state = torch::zeros({1, 1, model_->hidden_dim()});
-    torch::Tensor next_state;
-
-    auto y_norm = model_->forward(W, R, state, next_state);
+    auto y_norm = model_->forward(W, R);
     double y = y_norm.item<double>() * target_std_ + target_mean_;
 
     return std::max(0.0, y);
 }
-
-/* ---------- Save / Load ---------- */
 
 bool GPULoadPredictor::SaveModel(const std::string& model_path) {
     if (!model_loaded_)
@@ -365,8 +359,6 @@ bool GPULoadPredictor::LoadModel(const std::string& model_path) {
     try {
         model_ = RuntimeModel();
 
-        torch::NoGradGuard no_grad;  // ⭐ 关键
-
         torch::serialize::InputArchive ar;
         ar.load_from(model_path);
 
@@ -378,13 +370,18 @@ bool GPULoadPredictor::LoadModel(const std::string& model_path) {
         ar.read("target_mean", tm);
         ar.read("target_std", ts);
 
+        auto wm_acc = wm.accessor<float, 1>();
+        auto ws_acc = ws.accessor<float, 1>();
+        auto rm_acc = rm.accessor<float, 1>();
+        auto rs_acc = rs.accessor<float, 1>();
+
         for (int i = 0; i < 7; ++i) {
-            workload_mean_[i] = wm[i].item<double>();
-            workload_std_[i] = ws[i].item<double>();
+            workload_mean_[i] = wm_acc[i];
+            workload_std_[i] = ws_acc[i];
         }
         for (int i = 0; i < 5; ++i) {
-            resource_mean_[i] = rm[i].item<double>();
-            resource_std_[i] = rs[i].item<double>();
+            resource_mean_[i] = rm_acc[i];
+            resource_std_[i] = rs_acc[i];
         }
         target_mean_ = tm.item<double>();
         target_std_ = ts.item<double>();
@@ -392,11 +389,19 @@ bool GPULoadPredictor::LoadModel(const std::string& model_path) {
         for (auto& p : model_->named_parameters(true)) {
             torch::Tensor t;
             ar.read(p.key(), t);
-            p.value().copy_(t);  // ✅ NoGradGuard 下合法
+            p.value().data().copy_(t);
         }
 
-        model_loaded_ = true;
+        auto named_buffers = model_->named_buffers(true);
+        for (const auto& pair : named_buffers) {
+            torch::Tensor tensor;
+            if (ar.try_read(pair.key(), tensor)) {
+                pair.value().data().copy_(tensor);
+            }
+        }
+
         model_->eval();
+        model_loaded_ = true;
         return true;
 
     } catch (const torch::Error& e) {
@@ -404,4 +409,3 @@ bool GPULoadPredictor::LoadModel(const std::string& model_path) {
         return false;
     }
 }
-

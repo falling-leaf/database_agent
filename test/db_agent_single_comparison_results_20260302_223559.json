@@ -1,0 +1,1520 @@
+{
+  "timestamp": "2026-03-02T22:35:59.279651",
+  "row_count": 1000,
+  "query_times": 1,
+  "concurrency_levels": [
+    1,
+    5,
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "query_1": {
+    "sql": "select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 3200) AS sub_table;",
+    "results": [
+      {
+        "concurrency_level": 1,
+        "total_tasks": 1,
+        "successful_tasks": 1,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 34.53091812133789,
+        "min_latency": 34.53091812133789,
+        "max_latency": 34.53091812133789,
+        "cpu_load_before": 0.81,
+        "cpu_load_during": 1.02,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 34.53091812133789,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 5,
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 63.68254051208496,
+        "min_latency": 62.94166088104248,
+        "max_latency": 64.1541748046875,
+        "cpu_load_before": 0.93,
+        "cpu_load_during": 5.96,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 63.541736125946045,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 62.94166088104248,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 64.1541748046875,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 63.91477870941162,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 63.86035203933716,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 10,
+        "total_tasks": 10,
+        "successful_tasks": 10,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 190.64999768733978,
+        "min_latency": 144.86771035194397,
+        "max_latency": 205.24584436416626,
+        "cpu_load_before": 4.48,
+        "cpu_load_during": 64.88,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 205.03722548484802,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 205.00785851478577,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 205.24584436416626,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 144.86771035194397,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 204.43331670761108,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 175.19493699073792,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 198.00366115570068,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 160.15296125411987,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 205.00308752059937,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 203.5533745288849,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 15,
+        "total_tasks": 15,
+        "successful_tasks": 15,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 260.56922205289203,
+        "min_latency": 171.31807351112366,
+        "max_latency": 280.8726096153259,
+        "cpu_load_before": 46.59,
+        "cpu_load_during": 47.82,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 280.0402534008026,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 266.8923921585083,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 280.3736879825592,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 279.011456489563,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 266.830406665802,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 185.4224841594696,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 224.4271364212036,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 280.8581929206848,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 277.65655279159546,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 279.8264572620392,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 276.4029948711395,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 279.8978943824768,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 278.70773816108704,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 171.31807351112366,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 280.8726096153259,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 20,
+        "total_tasks": 20,
+        "successful_tasks": 20,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 537.0559381723403,
+        "min_latency": 342.61378717422485,
+        "max_latency": 631.3511154651642,
+        "cpu_load_before": 34.44,
+        "cpu_load_during": 79.85,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 447.3125898838043,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 342.61378717422485,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 556.7394144535065,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 631.0916442871094,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 630.0907511711121,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 627.0279276371002,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 628.6306307315826,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 526.376969575882,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 628.4623093605042,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 630.140053987503,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 580.6062617301941,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 361.2041208744049,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 624.1020317077637,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 451.0176799297333,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 631.113606929779,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 495.2994318008423,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 631.3511154651642,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 356.015661239624,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 605.8426976203918,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 356.0800778865814,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 25,
+        "total_tasks": 25,
+        "successful_tasks": 25,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 670.9961011314392,
+        "min_latency": 639.4057848453522,
+        "max_latency": 691.3003902435303,
+        "cpu_load_before": 57.41,
+        "cpu_load_during": 127.06,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 690.7666285037994,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 656.1001780033112,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 653.0023429393768,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 655.985390663147,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 685.3628342151642,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 690.7041738033295,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 648.6747090816498,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 687.810551404953,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 652.7422111034393,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 691.3003902435303,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 688.2327489852905,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 647.1179485321045,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 639.4057848453522,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 653.0045254230499,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 689.7901730537415,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 656.073707818985,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 653.031084060669,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 690.7795054912567,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 687.6654708385468,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 672.6129157543182,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 20,
+            "status": "success",
+            "latency": 691.0389754772186,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 21,
+            "status": "success",
+            "latency": 646.968504190445,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 22,
+            "status": "success",
+            "latency": 681.3767702579498,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 23,
+            "status": "success",
+            "latency": 674.2367572784424,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 24,
+            "status": "success",
+            "latency": 691.1182463169098,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 30,
+        "total_tasks": 30,
+        "successful_tasks": 30,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 903.7516121546428,
+        "min_latency": 861.1091732978821,
+        "max_latency": 925.4815678596497,
+        "cpu_load_before": 91.07,
+        "cpu_load_during": 153.88,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 889.5265216827393,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 921.5444447994232,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 887.7027258872986,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 890.8867883682251,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 917.8816874027252,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 887.5985872745514,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 880.8021824359894,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 916.9496715068817,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 861.1091732978821,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 882.2801244258881,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 876.5152614116669,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 889.9338536262512,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 921.4291415214539,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 887.6999759674072,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 886.8928084373474,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 925.0713460445404,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 921.4817280769348,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 917.8798282146454,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 924.3600199222565,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 925.4815678596497,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 20,
+            "status": "success",
+            "latency": 905.5986127853394,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 21,
+            "status": "success",
+            "latency": 922.5175585746765,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 22,
+            "status": "success",
+            "latency": 890.9379553794861,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 23,
+            "status": "success",
+            "latency": 924.2681646347046,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 24,
+            "status": "success",
+            "latency": 925.3921804428101,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 25,
+            "status": "success",
+            "latency": 925.1252467632294,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 26,
+            "status": "success",
+            "latency": 925.1276025772095,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 27,
+            "status": "success",
+            "latency": 900.1722502708435,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 28,
+            "status": "success",
+            "latency": 889.4711055755615,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 29,
+            "status": "success",
+            "latency": 890.9102494716644,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      }
+    ]
+  },
+  "query_2": {
+    "sql": "select predict_batch_float8('alexnet_stanford_dogs', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 3200;",
+    "results": [
+      {
+        "concurrency_level": 1,
+        "total_tasks": 1,
+        "successful_tasks": 1,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 11.702314615249634,
+        "min_latency": 11.702314615249634,
+        "max_latency": 11.702314615249634,
+        "cpu_load_before": 153.88,
+        "cpu_load_during": 120.09,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 11.702314615249634,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 5,
+        "total_tasks": 5,
+        "successful_tasks": 5,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 19.763486528396605,
+        "min_latency": 19.68497896194458,
+        "max_latency": 19.85657811164856,
+        "cpu_load_before": 86.07,
+        "cpu_load_during": 68.34,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 19.783222675323486,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 19.764655113220215,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 19.72799777984619,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 19.68497896194458,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 19.85657811164856,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 10,
+        "total_tasks": 10,
+        "successful_tasks": 10,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 206.37549722194672,
+        "min_latency": 67.70358085632324,
+        "max_latency": 261.98600697517395,
+        "cpu_load_before": 49.56,
+        "cpu_load_during": 68.39,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 122.56453013420105,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 261.29858922958374,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 261.96709632873535,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 261.56004571914673,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 261.98600697517395,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 80.7415976524353,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 247.54574608802795,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 259.3674564361572,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 67.70358085632324,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 239.02032279968262,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 15,
+        "total_tasks": 15,
+        "successful_tasks": 15,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 260.98879914283754,
+        "min_latency": 55.89708399772644,
+        "max_latency": 339.7436435222626,
+        "cpu_load_before": 49.26,
+        "cpu_load_during": 86.94,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 112.49831295013428,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 190.9254457950592,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 246.94974327087402,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 294.04712533950806,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 189.15147852897644,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 311.9183485507965,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 219.80870532989502,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 324.77661299705505,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 55.89708399772644,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 339.1008493900299,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 335.17147612571716,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 339.7436435222626,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 339.68031668663025,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 339.2845482826233,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 275.87829637527466,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 20,
+        "total_tasks": 20,
+        "successful_tasks": 20,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 410.61813133955,
+        "min_latency": 142.87937879562378,
+        "max_latency": 540.3644630908966,
+        "cpu_load_before": 62.61,
+        "cpu_load_during": 82.22,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 540.3236413002014,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 449.7598979473114,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 463.37580585479736,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 538.8266022205353,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 540.192449092865,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 528.4798493385315,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 427.0278539657593,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 510.2410762310028,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 518.9498715400696,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 191.32054901123047,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 398.48148941993713,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 282.76686930656433,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 142.87937879562378,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 496.74538946151733,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 270.78923773765564,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 540.3644630908966,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 322.3732120990753,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 143.46517324447632,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 539.6153173446655,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 366.3844997882843,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 25,
+        "total_tasks": 25,
+        "successful_tasks": 25,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 503.8514570236206,
+        "min_latency": 160.91807770729065,
+        "max_latency": 688.1832211017609,
+        "cpu_load_before": 59.11,
+        "cpu_load_during": 91.08,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 658.176905632019,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 236.948801279068,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 464.73236560821533,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 688.1832211017609,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 681.302666425705,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 688.1510553359985,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 364.0514426231384,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 647.2621350288391,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 587.3162183761597,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 403.0751714706421,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 160.91807770729065,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 161.52004504203796,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 523.6653134822845,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 618.0082545280457,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 495.89419984817505,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 629.2370269298553,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 688.167976140976,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 211.5322868824005,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 284.6345708370209,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 568.8779730796814,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 20,
+            "status": "success",
+            "latency": 687.6380512714386,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 21,
+            "status": "success",
+            "latency": 669.3029000759125,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 22,
+            "status": "success",
+            "latency": 688.1418113708496,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 23,
+            "status": "success",
+            "latency": 470.8411133289337,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 24,
+            "status": "success",
+            "latency": 318.7068421840668,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      },
+      {
+        "concurrency_level": 30,
+        "total_tasks": 30,
+        "successful_tasks": 30,
+        "failed_tasks": 0,
+        "success_rate": 1.0,
+        "avg_latency": 769.6833163658778,
+        "min_latency": 548.9942035675049,
+        "max_latency": 930.6168162822723,
+        "cpu_load_before": 65.67,
+        "cpu_load_during": 91.61,
+        "results": [
+          {
+            "task_id": 0,
+            "status": "success",
+            "latency": 919.4201695919037,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 1,
+            "status": "success",
+            "latency": 924.7739779949188,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 2,
+            "status": "success",
+            "latency": 930.6166231632233,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 3,
+            "status": "success",
+            "latency": 549.7313532829285,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 4,
+            "status": "success",
+            "latency": 862.7506198883057,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 5,
+            "status": "success",
+            "latency": 930.4311201572418,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 6,
+            "status": "success",
+            "latency": 812.3031420707703,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 7,
+            "status": "success",
+            "latency": 920.3081295490265,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 8,
+            "status": "success",
+            "latency": 555.1195042133331,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 9,
+            "status": "success",
+            "latency": 789.5804989337921,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 10,
+            "status": "success",
+            "latency": 747.3837604522705,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 11,
+            "status": "success",
+            "latency": 792.6691672801971,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 12,
+            "status": "success",
+            "latency": 669.2020561695099,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 13,
+            "status": "success",
+            "latency": 889.5116074085236,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 14,
+            "status": "success",
+            "latency": 548.9942035675049,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 15,
+            "status": "success",
+            "latency": 549.9458858966827,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 16,
+            "status": "success",
+            "latency": 579.7363982200623,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 17,
+            "status": "success",
+            "latency": 930.6168162822723,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 18,
+            "status": "success",
+            "latency": 837.8501040935516,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 19,
+            "status": "success",
+            "latency": 930.5871953964233,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 20,
+            "status": "success",
+            "latency": 551.1186428070068,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 21,
+            "status": "success",
+            "latency": 680.147656917572,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 22,
+            "status": "success",
+            "latency": 554.2595951557159,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 23,
+            "status": "success",
+            "latency": 621.906941652298,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 24,
+            "status": "success",
+            "latency": 896.6640248298645,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 25,
+            "status": "success",
+            "latency": 908.4669909477234,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 26,
+            "status": "success",
+            "latency": 852.6316480636597,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 27,
+            "status": "success",
+            "latency": 928.9957702159882,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 28,
+            "status": "success",
+            "latency": 550.8899145126343,
+            "return_rows": 3200
+          },
+          {
+            "task_id": 29,
+            "status": "success",
+            "latency": 873.8859722614288,
+            "return_rows": 3200
+          }
+        ],
+        "row_count_per_task": 1000,
+        "query_times_per_task": 1
+      }
+    ]
+  }
+}

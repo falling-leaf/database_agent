@@ -1,0 +1,7 @@
+Query,Concurrency_Level,Avg_Latency,Min_Latency,Max_Latency,Success_Rate,CPU_Load_Before,CPU_Load_During
+db_agent_single,1,4.6587,4.6587,4.6587,100.00%,3.26,3.56
+db_agent_single,5,7.3734,7.0284,7.4837,100.00%,2.61,2.96
+db_agent_single,10,12.7453,8.7845,13.7445,100.00%,2.35,10.75
+predict_batch_float8,1,11.3134,11.3134,11.3134,100.00%,10.75,9.48
+predict_batch_float8,5,32.3615,27.0315,33.8512,100.00%,7.06,27.3
+predict_batch_float8,10,183.9948,80.0666,217.4648,100.00%,19.55,80.79
