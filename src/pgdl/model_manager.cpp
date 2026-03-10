@@ -747,6 +747,11 @@ bool ModelManager::Predict(const std::string& model_path,
                 tensor = tensor.toTensor().to(at::kCUDA);
             }
         }
+        std::cout << "Input size: " << input.size() << std::endl;
+
+        auto t = input[0].toTensor();
+
+        std::cout << "Shape: " << t.sizes() << " dtype: " << t.dtype() << std::endl;
         torch::jit::IValue raw_output = module_handle_[model_path].first.forward(input);
         // 3. 处理 GoogLeNetOutputs tuple，取主输出
         if(raw_output.isTuple()){

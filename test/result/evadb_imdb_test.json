@@ -116,5 +116,233 @@
         "pre_time": 5.034409761428833,
         "infer_time": 827.8071620464325,
         "post_time": 0.769397497177124
+    },
+    {
+        "count": 100,
+        "total_time": 8.572702407836914,
+        "scan_time": 0.7092833518981934,
+        "load_model_time": 0.17175602912902832,
+        "pre_time": 0.04463529586791992,
+        "infer_time": 7.637843608856201,
+        "post_time": 0.009184122085571289,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 100;"
+    },
+    {
+        "count": 1000,
+        "total_time": 68.46071481704712,
+        "scan_time": 2.565741539001465,
+        "load_model_time": 0.1491384506225586,
+        "pre_time": 0.5057764053344727,
+        "infer_time": 65.14619469642639,
+        "post_time": 0.09386372566223145,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 1000;"
+    },
+    {
+        "count": 2000,
+        "total_time": 134.4780147075653,
+        "scan_time": 4.050206661224365,
+        "load_model_time": 0.14213109016418457,
+        "pre_time": 1.0238304138183594,
+        "infer_time": 129.075941324234,
+        "post_time": 0.18590521812438965,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 2000;"
+    },
+    {
+        "count": 3000,
+        "total_time": 199.60589909553528,
+        "scan_time": 6.00603175163269,
+        "load_model_time": 0.13829970359802246,
+        "pre_time": 1.5467934608459473,
+        "infer_time": 191.6371386051178,
+        "post_time": 0.2776355743408203,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 3000;"
+    },
+    {
+        "count": 4000,
+        "total_time": 266.19807481765747,
+        "scan_time": 7.92544960975647,
+        "load_model_time": 0.13784527778625488,
+        "pre_time": 2.081578016281128,
+        "infer_time": 255.68223667144775,
+        "post_time": 0.37096524238586426,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 4000;"
+    },
+    {
+        "count": 5000,
+        "total_time": 327.1121392250061,
+        "scan_time": 9.636920690536499,
+        "load_model_time": 0.13808321952819824,
+        "pre_time": 2.6749205589294434,
+        "infer_time": 314.1989850997925,
+        "post_time": 0.4632296562194824,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 5000;"
+    },
+    {
+        "count": 6000,
+        "total_time": 395.2223207950592,
+        "scan_time": 11.702723979949951,
+        "load_model_time": 0.13893628120422363,
+        "pre_time": 3.2477357387542725,
+        "infer_time": 379.5733230113983,
+        "post_time": 0.5596017837524414,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 6000;"
+    },
+    {
+        "count": 7000,
+        "total_time": 459.3559458255768,
+        "scan_time": 14.251432657241821,
+        "load_model_time": 0.1441946029663086,
+        "pre_time": 3.767960786819458,
+        "infer_time": 440.5334560871124,
+        "post_time": 0.6589016914367676,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 7000;"
+    },
+    {
+        "count": 8000,
+        "total_time": 528.1488645076752,
+        "scan_time": 15.512888669967651,
+        "load_model_time": 0.14029908180236816,
+        "pre_time": 4.174845218658447,
+        "infer_time": 507.5709571838379,
+        "post_time": 0.7498743534088135,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 8000;"
+    },
+    {
+        "count": 9000,
+        "total_time": 589.1904807090759,
+        "scan_time": 17.116485834121704,
+        "load_model_time": 0.13940191268920898,
+        "pre_time": 4.8737711906433105,
+        "infer_time": 566.2062146663666,
+        "post_time": 0.854607105255127,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 9000;"
+    },
+    {
+        "count": 9999,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.14091968536376953,
+        "pre_time": 5.44941520690918,
+        "infer_time": 629.7128698825836,
+        "post_time": 0.9348258972167969
+    },
+    {
+        "count": 100,
+        "total_time": 8.149426698684692,
+        "scan_time": 0.5443441867828369,
+        "load_model_time": 0.15448760986328125,
+        "pre_time": 0.0411074161529541,
+        "infer_time": 7.40156102180481,
+        "post_time": 0.007926464080810547,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 100;"
+    },
+    {
+        "count": 1000,
+        "total_time": 67.95863103866577,
+        "scan_time": 2.5630993843078613,
+        "load_model_time": 0.14783477783203125,
+        "pre_time": 0.505225658416748,
+        "infer_time": 64.66323590278625,
+        "post_time": 0.07923531532287598,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 1000;"
+    },
+    {
+        "count": 2000,
+        "total_time": 133.08797335624695,
+        "scan_time": 4.071453094482422,
+        "load_model_time": 0.1396164894104004,
+        "pre_time": 1.0176770687103271,
+        "infer_time": 127.70124578475952,
+        "post_time": 0.15798091888427734,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 2000;"
+    },
+    {
+        "count": 3000,
+        "total_time": 202.78427124023438,
+        "scan_time": 6.02005934715271,
+        "load_model_time": 0.13585305213928223,
+        "pre_time": 1.5457110404968262,
+        "infer_time": 194.84532189369202,
+        "post_time": 0.23732590675354004,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 3000;"
+    },
+    {
+        "count": 4000,
+        "total_time": 266.23133301734924,
+        "scan_time": 7.840182781219482,
+        "load_model_time": 0.13294577598571777,
+        "pre_time": 2.056940793991089,
+        "infer_time": 255.88570141792297,
+        "post_time": 0.31556224822998047,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 4000;"
+    },
+    {
+        "count": 5000,
+        "total_time": 328.10681343078613,
+        "scan_time": 9.700956344604492,
+        "load_model_time": 0.14209699630737305,
+        "pre_time": 2.792846918106079,
+        "infer_time": 315.076224565506,
+        "post_time": 0.39468860626220703,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 5000;"
+    },
+    {
+        "count": 6000,
+        "total_time": 400.0251839160919,
+        "scan_time": 11.439577102661133,
+        "load_model_time": 0.13236451148986816,
+        "pre_time": 3.0851356983184814,
+        "infer_time": 384.893102645874,
+        "post_time": 0.4750039577484131,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 6000;"
+    },
+    {
+        "count": 7000,
+        "total_time": 467.00940132141113,
+        "scan_time": 13.649959325790405,
+        "load_model_time": 0.13608407974243164,
+        "pre_time": 3.659050464630127,
+        "infer_time": 449.02174854278564,
+        "post_time": 0.5425589084625244,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 7000;"
+    },
+    {
+        "count": 8000,
+        "total_time": 535.9731810092926,
+        "scan_time": 15.407238721847534,
+        "load_model_time": 0.13354134559631348,
+        "pre_time": 4.195666790008545,
+        "infer_time": 515.6174330711365,
+        "post_time": 0.6193010807037354,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 8000;"
+    },
+    {
+        "count": 9000,
+        "total_time": 615.4281902313232,
+        "scan_time": 17.191128730773926,
+        "load_model_time": 0.1339585781097412,
+        "pre_time": 4.804503679275513,
+        "infer_time": 592.5381789207458,
+        "post_time": 0.7604203224182129,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 9000;"
+    },
+    {
+        "count": 9999,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.137650728225708,
+        "pre_time": 5.62540340423584,
+        "infer_time": 656.3176772594452,
+        "post_time": 0.8824942111968994
+    },
+    {
+        "count": 1000,
+        "total_time": 67.17756414413452,
+        "scan_time": 2.331420660018921,
+        "load_model_time": 0.16780376434326172,
+        "pre_time": 0.5345211029052734,
+        "infer_time": 64.05465292930603,
+        "post_time": 0.08916568756103516,
+        "sql": "SELECT IMDBTest(comment) FROM postgres_data.imdb_test limit 1000;"
     }
 ]

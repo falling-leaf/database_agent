@@ -126,5 +126,32 @@
         "infer_time": 6.644991397857666,
         "post_time": 4.288780212402344,
         "sql": "gpu\n            SELECT AlexnetStanford(data)\n            FROM STANFORD limit 10000;\n        "
+    },
+    {
+        "count": 1,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 1.31264066696167,
+        "pre_time": 0.004546165466308594,
+        "infer_time": 0,
+        "post_time": 0
+    },
+    {
+        "count": 1,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.35944652557373047,
+        "pre_time": 0.0040950775146484375,
+        "infer_time": 0,
+        "post_time": 0
+    },
+    {
+        "count": 1,
+        "total_time": 0,
+        "scan_time": 0,
+        "load_model_time": 0.37151670455932617,
+        "pre_time": 0.003857851028442383,
+        "infer_time": 0,
+        "post_time": 0
     }
 ]

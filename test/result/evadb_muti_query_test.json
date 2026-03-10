@@ -1,0 +1,26 @@
+[
+    {
+        "sql": "\n        SELECT user_id\n        FROM conversation_origin\n        WHERE SST2TestMuti(comment)=0\n        AND Resnet18TestMuti(image)=0;\n    ",
+        "cost time": 771.340074300766
+    },
+    {
+        "sql": "\n        SELECT *\n        FROM conversation_origin\n        WHERE datetime < '2024-06-30'\n        AND SST2TestMuti(comment)=0;\n    ",
+        "cost time": 281.5608859062195
+    },
+    {
+        "sql": "\n        SELECT user_id\n        FROM conversation_origin\n        WHERE SST2TestMuti(comment)=0\n        AND Resnet18TestMuti(image)=0;\n    ",
+        "cost time": 293.19604086875916
+    },
+    {
+        "sql": "\n        SELECT *\n        FROM conversation_origin\n        WHERE datetime < '2024-06-30'\n        AND SST2TestMuti(comment)=0;\n    ",
+        "cost time": 287.4460492134094
+    },
+    {
+        "sql": "\n        SELECT user_id\n        FROM conversation_origin\n        WHERE SST2TestMuti(comment)=0\n        AND Resnet18TestMuti(image)=0;\n    ",
+        "cost time": 308.2372968196869
+    },
+    {
+        "sql": "\n        SELECT *\n        FROM conversation_origin\n        WHERE datetime < '2024-06-30'\n        AND SST2TestMuti(comment)=0;\n    ",
+        "cost time": 292.25051856040955
+    }
+]

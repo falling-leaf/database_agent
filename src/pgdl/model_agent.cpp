@@ -18,15 +18,15 @@
 #include <sstream>
 #include <algorithm>
 
-#define ONLY_FOR_IMAGE_PREDICT true
+#define ONLY_FOR_IMAGE_PREDICT false
 
-#define ADD_OPTIMIZATION_LOGIC true
+#define ADD_OPTIMIZATION_LOGIC false
 
 #define ALWAYS_TRAINING false
 #define ONCE_AND_FOR_ALL true
 
 #define SAMPLE_BUTTON false
-#define CPU_SAMPLE_BUTTON true
+#define CPU_SAMPLE_BUTTON false
 #define GPU_SAMPLE_BUTTON false
 #define WINDOW_SIZE 32
 #define SAMPLE_SIZE 10
@@ -372,7 +372,9 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     int load_index = 1;
     char* task_type = (char*)PG_GETARG_CSTRING(load_index++);
     TaskType task_type_enum;
-    if (strcmp(task_type, "image_classification") == 0) {
+    if (strcmp(task_type, "reasoning") == 0) {
+        task_type_enum = TaskType::REASONING;
+    } else if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
     } else if (strcmp(task_type, "series") == 0) {
         task_type_enum = TaskType::SERIES;
@@ -390,7 +392,9 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     }
     // 下面代码每次调用均会执行
     MVec* current_data;
-    if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
+    if (task_info.task_type == TaskType::REASONING) {
+        current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
+    } else if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
         if (ONLY_FOR_IMAGE_PREDICT) {
             current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
         } else {
@@ -468,6 +472,15 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                     }
                     break;
                 case TaskType::NLP:
+                    {
+                        selected_model = SelectModel(state, task_unit.task_type);
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("gpu");
+                        MemoryContextSwitchTo(old_ctx);
+                    }
+                    break;
+                case TaskType::REASONING:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
@@ -633,6 +646,8 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         }
         elog(INFO, "SelectModel: %s", result_str.c_str());
         return result_str;
+    } else if (task_type == TaskType::REASONING) {
+        return "cross_encoder";
     } else {
         throw std::runtime_error("SelectModel: invalid task type");
     }
