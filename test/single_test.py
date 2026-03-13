@@ -20,16 +20,22 @@ def json_to_csv(json_file_path, csv_file_path):
     with open(json_file_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
     
-    # Extract all unique row counts and sort them
+    # Extract all unique row counts and query times
     row_counts = set()
+    query_times_set = set()
     for test in data['tests']:
         for result in test['results']:
             row_counts.add(result['row_count'])
+            query_times_set.add(result['query_times'])
     
     row_counts = sorted(list(row_counts))
+    query_times_list = sorted(list(query_times_set))
     
     # Prepare header
-    header = ['Test Name', 'Table', 'Model/FuncType', 'Column'] + [f'Latency_{rc}' for rc in row_counts]
+    header = ['Test Name', 'Table', 'Model/FuncType', 'Column']
+    for rc in row_counts:
+        for qt in query_times_list:
+            header.append(f'Latency_{rc}_qt{qt}')
     
     # Prepare rows
     rows = []
@@ -40,18 +46,21 @@ def json_to_csv(json_file_path, csv_file_path):
         # Initialize row with test metadata
         row = [test['name'], test['table'], model_or_func, test.get('column', 'N/A')]
         
-        # Create a mapping of row_count to latency for this test
+        # Create a mapping of (row_count, query_times) to latency for this test
         latency_map = {}
         for result in test['results']:
+            key = (result['row_count'], result['query_times'])
             if result['status'] == 'success':
-                latency_map[result['row_count']] = result['latency']
+                latency_map[key] = result['latency']
             else:
-                latency_map[result['row_count']] = 'ERROR'
+                latency_map[key] = 'ERROR'
         
-        # Add latency values for each row count (or 'N/A' if not available)
+        # Add latency values for each row count and query times combination
         for rc in row_counts:
-            latency_value = latency_map.get(rc, 'N/A')
-            row.append(latency_value)
+            for qt in query_times_list:
+                key = (rc, qt)
+                latency_value = latency_map.get(key, 'N/A')
+                row.append(latency_value)
         
         rows.append(row)
     
@@ -62,7 +71,7 @@ def json_to_csv(json_file_path, csv_file_path):
         writer.writerows(rows)
     
     print(f"Successfully converted {json_file_path} to {csv_file_path}")
-    print(f"Found {len(data['tests'])} tests and {len(row_counts)} different row counts: {row_counts}")
+    print(f"Found {len(data['tests'])} tests, {len(row_counts)} different row counts: {row_counts}, and {len(query_times_list)} different query times: {query_times_list}")
 
 # --- 保持你原有的 parse_timing_info 等工具函数不变 ---
 
@@ -111,49 +120,49 @@ def run_single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql
 # Define SQL queries to test - 9 test cases across 3 types
 SQL_QUERIES = [
     # Series tests (3)
-    # {
-    #     "name": "slice_predict",
-    #     "table": "slice_test",
-    #     "model": "slice",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
-    # {
-    #     "name": "swarm_predict", 
-    #     "table": "swarm_test",
-    #     "model": "swarm",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
-    # {
-    #     "name": "year_predict_test",
-    #     "table": "year_predict_test", 
-    #     "model": "year_predict",
-    #     "column": "data",
-    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    # },
+    {
+        "name": "slice_predict",
+        "table": "slice_test",
+        "model": "slice",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
+    {
+        "name": "swarm_predict", 
+        "table": "swarm_test",
+        "model": "swarm",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
+    {
+        "name": "year_predict_test",
+        "table": "year_predict_test", 
+        "model": "year_predict",
+        "column": "data",
+        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    },
     # NLP tests (3)
-    {
-        "name": "imdb_vector_predict",
-        "table": "imdb_vector_test",
-        "model": "sst2_vec",
-        "column": "comment_vec",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "financial_phrasebank_predict",
-        "table": "financial_phrasebank_vector_test",
-        "model": "finance",
-        "column": "comment_vec", 
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
-    {
-        "name": "nlp_vector_predict",
-        "table": "nlp_vector_test",
-        "model": "sst2_vec",  # Using sst2_vec as placeholder since exact model isn't clear
-        "column": "comment_vec",
-        "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
-    },
+    # {
+    #     "name": "imdb_vector_predict",
+    #     "table": "imdb_vector_test",
+    #     "model": "sst2_vec",
+    #     "column": "comment_vec",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "financial_phrasebank_predict",
+    #     "table": "financial_phrasebank_vector_test",
+    #     "model": "finance",
+    #     "column": "comment_vec", 
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
+    # {
+    #     "name": "nlp_vector_predict",
+    #     "table": "nlp_vector_test",
+    #     "model": "sst2_vec",  # Using sst2_vec as placeholder since exact model isn't clear
+    #     "column": "comment_vec",
+    #     "query": "select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};"
+    # },
     # Image tests (3)
     # {
     #     "name": "cifar_image_predict",
@@ -181,49 +190,49 @@ SQL_QUERIES = [
 # New SQL queries based on the commented examples
 NEW_SQL_QUERIES = [
     # Series tests using db_agent_single (3)
-    # {
-    #     "name": "slice_db_agent",
-    #     "table": "slice_test",
-    #     "func_type": "series",
-    #     "column": "data",
-    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    # },
-    # {
-    #     "name": "swarm_db_agent", 
-    #     "table": "swarm_test",
-    #     "func_type": "series",
-    #     "column": "data",
-    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    # },
-    # {
-    #     "name": "year_predict_db_agent",
-    #     "table": "year_predict_test", 
-    #     "func_type": "series",
-    #     "column": "data",
-    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    # },
+    {
+        "name": "slice_db_agent",
+        "table": "slice_test",
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    },
+    {
+        "name": "swarm_db_agent", 
+        "table": "swarm_test",
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    },
+    {
+        "name": "year_predict_db_agent",
+        "table": "year_predict_test", 
+        "func_type": "series",
+        "column": "data",
+        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    },
     # # NLP tests using db_agent_single (3)
-    {
-        "name": "imdb_db_agent",
-        "table": "imdb_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "financial_phrasebank_db_agent",
-        "table": "financial_phrasebank_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec", 
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
-    {
-        "name": "nlp_db_agent",
-        "table": "nlp_vector_test",
-        "func_type": "nlp",
-        "column": "comment_vec",
-        "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
-    },
+    # {
+    #     "name": "imdb_db_agent",
+    #     "table": "imdb_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "financial_phrasebank_db_agent",
+    #     "table": "financial_phrasebank_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec", 
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
+    # {
+    #     "name": "nlp_db_agent",
+    #     "table": "nlp_vector_test",
+    #     "func_type": "nlp",
+    #     "column": "comment_vec",
+    #     "query": "select unnest(db_agent_single('{func_type}', sub_table.{column})) AS score FROM (SELECT * FROM {table} limit {{row_count}}) AS sub_table;"
+    # },
     # Image tests using db_agent_single (3)
     # {
     #     "name": "cifar_db_agent",
@@ -253,7 +262,10 @@ from datetime import datetime
 
 def run_single_slice_test(use_new_queries=False):
     # Row counts to iterate through
-    ROW_COUNTS = [1000, 2000, 5000, 10000]
+    # ROW_COUNTS = [1000, 2000, 5000, 10000]
+    ROW_COUNTS = [10000]
+    # Query times to iterate through
+    QUERY_TIMES_LIST = [1, 5, 10, 20]
     
     # Select which queries to use
     if use_new_queries:
@@ -298,54 +310,56 @@ def run_single_slice_test(use_new_queries=False):
         test_results["column"] = sql_info["column"]
         
         for row_count in ROW_COUNTS:
-            print(f"\n  Testing with {row_count} rows...")
-            
-            # Determine the appropriate symbol based on test type
-            if use_new_queries:
-                # For NEW_SQL_QUERIES, use func_type to determine symbol
-                if sql_info['func_type'] == 'series':
-                    symbol = 'cpu'
-                else:  # nlp or image_classification
-                    symbol = 'gpu'
-            else:
-                # For original SQL_QUERIES, use test name to determine symbol
-                if sql_info['name'] in ['slice_predict', 'swarm_predict', 'year_predict_test']:
-                    symbol = 'cpu'
-                else:
-                    symbol = 'gpu'
+            for query_times in QUERY_TIMES_LIST:
+                print(f"\n  Testing with {row_count} rows and {query_times} query times...")
                 
-            # Format the query with actual values
-            if use_new_queries:
-                # For NEW_SQL_QUERIES, first format the outer placeholders, then the row_count
-                formatted_query_template = sql_info['query'].format(
-                    func_type=sql_info['func_type'],
-                    column=sql_info['column'],
-                    table=sql_info['table']
-                )
-                # Replace the row_count placeholder - note: the template uses {{row_count}} which becomes {row_count} after first format
-                formatted_query = formatted_query_template.format(row_count=row_count)
-            else:
-                # For original SQL_QUERIES, format with model, symbol, column, table, row_count
-                formatted_query = sql_info['query'].format(
-                    model=sql_info['model'],
-                    symbol=symbol,
-                    column=sql_info['column'],
-                    table=sql_info['table'],
-                    row_count=row_count
-                )
-            
-            print(f"  Query: {formatted_query}")
-            
-            result = run_single_task_worker(0, row_count, 1, symbol, formatted_query)
-            
-            # Add metadata to result
-            result['row_count'] = row_count
-            result['formatted_query'] = formatted_query
-            
-            print(f"  Result: {result}")
-            
-            # Add to test results
-            test_results["results"].append(result)
+                # Determine the appropriate symbol based on test type
+                if use_new_queries:
+                    # For NEW_SQL_QUERIES, use func_type to determine symbol
+                    if sql_info['func_type'] == 'series':
+                        symbol = 'cpu'
+                    else:  # nlp or image_classification
+                        symbol = 'gpu'
+                else:
+                    # For original SQL_QUERIES, use test name to determine symbol
+                    if sql_info['name'] in ['slice_predict', 'swarm_predict', 'year_predict_test']:
+                        symbol = 'cpu'
+                    else:
+                        symbol = 'gpu'
+                    
+                # Format the query with actual values
+                if use_new_queries:
+                    # For NEW_SQL_QUERIES, first format the outer placeholders, then the row_count
+                    formatted_query_template = sql_info['query'].format(
+                        func_type=sql_info['func_type'],
+                        column=sql_info['column'],
+                        table=sql_info['table']
+                    )
+                    # Replace the row_count placeholder - note: the template uses {{row_count}} which becomes {row_count} after first format
+                    formatted_query = formatted_query_template.format(row_count=row_count)
+                else:
+                    # For original SQL_QUERIES, format with model, symbol, column, table, row_count
+                    formatted_query = sql_info['query'].format(
+                        model=sql_info['model'],
+                        symbol=symbol,
+                        column=sql_info['column'],
+                        table=sql_info['table'],
+                        row_count=row_count
+                    )
+                
+                print(f"  Query: {formatted_query}")
+                
+                result = run_single_task_worker(0, row_count, query_times, symbol, formatted_query)
+                
+                # Add metadata to result
+                result['row_count'] = row_count
+                result['query_times'] = query_times
+                result['formatted_query'] = formatted_query
+                
+                print(f"  Result: {result}")
+                
+                # Add to test results
+                test_results["results"].append(result)
         
         # Add test results to all results
         all_results["tests"].append(test_results)

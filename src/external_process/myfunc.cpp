@@ -45,6 +45,79 @@ bool MyProcessImage_vec(std::vector<torch::jit::IValue>& img_tensor, Args* args)
     return true;
 }
 
+bool ReasoningOutPutProcessfloat(torch::jit::IValue& output_tensor, Args* args, float8& result)
+{
+    try {
+
+        torch::Tensor tensor;
+
+        // -------- Tensor --------
+        if (output_tensor.isTensor()) {
+
+            tensor = output_tensor.toTensor();
+
+        }
+        // -------- Tuple --------
+        else if (output_tensor.isTuple()) {
+
+            auto tuple = output_tensor.toTuple();
+
+            if (tuple->elements().size() > 0 && tuple->elements()[0].isTensor()) {
+
+                tensor = tuple->elements()[0].toTensor();
+
+            } else {
+
+                elog(INFO, "Tuple does not contain tensor.");
+                return false;
+
+            }
+        }
+        else {
+
+            elog(INFO, "output_tensor is neither Tensor nor Tuple.");
+            return false;
+
+        }
+
+        // ---------- Debug ----------
+        // elog(INFO, "output dim: %ld", tensor.dim());
+
+        // for(int i=0;i<tensor.dim();i++)
+        //     elog(INFO, "size[%d] = %ld", i, tensor.size(i));
+
+        // ---------- 取score ----------
+        double score;
+
+        if (tensor.dim() == 2)
+        {
+            score = tensor[0][0].item<double>();
+        }
+        else if (tensor.dim() == 1)
+        {
+            score = tensor[0].item<double>();
+        }
+        else
+        {
+            score = tensor.flatten()[0].item<double>();
+        }
+
+        result = (float8)score;
+
+        // elog(INFO, "output value: %f", score);
+        // elog(INFO, "result: %f", result);
+
+    }
+    catch (const std::exception& e) {
+
+        elog(INFO, "Exception: %s", e.what());
+        return false;
+
+    }
+
+    return true;
+}
+
 bool MyOutPutProcessfloat(torch::jit::IValue& output_tensor, Args* args, float8& result)
 {
     try {
@@ -608,4 +681,8 @@ void register_callback()
     model_manager.RegisterPreProcess("febri", MyProcessImage);
     model_manager.RegisterOutoutProcessFloat("febri", MyOutPutProcessfloat);
     model_manager.RegisterOutoutProcessText("febri", MyOutPutProcesstext);
+
+    model_manager.RegisterPreProcess("cross_encoder", MyProcessImage_vec);
+    model_manager.RegisterOutoutProcessFloat("cross_encoder", ReasoningOutPutProcessfloat);
+    model_manager.RegisterOutoutProcessText("cross_encoder", MyOutPutProcesstext);
 }

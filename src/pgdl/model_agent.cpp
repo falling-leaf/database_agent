@@ -673,7 +673,7 @@ ModelAnalysisResult AnalyzeModelWithInference(const std::string& model_name) {
 }
 
 bool OrchestrationAgent::InitModel(const char* model_name, bool from_select_model) {
-    elog(INFO, "here");
+    // elog(INFO, "here");
     std::string full_path;
     if (from_select_model) {
         full_path = "/home/why/models_all/";
@@ -1383,9 +1383,9 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
 AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
     if (CPU_SAMPLE_BUTTON) {
-        task->cuda = "cpu";
+        task->cuda = pstrdup("cpu");
     } else if (GPU_SAMPLE_BUTTON) {
-        task->cuda = "gpu";
+        task->cuda = pstrdup("gpu");
     }
     elog(INFO, "Execution task: %s, %s, %ld, %ld", task->model, task->cuda, task->input_start_index, task->input_end_index);
     
@@ -1484,6 +1484,7 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
 
     for (int i = 0; i < result_count; i++) {
         Args* ret = (Args*)list_nth(state->current_state.outs, i);
+        // elog(INFO, "Evaluation Result on index %d: %f", i, ret->floating);
         // 计算对应的全局行号用于日志
         long global_row_index = task->input_start_index + i;
         memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
