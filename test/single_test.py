@@ -263,9 +263,9 @@ from datetime import datetime
 def run_single_slice_test(use_new_queries=False):
     # Row counts to iterate through
     # ROW_COUNTS = [1000, 2000, 5000, 10000]
-    ROW_COUNTS = [10000]
+    ROW_COUNTS = [1000]
     # Query times to iterate through
-    QUERY_TIMES_LIST = [1, 5, 10, 20]
+    QUERY_TIMES_LIST = [1, 5, 10, 20, 50, 100]
     
     # Select which queries to use
     if use_new_queries:

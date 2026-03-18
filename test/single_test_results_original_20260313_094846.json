@@ -1,0 +1,174 @@
+{
+  "timestamp": "2026-03-13T09:47:52.133244",
+  "queries_used": "SQL_QUERIES (predict_batch_float8)",
+  "tests": [
+    {
+      "name": "slice_predict",
+      "table": "slice_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.6346805095672607,
+          "row_count": 1000,
+          "query_times": 1,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.9017143249511719,
+          "row_count": 1000,
+          "query_times": 5,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.247189998626709,
+          "row_count": 1000,
+          "query_times": 10,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 2.216992139816284,
+          "row_count": 1000,
+          "query_times": 20,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 4.83770227432251,
+          "row_count": 1000,
+          "query_times": 50,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 7.930237054824829,
+          "row_count": 1000,
+          "query_times": 100,
+          "formatted_query": "select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 1000;"
+        }
+      ],
+      "model": "slice",
+      "column": "data"
+    },
+    {
+      "name": "swarm_predict",
+      "table": "swarm_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.666287899017334,
+          "row_count": 1000,
+          "query_times": 1,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.0679545402526855,
+          "row_count": 1000,
+          "query_times": 5,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.601250171661377,
+          "row_count": 1000,
+          "query_times": 10,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 2.7684028148651123,
+          "row_count": 1000,
+          "query_times": 20,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 5.828431129455566,
+          "row_count": 1000,
+          "query_times": 50,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 11.369753122329712,
+          "row_count": 1000,
+          "query_times": 100,
+          "formatted_query": "select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 1000;"
+        }
+      ],
+      "model": "swarm",
+      "column": "data"
+    },
+    {
+      "name": "year_predict_test",
+      "table": "year_predict_test",
+      "results": [
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.5777385234832764,
+          "row_count": 1000,
+          "query_times": 1,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 0.7868578433990479,
+          "row_count": 1000,
+          "query_times": 5,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.0739738941192627,
+          "row_count": 1000,
+          "query_times": 10,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 1.5979583263397217,
+          "row_count": 1000,
+          "query_times": 20,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 3.3422577381134033,
+          "row_count": 1000,
+          "query_times": 50,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        },
+        {
+          "task_id": 0,
+          "status": "success",
+          "latency": 6.214497327804565,
+          "row_count": 1000,
+          "query_times": 100,
+          "formatted_query": "select predict_batch_float8('year_predict', 'cpu', data) over (rows between current row and 31 following) from year_predict_test limit 1000;"
+        }
+      ],
+      "model": "year_predict",
+      "column": "data"
+    }
+  ]
+}

@@ -608,6 +608,55 @@ bool FinanceOutputProcessFloat(torch::jit::IValue& outputs, Args* args, float8& 
     return true;
 }
 
+bool deberta_reader_OutputProcessFloat(torch::jit::IValue& outputs, Args* args, float8& result)
+{
+    try {
+        // 检查 output_tensor 是否是 Tensor
+        if (outputs.isTensor()) {
+            auto tensor = outputs.toTensor().select(1, 0); //.slice(1, 0, 120);
+            // elog(INFO, "tensor.size: %s", c10::str(tensor.sizes()).c_str());
+            std::tuple<torch::Tensor, torch::Tensor> res = tensor.sort(1, true);
+            torch::Tensor top_scores = std::get<1>(res);
+            result = top_scores[0][0].item<float8>();
+        }
+        // 检查 output_tensor 是否是 Tuple
+        else if (outputs.isTuple()) {
+            elog(INFO, "tuple size: %d", outputs.toTuple()->elements().size());
+            // 获取 Tuple 中的第一个元素，假设它是 Tensor
+            auto tuple = outputs.toTuple();
+            if (tuple->elements().size() > 0 && tuple->elements()[0].isTensor()) {
+                auto tensor = tuple->elements()[0].toTensor(); //.slice(1, 0, 120);
+                std::tuple<torch::Tensor, torch::Tensor> res = tensor.sort(1, true);
+                torch::Tensor top_scores = std::get<1>(res);
+                result = top_scores[0][0].item<float8>();
+            } else {
+                elog(INFO, "The first element of the tuple is not a Tensor.\n");
+                return false;
+            }
+        } else {
+            elog(INFO, "output_tensor is neither a Tensor nor a Tuple.\n");
+            return false;
+        }
+    } catch (const std::exception& e) {
+        elog(INFO, "e.what(): %s\n", e.what());
+        return false;
+    }
+    return true;
+}
+
+bool deberta_reader_OutputProcessText(torch::jit::IValue& outputs, Args* args, std::string& result)
+{
+    auto start_tensor = outputs.toTensor().select(1, 0);
+    auto end_tensor = outputs.toTensor().select(1, 1);
+
+    auto start_index = torch::argmax(start_tensor).item<int>();
+    auto end_index = torch::argmax(end_tensor).item<int>();
+
+    result = std::to_string(start_index) + "," + std::to_string(end_index);
+    return true;
+}
+
+
 void register_callback()
 {
     elog(INFO, "register callback");
@@ -685,4 +734,9 @@ void register_callback()
     model_manager.RegisterPreProcess("cross_encoder", MyProcessImage_vec);
     model_manager.RegisterOutoutProcessFloat("cross_encoder", ReasoningOutPutProcessfloat);
     model_manager.RegisterOutoutProcessText("cross_encoder", MyOutPutProcesstext);
+
+    model_manager.RegisterPreProcess("deberta_reader", MyProcessImage_vec);
+    model_manager.RegisterOutoutProcessFloat("deberta_reader", deberta_reader_OutputProcessFloat);
+    model_manager.RegisterOutoutProcessText("deberta_reader", deberta_reader_OutputProcessText);
 }
+

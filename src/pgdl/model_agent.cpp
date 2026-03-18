@@ -352,6 +352,10 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
             memory_manager.ins_cache = (MVec**)palloc0(sizeof(MVec*) * MAX_CACHE_SIZE);
             memory_manager.out_cache_data = (float*)palloc0(sizeof(float) * MAX_CACHE_SIZE);
             memory_manager.ins_buffer = (Args*)palloc0(WINDOW_SIZE * sizeof(Args));
+            memory_manager.ins2_cache_data = (float**)palloc0(sizeof(float*) * MAX_CACHE_SIZE);
+            memory_manager.ins2_cache = (MVec**)palloc0(sizeof(MVec*) * MAX_CACHE_SIZE);
+
+            memory_manager.out_cache_string_data = (char**)palloc0(sizeof(char*) * MAX_CACHE_SIZE);
             MemoryContextSwitchTo(old_context);
             
             elog(NOTICE, "Global memory allocated in TopMemoryContext.");
@@ -372,8 +376,14 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     int load_index = 1;
     char* task_type = (char*)PG_GETARG_CSTRING(load_index++);
     TaskType task_type_enum;
+    memory_manager.output_type = 0;
     if (strcmp(task_type, "reasoning") == 0) {
         task_type_enum = TaskType::REASONING;
+    } else if (strcmp(task_type, "step1") == 0) {
+        task_type_enum = TaskType::STEP1;
+    } else if (strcmp(task_type, "step2") == 0) {
+        task_type_enum = TaskType::STEP2;
+        memory_manager.output_type = 1;
     } else if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
     } else if (strcmp(task_type, "series") == 0) {
@@ -447,7 +457,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         if (!ready_for_task)
             continue;
         bool from_select_model = false;
-        if (memory_manager.current_func_call == WINDOW_SIZE - 1) {
+        if (memory_manager.current_func_call == WINDOW_SIZE - 1 || (memory_manager.current_func_call < WINDOW_SIZE - 1 && memory_manager.is_last_call == 1)) {
             elog(INFO, "start setting model and cuda");
             switch (task_unit.task_type) {
                 case TaskType::IMAGE_CLASSIFICATION:
@@ -481,11 +491,21 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
                     }
                     break;
                 case TaskType::REASONING:
+                case TaskType::STEP1:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
                         MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
                         task_unit.model_name = pstrdup(selected_model.c_str());
                         task_unit.cuda_name = pstrdup("gpu");
+                        MemoryContextSwitchTo(old_ctx);
+                    }
+                    break;
+                case TaskType::STEP2:
+                    {
+                        selected_model = SelectModel(state, task_unit.task_type);
+                        MemoryContext old_ctx = MemoryContextSwitchTo(TopMemoryContext);
+                        task_unit.model_name = pstrdup(selected_model.c_str());
+                        task_unit.cuda_name = pstrdup("cpu");
                         MemoryContextSwitchTo(old_ctx);
                     }
                     break;
@@ -519,6 +539,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         task->input_end_index = window_end; // 包含start，不包含end
         task->output_start_index = 0;
         task->output_end_index = task->input_end_index - task->input_start_index;
+        task->task_type = task_unit.task_type;
         state->task_list = lappend(state->task_list, task);
     }
     // elog(INFO, "task_list length: %d", list_length(state->task_list));
@@ -648,6 +669,10 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         return result_str;
     } else if (task_type == TaskType::REASONING) {
         return "cross_encoder";
+    } else if (task_type == TaskType::STEP1) {
+        return "cross_encoder";
+    } else if (task_type == TaskType::STEP2) {
+        return "deberta_reader";
     } else {
         throw std::runtime_error("SelectModel: invalid task type");
     }
@@ -1431,8 +1456,9 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
             gpu_data = CollectGPULoadData();
         }
     }
-
-    infer_batch_internal(&state->current_state, true);
+    if (task->task_type == TaskType::STEP2)
+        infer_batch_internal(&state->current_state, false);
+    else infer_batch_internal(&state->current_state, true);
 
     // Collect CPU load and runtime data after execution
     if (SAMPLE_BUTTON && (list_length(state->current_state.ins) == WINDOW_SIZE)) {
@@ -1482,13 +1508,46 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         elog(WARNING, "Evaluation warning: expected %d results, got %d", expected_count, result_count);
     }
 
-    for (int i = 0; i < result_count; i++) {
-        Args* ret = (Args*)list_nth(state->current_state.outs, i);
-        // elog(INFO, "Evaluation Result on index %d: %f", i, ret->floating);
-        // 计算对应的全局行号用于日志
-        long global_row_index = task->input_start_index + i;
-        memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
-        // elog(INFO, "Evaluation Result on index %ld: %f", global_row_index, ret->floating);
+    if (memory_manager.output_type == 0) {
+        for (int i = 0; i < result_count; i++) {
+            Args* ret = (Args*)list_nth(state->current_state.outs, i);
+            memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
+        }
+    } else {
+        for (int i = 0; i < result_count; i++) {
+            Args* in_content = (Args*)list_nth(state->current_state.ins, i);
+            Args* out_content = (Args*)list_nth(state->current_state.outs, i);
+            char* ret_string = (char*)(out_content->ptr);
+            // elog(INFO, "ret_string: %s", ret_string);
+            // 将ret_string(19,19)拆成两个变量：
+            int pos = strchr(ret_string, ',') - ret_string;
+            int res_start = atoi(ret_string);
+            int res_end = atoi(ret_string + pos + 1);
+
+            MVec* input_mvec = (MVec*)(in_content->ptr);
+            // elog(INFO, "start, end is: %d, %d", res_start, res_end);
+            torch::Tensor input_tensor = vector_to_tensor(input_mvec);
+            // torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
+            torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
+            std::string res_str = "";
+            int sample_res = res_tensor[0].item<int>();
+            for (int j = 0; j < res_tensor.size(0); j++) {
+                int res = res_tensor[j].item<int>();
+                res_str += std::to_string(res);
+                if (j != res_tensor.size(0) - 1) {
+                    res_str += ",";
+                }
+            }
+            elog(INFO, "res_str: %s", res_str.c_str());
+            std::string cmd =
+                "cd /home/why/pgdl/test/tools && "
+                "uv run reader_decoder.py --ids " + res_str;
+            elog(INFO, "cmd: %s", cmd.c_str());
+           std::string result_string = exec_command(cmd.c_str());
+           elog(INFO, "result_string: %s", result_string.c_str());
+            float output_res = (float)sample_res;
+            memory_manager.out_cache_data[memory_manager.out_cache_size++] = output_res;
+        }
     }
 
     // 任务完成后，可以在这里选择性释放 current_state.outs 里的 Args* 内存，但这通常由 PG 上下文自动处理

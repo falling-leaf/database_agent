@@ -87,6 +87,40 @@ void reset_global_memory_state() {
         memory_manager.ins_cache_data = NULL;
     }
 
+    // 3. 清理 ins2_cache
+    if (memory_manager.ins2_cache != NULL) {
+        if (memory_manager.current_func_call > 0) {
+            for (int i = 0; i <= memory_manager.current_func_call; i++) {
+                if (memory_manager.ins2_cache[i] != NULL) {
+                    pfree(memory_manager.ins2_cache[i]);
+                    memory_manager.ins2_cache[i] = NULL;
+                }
+                memory_manager.ins2_cache_data[i] = NULL;
+            }
+        }
+        pfree(memory_manager.ins2_cache);
+        memory_manager.ins2_cache = NULL;
+    }
+
+    if (memory_manager.out_cache_data != NULL) {
+        pfree(memory_manager.out_cache_data);
+        memory_manager.out_cache_data = NULL;
+    }
+
+    // 4. 清理 out_cache_string_data
+    if (memory_manager.out_cache_string_data != NULL) {
+        if (memory_manager.current_func_call > 0) {
+            for (int i = 0; i <= memory_manager.current_func_call; i++) {
+                if (memory_manager.out_cache_string_data[i] != NULL) {
+                    pfree(memory_manager.out_cache_string_data[i]);
+                    memory_manager.out_cache_string_data[i] = NULL;
+                }
+            }
+        }
+        pfree(memory_manager.out_cache_string_data);
+        memory_manager.out_cache_string_data = NULL;
+    }
+
     // 【关键修正 1】: 清理全局 state_ 中的持久化容器
     // 否则第二次连接复用时，task_info 会残留上一次的野指针
     if (state_) {
@@ -181,6 +215,7 @@ Datum db_agent_final(PG_FUNCTION_ARGS) {
 }
 
 Datum db_agent_sfinal(PG_FUNCTION_ARGS) {
+    // elog(INFO, "into db_agent_sfinal");
     memory_manager.is_last_call = 1;
     state_->last_action = AgentAction::PERCEPTION;
     AgentAction next_action = AgentAction::SCHEDULE;
@@ -194,17 +229,31 @@ Datum db_agent_sfinal(PG_FUNCTION_ARGS) {
             }
         }
     }
-    Datum* elems;       // 存放数据的 Datum 数组
-    ArrayType  *result_array;   // PostgreSQL 的数组对象
-    elems = (Datum*)palloc(sizeof(Datum) * memory_manager.out_cache_size);
-    for(int i = 0; i < memory_manager.out_cache_size; i++) {
-        elems[i] = Float8GetDatum((double)memory_manager.out_cache_data[i]);
-    }
+    if (memory_manager.output_type == 0) {
+        Datum* elems;       // 存放数据的 Datum 数组
+        ArrayType  *result_array;   // PostgreSQL 的数组对象
+        elems = (Datum*)palloc(sizeof(Datum) * memory_manager.out_cache_size);
+        for(int i = 0; i < memory_manager.out_cache_size; i++) {
+            elems[i] = Float8GetDatum((double)memory_manager.out_cache_data[i]);
+        }
 
-    result_array = construct_array(elems, memory_manager.out_cache_size, FLOAT8OID, 8, true, 'd');
-    memory_manager.PrintTimingStats();
-    reset_global_memory_state();
-    PG_RETURN_ARRAYTYPE_P(result_array);
+        result_array = construct_array(elems, memory_manager.out_cache_size, FLOAT8OID, 8, true, 'd');
+        memory_manager.PrintTimingStats();
+        reset_global_memory_state();
+        PG_RETURN_ARRAYTYPE_P(result_array);
+    } else {
+        Datum* elems;       // 存放数据的 Datum 数组
+        ArrayType  *result_array;   // PostgreSQL 的数组对象
+        elems = (Datum*)palloc(sizeof(Datum) * memory_manager.out_cache_size);
+        for(int i = 0; i < memory_manager.out_cache_size; i++) {
+            elems[i] = Float8GetDatum((double)memory_manager.out_cache_data[i]);
+        }
+
+        result_array = construct_array(elems, memory_manager.out_cache_size, FLOAT8OID, 8, true, 'd');
+        memory_manager.PrintTimingStats();
+        reset_global_memory_state();
+        PG_RETURN_ARRAYTYPE_P(result_array);
+    }
     // PG_RETURN_FLOAT8(memory_manager.out_cache_data[0]);
 }
 

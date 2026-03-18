@@ -134,3 +134,40 @@ text_to_vector(const char* piece_model_path,
     }
     return ret;
 }
+
+// std::string ids_to_text(
+//     const char* piece_model_path,
+//     const std::vector<int>& answer_ids)
+// {
+//     sentencepiece::SentencePieceProcessor sp;
+
+//     if (!sp.Load(piece_model_path).ok()) {
+//         throw std::runtime_error("spiece model not exist!");
+//     }
+
+//     int cls_id = sp.PieceToId("[CLS]");
+//     int sep_id = sp.PieceToId("[SEP]");
+//     int pad_id = sp.PieceToId("<pad>");
+
+//     std::vector<int> filtered_ids;
+//     filtered_ids.reserve(answer_ids.size());
+
+//     for (auto id : answer_ids)
+//     {
+//         if (id == cls_id || id == sep_id || id == pad_id)
+//             continue;
+//         filtered_ids.push_back(id);
+//     }
+
+//     std::string answer;
+//     sp.Decode(filtered_ids, &answer);
+
+//     // strip
+//     size_t start = answer.find_first_not_of(" \t\n\r");
+//     size_t end = answer.find_last_not_of(" \t\n\r");
+
+//     if (start == std::string::npos)
+//         return "";
+
+//     return answer.substr(start, end - start + 1);
+// }

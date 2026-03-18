@@ -31,6 +31,9 @@ text_to_vector(const char* piece_model_path,
                const char* text);
 
 
+// std::string
+// ids_to_text(const char* piece_model_path,
+//                const std::vector<int>& answer_ids);
 
 
 

@@ -12,6 +12,7 @@ dependencies = [
     "opencv-python==4.10.0.84",
     "pandas==2.2.3",
     "pillow==11.0.0",
+    "protobuf>=7.34.0",
     "psycopg2-binary==2.9.9",
     "ptflops>=0.7.4",
     "scikit-learn==1.5.2",

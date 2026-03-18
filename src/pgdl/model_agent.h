@@ -46,12 +46,20 @@ public:
     // to be done
     int current_func_call{-1};
     int is_last_call{2};
+
     float** ins_cache_data;
     MVec** ins_cache;
     int out_cache_size{0};
     float* out_cache_data;
+    char** out_cache_string_data;
     int output_index{0};
+    int output_type{0}; // 0为float8，1为string
     Args* ins_buffer{nullptr};
+
+    float** ins2_cache_data;
+    MVec** ins2_cache;
+
+
 
     std::vector<std::string> sample_path;
     
@@ -80,7 +88,9 @@ enum class TaskType {
     IMAGE_CLASSIFICATION,
     SERIES,
     NLP,
-    REASONING
+    REASONING,
+    STEP1,
+    STEP2
     // to be done
 };
 

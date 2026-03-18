@@ -751,19 +751,51 @@ bool ModelManager::Predict(const std::string& model_path,
 
         auto t = input[0].toTensor();
 
-        // std::cout << "Shape: " << t.sizes() << " dtype: " << t.dtype() << std::endl;
         torch::jit::IValue raw_output = module_handle_[model_path].first.forward(input);
-        // 3. 处理 GoogLeNetOutputs tuple，取主输出
+
         if(raw_output.isTuple()){
+            // elog(INFO, "output is tuple");
             auto tuple = raw_output.toTuple();
+            // elog(INFO, "tuple size: %d", tuple->elements().size());
+            // // 打印每个元素的类型
+            // elog(INFO, "element type: %s", tuple->elements()[0].type()->str().c_str());
+            // auto tensor1 = tuple->elements()[0].toTensor();
+            // elog(INFO, "element[0] shape: %s",
+            // c10::str(tensor1.sizes()).c_str());
+            // elog(INFO, "element type: %s", tuple->elements()[1].type()->str().c_str());
+            // auto tensor2 = tuple->elements()[1].toTensor();
+            // elog(INFO, "element[1] shape: %s",
+            // c10::str(tensor2.sizes()).c_str());
             if(tuple->elements().size() > 0){
+                if (tuple->elements().size() == 2) {
+                    // output = torch::jit::IValue(tuple->elements()[0].toTensor());
+                    auto tensor1 = tuple->elements()[0].toTensor();
+                    auto tensor2 = tuple->elements()[1].toTensor();
+                    // elog(INFO, "output shape: %s",
+                    // c10::str(tensor1.sizes()).c_str());
+                    // elog(INFO, "element[0] shape: %s",
+                    // c10::str(tensor1.sizes()).c_str());
+                    // elog(INFO, "element[1] shape: %s",
+                    // c10::str(tensor2.sizes()).c_str());
+                    torch::Tensor result = torch::stack({tensor1, tensor2}, 1);
+                    // elog(INFO, "stack shape: %s",
+                    // c10::str(result.sizes()).c_str());
+                    output = torch::jit::IValue(result);
+                    // // stack -> [batch, 2, seq_len]
+                    // auto merged = torch::stack({tensor1, tensor2}, 1);
+
+                    // // 封装为 IValue 返回
+                    // output = torch::jit::IValue(merged);
+                }
                 // 只取第一个输出，封装回 IValue
-                output = torch::jit::IValue(tuple->elements()[0].toTensor());
+                else output = torch::jit::IValue(tuple->elements()[0].toTensor());
             } else {
                 // tuple 为空，直接返回整个输出
+                // elog(INFO, "tuple is empty");
                 output = raw_output;
             }
         } else {
+            // elog(INFO, "output is not tuple");
             output = raw_output;
         }
         return true;
