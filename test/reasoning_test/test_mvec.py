@@ -67,7 +67,7 @@ mvec = mvec.unsqueeze(0)
 
 print("\nmvec shape:", mvec.shape)
 
-ts_model = torch.jit.load("/home/why/reasoning_model/cross_encoder.pt")
+ts_model = torch.jit.load("/home/why/pgdl/model/models/cross_encoder.pt")
 ts_model.eval()
 
 with torch.no_grad():

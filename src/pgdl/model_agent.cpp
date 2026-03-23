@@ -18,7 +18,7 @@
 #include <sstream>
 #include <algorithm>
 
-#define ONLY_FOR_IMAGE_PREDICT false
+#define ONLY_FOR_IMAGE_PREDICT true
 
 #define ADD_OPTIMIZATION_LOGIC false
 
@@ -452,8 +452,8 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
     for (auto& task_unit : state->task_info) {
         int window_size = 32;
         std::string selected_model;
-        bool ready_for_task = (memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1) ||
-                              (memory_manager.is_last_call == 1);
+        bool ready_for_task = (memory_manager.is_last_call != 1 && memory_manager.current_func_call % WINDOW_SIZE == WINDOW_SIZE - 1) ||
+                              (memory_manager.is_last_call == 1 && memory_manager.current_func_call % 32 != 31);
         if (!ready_for_task)
             continue;
         bool from_select_model = false;
@@ -1508,12 +1508,24 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         elog(WARNING, "Evaluation warning: expected %d results, got %d", expected_count, result_count);
     }
 
-    if (memory_manager.output_type == 0) {
+    if (task->task_type == TaskType::SERIES || task->task_type == TaskType::NLP || task->task_type == TaskType::IMAGE_CLASSIFICATION) {
         for (int i = 0; i < result_count; i++) {
             Args* ret = (Args*)list_nth(state->current_state.outs, i);
             memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
         }
+    } else if (task->task_type == TaskType::STEP1) {
+        for (int i = 0; i < result_count; i += 2) {
+            Args* ret1 = (Args*)list_nth(state->current_state.outs, i);
+            Args* ret2 = (Args*)list_nth(state->current_state.outs, i + 1);
+            memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret1->floating + ret2->floating;
+        }
     } else {
+        // if (model_manager.GetModelPath(task->model) == NULL) {
+        //     ereport(ERROR, (errmsg("model path is null")));
+        // }
+        std::string cmd =
+                "cd /home/why/pgdl/test/tools && "
+                "uv run reader_decoder.py --ids \"";
         for (int i = 0; i < result_count; i++) {
             Args* in_content = (Args*)list_nth(state->current_state.ins, i);
             Args* out_content = (Args*)list_nth(state->current_state.outs, i);
@@ -1538,16 +1550,21 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
                     res_str += ",";
                 }
             }
-            elog(INFO, "res_str: %s", res_str.c_str());
-            std::string cmd =
-                "cd /home/why/pgdl/test/tools && "
-                "uv run reader_decoder.py --ids " + res_str;
-            elog(INFO, "cmd: %s", cmd.c_str());
-           std::string result_string = exec_command(cmd.c_str());
-           elog(INFO, "result_string: %s", result_string.c_str());
+            if (i != result_count - 1) {
+                res_str += ";";
+            }
+            cmd += res_str;
             float output_res = (float)sample_res;
             memory_manager.out_cache_data[memory_manager.out_cache_size++] = output_res;
         }
+        cmd += "\"";
+        elog(INFO, "cmd: %s", cmd.c_str());
+        auto start_time = std::chrono::high_resolution_clock::now();
+        std::string result_string = exec_command(cmd.c_str());
+        elog(INFO, "result_string: %s", result_string.c_str());
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+        elog(INFO, "execution time: %lld sec", duration.count() / 1000000);
     }
 
     // 任务完成后，可以在这里选择性释放 current_state.outs 里的 Args* 内存，但这通常由 PG 上下文自动处理

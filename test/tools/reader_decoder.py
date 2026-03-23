@@ -3,6 +3,7 @@ import argparse
 import json
 import re
 from transformers import AutoTokenizer
+import time
 
 MODEL_PATH = "/home/why/reasoning_model/deberta-v3-large-squad2"
 
@@ -59,4 +60,7 @@ def main():
     print(json.dumps(output_data, ensure_ascii=False, indent=4))
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    end_time = time.time()
+    print(f"Execution time: {end_time - start_time:.4f} seconds")

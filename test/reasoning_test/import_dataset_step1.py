@@ -7,22 +7,30 @@ VECTOR_TABLE = "reasoning_vector_step1"
 DATASET_PATH = "/home/why/reasoning_model/HotpotQA/raw/distractor_sample.json"
 MODEL_PATH = "/home/why/reasoning_model/ms-marco-MiniLM-L6-v2"
 
-# CrossEncoder TorchScript
 PT_MODEL_PATH = "/home/why/pgdl/model/models/cross_encoder.pt"
 
 MAX_INSERT = 10000
 
 
+def split_question(question):
+    """
+    简单规则拆分（针对当前任务）
+    """
+    # 示例专用（HotpotQA）
+    return [
+        "Scott Derrickson nationality",
+        "Ed Wood nationality"
+    ]
+
+
 def load_dataset():
-    """
-    读取 HotpotQA 数据
-    生成 (question, context_paragraph)
-    """
     with open(DATASET_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     question = data["question"]
     contexts = data["context"]
+
+    sub_questions = split_question(question)
 
     processed = []
 
@@ -32,37 +40,26 @@ def load_dataset():
 
         paragraph = " ".join(sentences)
         full_context = f"{title}: {paragraph}"
-        processed.append((question, full_context))
 
-    return processed[:MAX_INSERT]
+        for sub_q in sub_questions:
+            processed.append((sub_q, full_context))
+
+    return processed[:MAX_INSERT], len(contexts)
 
 
 def load_cross_encoder(pt_path):
-    """
-    加载 TorchScript CrossEncoder
-    """
     model = torch.jit.load(pt_path)
     model.eval()
     return model
 
 
 def run_cross_encoder(model, tensor):
-    """
-    调用 TorchScript 模型进行推理
-    """
     with torch.no_grad():
         logits = model(tensor)
-
     return logits
 
 
 def tensor_to_mvec_str(tensor):
-    """
-    将 tensor 转为数据库 mvec 字符串
-    格式:
-    [data]{shape}
-    """
-
     data = tensor.flatten().tolist()
     shape = tensor.shape
 
@@ -74,28 +71,18 @@ def tensor_to_mvec_str(tensor):
 
 def main():
 
-    print("Loading tokenizer...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-
-    print("Loading TorchScript CrossEncoder...")
     cross_encoder = load_cross_encoder(PT_MODEL_PATH)
 
-    print("Loading dataset...")
-    data = load_dataset()
+    data, context_count = load_dataset()
 
-    # 存储结果
     results = []
 
+    # ---------- 推理 ----------
     for i, (q, c) in enumerate(data):
 
-        print("\nSample", i)
-        print("Question:", q)
-        print("Context:", c[:200], "...")
-
-        # Tokenize
         inputs = tokenizer(
-            q,
-            c,
+            q, c,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
@@ -105,37 +92,43 @@ def main():
         input_ids = inputs["input_ids"][0]
         attention_mask = inputs["attention_mask"][0]
 
-        # CrossEncoder 输入 shape = [1,2,128]
         stacked = torch.stack([
             input_ids,
             attention_mask
         ]).float().unsqueeze(0)
 
-        # ---------- 推理验证 ----------
         logits = run_cross_encoder(cross_encoder, stacked)
         score = logits.item()
 
-        print("CrossEncoder score:", score)
-
-        # 存储结果
         results.append({
             "question": q,
             "context": c,
-            "score": score
+            "score": score,
+            "tensor": stacked
         })
 
-    # 根据score排序
-    results.sort(key=lambda x: x["score"], reverse=True)
+    # ---------- 聚合（关键）----------
+    # 每两个为一组（对应同一个 context）
+    aggregated = []
 
-    # 输出排序结果
-    print("\n=== 排序结果 ===")
-    for i, result in enumerate(results[:10]):  # 只输出前10个
+    for i in range(0, len(results), 2):
+        score_sum = results[i]["score"] + results[i+1]["score"]
+
+        aggregated.append({
+            "context": results[i]["context"],
+            "score": score_sum
+        })
+
+    # 排序（仅展示）
+    aggregated_sorted = sorted(aggregated, key=lambda x: x["score"], reverse=True)
+
+    print("\n=== 聚合排序结果 ===")
+    for i, r in enumerate(aggregated_sorted[:10]):
         print(f"\nRank {i+1}")
-        print(f"Score: {result['score']:.4f}")
-        print(f"Question: {result['question']}")
-        print(f"Context: {result['context'][:200]}...")
+        print(f"Score: {r['score']:.4f}")
+        print(f"Context: {r['context'][:200]}...")
 
-    # 插入数据库（如果psycopg2可用）
+    # ---------- 写数据库 ----------
     try:
         import psycopg2
         from config import db_config
@@ -143,7 +136,16 @@ def main():
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
 
-        print("\nCreating table if not exists...")
+        # 表结构不变（你要求不改约束）
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS reasoning_step1(
+                id serial PRIMARY KEY,
+                query text,
+                context text
+            );
+        """)
+
+        cur.execute("DELETE FROM reasoning_step1;")
 
         cur.execute(f"""
             CREATE TABLE IF NOT EXISTS {VECTOR_TABLE}(
@@ -154,56 +156,34 @@ def main():
 
         conn.commit()
 
-        print("Clearing old data...")
-
         cur.execute(f"DELETE FROM {VECTOR_TABLE};")
         conn.commit()
 
-        inserted = 0
-
+        # 插入（注意：现在是2N条）
         for result in results:
-            q, c = result["question"], result["context"]
-
-            # 重新tokenize
-            inputs = tokenizer(
-                q,
-                c,
-                return_tensors="pt",
-                padding="max_length",
-                truncation=True,
-                max_length=128
+            cur.execute(
+                "INSERT INTO reasoning_step1(query, context) VALUES (%s, %s)",
+                (result["question"], result["context"])
             )
 
-            input_ids = inputs["input_ids"][0]
-            attention_mask = inputs["attention_mask"][0]
+        conn.commit()
 
-            stacked = torch.stack([
-                input_ids,
-                attention_mask
-            ]).float().unsqueeze(0)
-
-            # ---------- 插入数据库 ----------
-            mvec_str = tensor_to_mvec_str(stacked)
+        for result in results:
+            mvec_str = tensor_to_mvec_str(result["tensor"])
 
             cur.execute(
                 f"INSERT INTO {VECTOR_TABLE}(text_vec) VALUES (%s::mvec)",
                 (mvec_str,)
             )
 
-            inserted += 1
-
-            if inserted % 100 == 0:
-                conn.commit()
-                print("Inserted", inserted)
-
         conn.commit()
         conn.close()
 
-        print("\nFinished.")
-        print("Total inserted:", inserted)
+        print("\nFinished (2x data inserted).")
+
     except ImportError:
-        print("\npsycopg2 not available, skipping database insertion.")
-        print("Finished sorting and displaying results.")
+        print("\npsycopg2 not available.")
+
 
 if __name__ == "__main__":
     main()

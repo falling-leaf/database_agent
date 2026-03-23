@@ -220,7 +220,8 @@ Datum db_agent_sfinal(PG_FUNCTION_ARGS) {
     state_->last_action = AgentAction::PERCEPTION;
     AgentAction next_action = AgentAction::SCHEDULE;
 
-    if (memory_manager.current_func_call % 32 != 31) {
+    if (true) {
+    // if (memory_manager.current_func_call % 32 != 31) {
         while (next_action != AgentAction::SUCCESS && next_action != AgentAction::FAILURE && next_action != AgentAction::START) {
             if (func_map_.find(next_action) != func_map_.end()) {
                 next_action = func_map_[next_action](state_);

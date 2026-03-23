@@ -1,0 +1,7 @@
+Query,Concurrency_Level,Avg_Latency,Min_Latency,Max_Latency,Success_Rate,CPU_Load_Before,CPU_Load_During,GPU_Util_Before,GPU_Util_During (Max),GPU_Mem_Used_Before,GPU_Mem_Used_During (Max)
+db_agent_single,1,19.9846,19.9846,19.9846,100.00%,3.78,3.19,0.0,47.0,19975.0,20692.0
+db_agent_single,5,22.7582,22.4196,22.9870,100.00%,2.43,9.95,0.0,100.0,19975.0,23561.0
+db_agent_single,10,0.0000,0.0000,0.0000,0.00%,7.27,15.01,0.0,100.0,19975.0,24148.0
+predict_batch_float8,1,11.6404,11.6404,11.6404,100.00%,15.01,12.85,9.0,50.0,19975.0,20692.0
+predict_batch_float8,5,23.8675,23.6751,23.9951,100.00%,9.34,18.45,0.0,100.0,19975.0,23561.0
+predict_batch_float8,10,0.0000,0.0000,0.0000,0.00%,13.49,18.2,0.0,100.0,19975.0,24146.0

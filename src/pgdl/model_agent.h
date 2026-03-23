@@ -89,6 +89,8 @@ enum class TaskType {
     SERIES,
     NLP,
     REASONING,
+    REASONING_STEP2,
+    REASONING_STEP3,
     STEP1,
     STEP2
     // to be done
