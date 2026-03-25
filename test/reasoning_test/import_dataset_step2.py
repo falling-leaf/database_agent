@@ -6,8 +6,6 @@ from config import db_config
 
 VECTOR_TABLE = "reasoning_vector_step2"
 
-DATASET_PATH = "/home/why/reasoning_model/HotpotQA/raw/distractor_sample.json"
-
 MODEL_PATH = "/home/why/reasoning_model/deberta-v3-large-squad2"
 
 PT_MODEL_PATH = "/home/why/pgdl/model/models/deberta_reader.pt"
@@ -32,42 +30,32 @@ def rewrite_question(question):
 
 def load_dataset():
     """
-    读取 HotpotQA
-    构造 (sub_question, paragraph)
+    从数据库表 reasoning_step1 读取数据
+    构造 (id, sub_question, paragraph)
     """
-
-    with open(DATASET_PATH, "r", encoding="utf-8") as f:
-        dataset = json.load(f)
-
-        # 如果是单个 sample，转为 list
-        if isinstance(dataset, dict):
-            dataset = [dataset]
-
     processed = []
-
-    for item in dataset:
-
-        question = item["question"]
-        contexts = item["context"]
-
-        sub_questions = rewrite_question(question)
-
-        for context in contexts:
-
-            title = context[0]
-            sentences = context[1]
-
-            paragraph = " ".join(sentences)
-
-            full_context = f"{title}: {paragraph}"
-
-            for sub_q in sub_questions:
-
-                processed.append((sub_q, full_context))
-
-                if len(processed) >= MAX_INSERT:
-                    return processed
-
+    
+    # 连接数据库
+    conn = psycopg2.connect(**db_config)
+    cur = conn.cursor()
+    
+    # 从 reasoning_step1 表读取数据
+    cur.execute("SELECT id, query, context FROM reasoning_step1 ORDER BY id")
+    rows = cur.fetchall()
+    
+    for row in rows:
+        id, query, context = row
+        
+        sub_questions = rewrite_question(query)
+        
+        for sub_q in sub_questions:
+            processed.append((id, sub_q, context))
+            
+            if len(processed) >= MAX_INSERT:
+                conn.close()
+                return processed
+    
+    conn.close()
     return processed
 
 
@@ -143,7 +131,7 @@ def main():
 
     cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {VECTOR_TABLE}(
-            id serial,
+            id integer PRIMARY KEY,
             text_vec mvec
         );
     """)
@@ -157,9 +145,10 @@ def main():
 
     inserted = 0
 
-    for q, c in data:
+    for id, q, c in data:
 
         print("\nSample", inserted)
+        print("ID:", id)
         print("Question:", q)
         print("Context:", c[:200], "...")
 
@@ -195,8 +184,8 @@ def main():
         mvec_str = tensor_to_mvec_str(stacked)
 
         cur.execute(
-            f"INSERT INTO {VECTOR_TABLE}(text_vec) VALUES (%s::mvec)",
-            (mvec_str,)
+            f"INSERT INTO {VECTOR_TABLE}(id, text_vec) VALUES (%s, %s::mvec)",
+            (id, mvec_str)
         )
 
         inserted += 1

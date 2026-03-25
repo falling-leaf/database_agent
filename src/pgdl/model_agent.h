@@ -273,4 +273,6 @@ CpuLoadData CollectCPULoadData();
 void CollectGPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, GpuLoadData gpu_data);
 void CollectCPULoadAndRuntimeData(int shape0, int shape1, int shape2, int shape3, long long execution_runtime_us, ModelAnalysisResult analysis_result, CpuLoadData cpu_data);
 
+void temp_addition_function(std::shared_ptr<AgentState> state);
+
 #endif

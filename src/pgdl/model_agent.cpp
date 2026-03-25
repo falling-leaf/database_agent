@@ -45,6 +45,8 @@ extern void infer_batch_internal(VecAggState *state, bool ret_float8);
 extern void register_callback();
 extern ModelManager model_manager;
 extern MemoryManager memory_manager;
+extern OrchestrationAgent orchestration_agent_;
+extern ExecutionAgent execution_agent_;
 
 // Global CPU load predictor instance
 static CPULoadPredictor cpu_load_predictor;
@@ -259,8 +261,10 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
     // elog(INFO, "start converting row to vector, ncols=%d", ncols);
     if (table_name == "cifar_image_vector_table") {
         vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 1, 1);
-    }
-    else {
+    } else if (table_name == "reasoning_vector_step2") {
+        // reasoning_vector_step2 表的结构是 (id, text_vec)，text_vec 在第2列（索引1）
+        vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 1, 1);
+    } else {
         vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 0, 1);
     }
 
@@ -1519,7 +1523,7 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
             Args* ret2 = (Args*)list_nth(state->current_state.outs, i + 1);
             memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret1->floating + ret2->floating;
         }
-    } else {
+    } else if (task->task_type == TaskType::STEP2) {
         // if (model_manager.GetModelPath(task->model) == NULL) {
         //     ereport(ERROR, (errmsg("model path is null")));
         // }
@@ -1565,6 +1569,12 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
         elog(INFO, "execution time: %lld sec", duration.count() / 1000000);
+    } else {
+        for (int i = 0; i < result_count; i += 2) {
+            Args* ret1 = (Args*)list_nth(state->current_state.outs, i);
+            Args* ret2 = (Args*)list_nth(state->current_state.outs, i + 1);
+            memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret1->floating + ret2->floating;
+        }
     }
 
     // 任务完成后，可以在这里选择性释放 current_state.outs 里的 Args* 内存，但这通常由 PG 上下文自动处理
@@ -1599,6 +1609,7 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
         } else if (state->last_action == AgentAction::EVALUATION) {
             state->task_list = list_delete_first(state->task_list);
             if (list_length(state->task_list) == 0) {
+                elog(INFO, "is last call: %d", memory_manager.is_last_call);
                 return AgentAction::SUCCESS;
             } else {                
                 state->current_task_id = 0;
@@ -1610,5 +1621,132 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
     } catch (const std::exception& e) {
         elog(INFO, "ScheduleAgent error message:%s", e.what());
         return AgentAction::FAILURE;
+    }
+}
+
+void temp_addition_function(std::shared_ptr<AgentState> state) {
+    elog(INFO, "temp_addition_function");
+
+    bool need_flag = true;
+
+    for (auto& task_unit : state->task_info) {
+        if (task_unit.task_type != TaskType::REASONING) {
+            need_flag = false;
+        }
+    }
+    
+    if (!need_flag) {
+        return;
+    }
+    
+    // 获取 out_cache_data 中的数据
+    int data_size = memory_manager.out_cache_size;
+    elog(INFO, "out_cache_size: %d", data_size);
+    
+    if (data_size == 0) {
+        elog(INFO, "out_cache_data is empty");
+        return;
+    }
+    
+    // 创建一个包含值和原始索引的结构体
+    std::vector<std::pair<float, int>> value_index_pairs;
+    value_index_pairs.reserve(data_size);
+    
+    // 填充数据
+    for (int i = 0; i < data_size; i++) {
+        value_index_pairs.emplace_back(memory_manager.out_cache_data[i], i);
+    }
+    
+    // 排序（默认按值升序）
+    std::sort(value_index_pairs.begin(), value_index_pairs.end());
+    
+    // 输出排序结果
+    elog(INFO, "Sorted results:");
+    for (size_t i = 0; i < value_index_pairs.size(); i++) {
+        elog(INFO, "Rank %zu: value=%.4f, original_index=%d", 
+             i + 1, 
+             value_index_pairs[i].first, 
+             value_index_pairs[i].second);
+    }
+    
+    // 也输出降序结果
+    std::sort(value_index_pairs.begin(), value_index_pairs.end(), 
+              [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
+                  return a.first > b.first;
+              });
+    
+    elog(INFO, "Sorted results (descending):");
+    for (size_t i = 0; i < value_index_pairs.size(); i++) {
+        elog(INFO, "Rank %zu: value=%.4f, original_index=%d", 
+             i + 1, 
+             value_index_pairs[i].first, 
+             value_index_pairs[i].second);
+    }
+    
+    // 取前2个最大元素
+    int top_n = 2;
+    elog(INFO, "Processing top %d elements:", top_n);
+    
+    // 存储提取的 vec 到 ins_cache
+    int cache_index = 0;
+    for (int i = 0; i < top_n && i < value_index_pairs.size(); i++) {
+        float value = value_index_pairs[i].first;
+        int original_index = value_index_pairs[i].second;
+        
+        // 计算 idx = original_index * 2
+        int idx = original_index * 2;
+        elog(INFO, "Top %d: value=%.4f, original_index=%d, idx=%d", 
+             i + 1, value, original_index, idx);
+        
+        // 使用 LoadOneRow 从 reasoning_vector_step2 中提取内容（idx 和 idx+1）
+        std::string table_name = "reasoning_vector_step2";
+        
+        // 处理 idx
+        elog(INFO, "Loading row from %s at index %d using LoadOneRow", table_name.c_str(), idx);
+        Args* vec1 = MemoryManager::LoadOneRow(table_name, idx);
+        if (vec1) {
+            elog(INFO, "Successfully loaded row from %s at index %d", table_name.c_str(), idx);
+            // 存储到 ins_cache
+            if (memory_manager.ins_cache) {
+                memory_manager.ins_cache[cache_index] = (MVec*)vec1->ptr;
+                elog(INFO, "Stored vec1 to ins_cache[%d]", cache_index);
+                cache_index++;
+            }
+        } else {
+            elog(INFO, "Failed to load row from %s at index %d", table_name.c_str(), idx);
+        }
+        
+        // 处理 idx+1
+        int idx_plus_1 = idx + 1;
+        elog(INFO, "Loading row from %s at index %d using LoadOneRow", table_name.c_str(), idx_plus_1);
+        Args* vec2 = MemoryManager::LoadOneRow(table_name, idx_plus_1);
+        if (vec2) {
+            elog(INFO, "Successfully loaded row from %s at index %d", table_name.c_str(), idx_plus_1);
+            // 存储到 ins_cache
+            if (memory_manager.ins_cache) {
+                memory_manager.ins_cache[cache_index] = (MVec*)vec2->ptr;
+                elog(INFO, "Stored vec2 to ins_cache[%d]", cache_index);
+                cache_index++;
+            }
+        } else {
+            elog(INFO, "Failed to load row from %s at index %d", table_name.c_str(), idx_plus_1);
+        }
+    }
+    
+    // 清空 state->task_info 并重新插入一个 task_type 为 STEP2 的 TaskInfo 实例
+    if (state) {
+        state->task_info.clear();
+        TaskInfo task_info;
+        task_info.task_type = TaskType::STEP2;
+        task_info.table_name = const_cast<char*>("reasoning_vector_step2");
+        task_info.model_name = const_cast<char*>("deberta_reader");
+        task_info.cuda_name = const_cast<char*>("gpu");
+        state->task_info.push_back(task_info);
+        elog(INFO, "Added STEP2 task info to state");
+        
+        // 调用 OrchestrationAgent::Execute
+        AgentAction action = orchestration_agent_.Execute(state);
+        action = execution_agent_.Execute(state);
+        elog(INFO, "OrchestrationAgent::Execute returned: %d", static_cast<int>(action));
     }
 }
