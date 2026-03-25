@@ -47,6 +47,7 @@ extern ModelManager model_manager;
 extern MemoryManager memory_manager;
 extern OrchestrationAgent orchestration_agent_;
 extern ExecutionAgent execution_agent_;
+extern EvaluationAgent evaluation_agent_;
 
 // Global CPU load predictor instance
 static CPULoadPredictor cpu_load_predictor;
@@ -272,6 +273,50 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
     return vec;
 }
 
+bool MemoryManager::LoadTextData(const std::string& table_name, size_t row_index, std::string& query, std::string& context)
+{
+    HeapTuple   tuple;
+    TupleDesc   tupdesc;
+    SPILoadOneRow(tuple, tupdesc, table_name, row_index);
+    
+    if (!tuple || !tupdesc) {
+        return false;
+    }
+    
+    // 确保表有足够的列
+    if (tupdesc->natts < 3) {
+        elog(INFO, "LoadTextData: table %s has only %d columns, expected at least 3", table_name.c_str(), tupdesc->natts);
+        return false;
+    }
+    
+    try {
+        // 为 heap_getattr 准备 isnull 参数
+        bool isnull = false;
+        
+        // 读取 query 字段（第2列，索引1）
+        Datum query_datum = heap_getattr(tuple, 2, tupdesc, &isnull);
+        if (!isnull) {
+            char* query_str = TextDatumGetCString(query_datum);
+            query = std::string(query_str);
+            pfree(query_str);
+        }
+        
+        // 读取 context 字段（第3列，索引2）
+        isnull = false;
+        Datum context_datum = heap_getattr(tuple, 3, tupdesc, &isnull);
+        if (!isnull) {
+            char* context_str = TextDatumGetCString(context_datum);
+            context = std::string(context_str);
+            pfree(context_str);
+        }
+        
+        return true;
+    } catch (const std::exception& e) {
+        elog(INFO, "LoadTextData: exception occurred: %s", e.what());
+        return false;
+    }
+}
+
 void PerceptionAgent::LoadMVecData(MVec* current_data) {
     if (IS_MVEC_REF(current_data)) {
         int cache_idx = memory_manager.current_func_call;
@@ -388,6 +433,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     } else if (strcmp(task_type, "step2") == 0) {
         task_type_enum = TaskType::STEP2;
         memory_manager.output_type = 1;
+    } else if (strcmp(task_type, "step3") == 0) {
+        task_type_enum = TaskType::STEP3;
     } else if (strcmp(task_type, "image_classification") == 0) {
         task_type_enum = TaskType::IMAGE_CLASSIFICATION;
     } else if (strcmp(task_type, "series") == 0) {
@@ -452,7 +499,7 @@ void OrchestrationAgent::SPIRegisterProcess() {
     return;
 }
 
-void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
+void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state, int window_start_index, int window_end_index) {
     for (auto& task_unit : state->task_info) {
         int window_size = 32;
         std::string selected_model;
@@ -539,8 +586,15 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state) {
         // 关键修复：为每个 task 复制字符串，而不是共享同一个指针
         task->model = pstrdup(task_unit.model_name);
         task->cuda = pstrdup(task_unit.cuda_name);
+
+        if (window_start_index != -1 && window_end_index != -1) {
+            window_start = window_start_index;
+            window_end = window_end_index;
+        }
+
         task->input_start_index = window_start;
         task->input_end_index = window_end; // 包含start，不包含end
+
         task->output_start_index = 0;
         task->output_end_index = task->input_end_index - task->input_start_index;
         task->task_type = task_unit.task_type;
@@ -1499,6 +1553,16 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
     return AgentAction::SCHEDULE;
 }
 
+std::string CallToolReaderDecoder(std::string id_str) {
+    std::string cmd =
+                "cd /home/why/pgdl/test/tools && "
+                "uv run reader_decoder.py --ids \"";
+    cmd += id_str;
+    cmd += "\"";
+    std::string result_string = exec_command(cmd.c_str());
+    return result_string;
+}
+
 // evaluation agent: evaluate the execution result
 AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
     Task* task = (Task*)list_nth(state->task_list, state->current_task_id);
@@ -1524,12 +1588,7 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
             memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret1->floating + ret2->floating;
         }
     } else if (task->task_type == TaskType::STEP2) {
-        // if (model_manager.GetModelPath(task->model) == NULL) {
-        //     ereport(ERROR, (errmsg("model path is null")));
-        // }
-        std::string cmd =
-                "cd /home/why/pgdl/test/tools && "
-                "uv run reader_decoder.py --ids \"";
+        std::string res_str = "";
         for (int i = 0; i < result_count; i++) {
             Args* in_content = (Args*)list_nth(state->current_state.ins, i);
             Args* out_content = (Args*)list_nth(state->current_state.outs, i);
@@ -1545,7 +1604,6 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
             torch::Tensor input_tensor = vector_to_tensor(input_mvec);
             // torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
             torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
-            std::string res_str = "";
             int sample_res = res_tensor[0].item<int>();
             for (int j = 0; j < res_tensor.size(0); j++) {
                 int res = res_tensor[j].item<int>();
@@ -1557,14 +1615,11 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
             if (i != result_count - 1) {
                 res_str += ";";
             }
-            cmd += res_str;
             float output_res = (float)sample_res;
             memory_manager.out_cache_data[memory_manager.out_cache_size++] = output_res;
         }
-        cmd += "\"";
-        elog(INFO, "cmd: %s", cmd.c_str());
         auto start_time = std::chrono::high_resolution_clock::now();
-        std::string result_string = exec_command(cmd.c_str());
+        std::string result_string = CallToolReaderDecoder(res_str);
         elog(INFO, "result_string: %s", result_string.c_str());
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
@@ -1687,6 +1742,13 @@ void temp_addition_function(std::shared_ptr<AgentState> state) {
     int top_n = 2;
     elog(INFO, "Processing top %d elements:", top_n);
     
+    // 定义数据结构来存储从 reasoning_step2 表中读取的内容
+    struct TextData {
+        std::string query;
+        std::string context;
+    };
+    std::vector<TextData> text_data_list;
+    
     // 存储提取的 vec 到 ins_cache
     int cache_index = 0;
     for (int i = 0; i < top_n && i < value_index_pairs.size(); i++) {
@@ -1731,6 +1793,40 @@ void temp_addition_function(std::shared_ptr<AgentState> state) {
         } else {
             elog(INFO, "Failed to load row from %s at index %d", table_name.c_str(), idx_plus_1);
         }
+        
+        // 从 reasoning_step2 表中提取 query 和 context 内容
+        std::string text_table_name = "reasoning_step2";
+        
+        // 处理 idx
+        elog(INFO, "Loading text data from %s at index %d", text_table_name.c_str(), idx);
+        TextData text_data1;
+        if (MemoryManager::LoadTextData(text_table_name, idx, text_data1.query, text_data1.context)) {
+            elog(INFO, "Successfully loaded text data from %s at index %d", text_table_name.c_str(), idx);
+            elog(INFO, "Query: %s", text_data1.query.c_str());
+            elog(INFO, "Context: %s", text_data1.context.c_str());
+            text_data_list.push_back(text_data1);
+        } else {
+            elog(INFO, "Failed to load text data from %s at index %d", text_table_name.c_str(), idx);
+        }
+        
+        // 处理 idx+1
+        elog(INFO, "Loading text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
+        TextData text_data2;
+        if (MemoryManager::LoadTextData(text_table_name, idx_plus_1, text_data2.query, text_data2.context)) {
+            elog(INFO, "Successfully loaded text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
+            elog(INFO, "Query: %s", text_data2.query.c_str());
+            elog(INFO, "Context: %s", text_data2.context.c_str());
+            text_data_list.push_back(text_data2);
+        } else {
+            elog(INFO, "Failed to load text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
+        }
+    }
+    
+    // 输出存储的文本数据
+    elog(INFO, "Total text data loaded: %d", text_data_list.size());
+    for (int i = 0; i < text_data_list.size(); i++) {
+        elog(INFO, "Text data %d: Query='%s', Context='%s'", 
+             i + 1, text_data_list[i].query.c_str(), text_data_list[i].context.c_str());
     }
     
     // 清空 state->task_info 并重新插入一个 task_type 为 STEP2 的 TaskInfo 实例
@@ -1743,10 +1839,111 @@ void temp_addition_function(std::shared_ptr<AgentState> state) {
         task_info.cuda_name = const_cast<char*>("gpu");
         state->task_info.push_back(task_info);
         elog(INFO, "Added STEP2 task info to state");
+        memory_manager.out_cache_size = 0;
         
         // 调用 OrchestrationAgent::Execute
-        AgentAction action = orchestration_agent_.Execute(state);
-        action = execution_agent_.Execute(state);
-        elog(INFO, "OrchestrationAgent::Execute returned: %d", static_cast<int>(action));
+        orchestration_agent_.TaskInit(state, 0, top_n * 2);
+        AgentAction action = execution_agent_.Execute(state);
+        action = evaluation_agent_.Execute(state);
+        
+        // 从 memory_manager.out_cache_data 获取数据并生成 res_str
+        int output_size = memory_manager.out_cache_size;
+        elog(INFO, "out_cache_size after evaluation: %d", output_size);
+        
+        if (output_size > 0) {
+            std::string res_str = "";
+            for (int i = 0; i < output_size; i++) {
+                // 假设 out_cache_data 中的数据是整数索引
+                int res = static_cast<int>(memory_manager.out_cache_data[i]);
+                res_str += std::to_string(res);
+                if (i != output_size - 1) {
+                    res_str += ";";
+                }
+            }
+            
+            elog(INFO, "Generated res_str: %s", res_str.c_str());
+            
+            // 调用 CallToolReaderDecoder 函数
+            std::string result_string = CallToolReaderDecoder(res_str);
+            
+            // 在命令行输出结果
+            elog(INFO, "CallToolReaderDecoder result: %s", result_string.c_str());
+            printf("\n=== Reader Decoder Result ===\n");
+            printf("%s\n", result_string.c_str());
+            printf("============================\n");
+            
+            // add more code
+            // 解析 result_string 并进行字符串拼接
+            // 第一步：提取值不为空的内容和索引
+            std::map<int, std::string> valid_results;
+            
+            // 简单解析 JSON 格式的 result_string
+            // 注意：这里使用简单的字符串处理，实际项目中建议使用 JSON 解析库
+            size_t pos = 0;
+            for (int i = 1; i <= 4; i++) {
+                std::string key = "paragraph_" + std::to_string(i);
+                size_t key_pos = result_string.find(key, pos);
+                if (key_pos != std::string::npos) {
+                    // 找到冒号位置
+                    size_t colon_pos = result_string.find(":", key_pos);
+                    if (colon_pos != std::string::npos) {
+                        // 找到值的起始位置（跳过冒号和空格）
+                        size_t value_pos = colon_pos + 1;
+                        while (value_pos < result_string.size() && (result_string[value_pos] == ' ' || result_string[value_pos] == '\n' || result_string[value_pos] == '\t')) {
+                            value_pos++;
+                        }
+                        // 找到值的结束位置（从值的起始位置开始查找引号）
+                        if (value_pos < result_string.size() && result_string[value_pos] == '"') {
+                            value_pos++;
+                            size_t end_pos = result_string.find("\"", value_pos);
+                            if (end_pos != std::string::npos) {
+                                std::string value = result_string.substr(value_pos, end_pos - value_pos);
+                                elog(INFO, "Extracted value for %s: '%s' (length: %d)", key.c_str(), value.c_str(), value.length());
+                                if (!value.empty()) {
+                                    valid_results[i] = value;
+                                }
+                                pos = end_pos;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // 输出提取的有效结果
+            // elog(INFO, "Extracted valid results:");
+            // for (const auto& pair : valid_results) {
+            //     elog(INFO, "Index: %d, Value: %s", pair.first, pair.second.c_str());
+            // }
+            
+            // 第二步：将文本段落的 query 和对应的有效值进行拼接
+            std::vector<std::string> context_parts;
+            for (const auto& pair : valid_results) {
+                int index = pair.first - 1; // 转换为 0-based 索引
+                if (index >= 0 && index < text_data_list.size()) {
+                    const TextData& text_data = text_data_list[index];
+                    std::string part = text_data.query + ": " + pair.second;
+                    context_parts.push_back(part);
+                    // elog(INFO, "Generated context part: %s", part.c_str());
+                }
+            }
+            
+            // 第三步：拼接成完整的 context 上下文
+            std::string context = "Question: Were Scott Derrickson and Ed Wood of the same nationality? \n Context: \n";
+            for (const auto& part : context_parts) {
+                context += " <" + part + "> \n";
+            }
+            printf("\n=== Generated Context ===\n");
+            printf("%s\n", context.c_str());
+            printf("========================\n");
+            std::string cmd =
+                "cd /home/why/pgdl/test/tools && "
+                "uv run llm_generate.py --input \"";
+            cmd += context;
+            cmd += "\"";
+            result_string = exec_command(cmd.c_str());
+            elog(INFO, "llm_generate result: %s", result_string.c_str());
+        } else {
+            elog(INFO, "No data in out_cache_data after evaluation");
+        }
     }
 }

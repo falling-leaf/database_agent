@@ -129,6 +129,16 @@ def main():
 
     print("Creating table if not exists...")
 
+    # 创建 reasoning_step2 表
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS reasoning_step2(
+            id integer PRIMARY KEY,
+            query text,
+            context text
+        );
+    """)
+
+    # 创建向量表
     cur.execute(f"""
         CREATE TABLE IF NOT EXISTS {VECTOR_TABLE}(
             id integer PRIMARY KEY,
@@ -140,6 +150,7 @@ def main():
 
     print("Clearing old data...")
 
+    cur.execute("DELETE FROM reasoning_step2;")
     cur.execute(f"DELETE FROM {VECTOR_TABLE};")
     conn.commit()
 
@@ -183,6 +194,13 @@ def main():
 
         mvec_str = tensor_to_mvec_str(stacked)
 
+        # 插入到 reasoning_step2 表（tokenize 前的文本）
+        cur.execute(
+            "INSERT INTO reasoning_step2(id, query, context) VALUES (%s, %s, %s)",
+            (id, q, c)
+        )
+
+        # 插入到向量表
         cur.execute(
             f"INSERT INTO {VECTOR_TABLE}(id, text_vec) VALUES (%s, %s::mvec)",
             (id, mvec_str)

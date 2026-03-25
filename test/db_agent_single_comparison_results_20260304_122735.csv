@@ -1,9 +1,0 @@
-Query,Concurrency_Level,Avg_Latency,Min_Latency,Max_Latency,Success_Rate,CPU_Load_Before,CPU_Load_During
-db_agent_single,15,857.5273,483.8886,1050.8617,100.00%,1.64,102.27
-db_agent_single,20,1809.6168,1791.3501,1834.3691,100.00%,79.13,158.72
-db_agent_single,25,1007.7580,533.8230,1318.7254,100.00%,116.87,99.78
-db_agent_single,30,1239.3354,860.6911,1534.9293,100.00%,71.72,88.39
-predict_batch_float8,15,285.5763,123.1831,381.9320,100.00%,88.39,69.85
-predict_batch_float8,20,457.8611,87.1965,576.2488,100.00%,50.02,91.1
-predict_batch_float8,25,508.4040,165.1003,676.7447,100.00%,66.31,87.67
-predict_batch_float8,30,701.8323,471.4882,875.6776,100.00%,63.2,95.65
