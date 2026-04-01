@@ -231,7 +231,7 @@ Datum db_agent_sfinal(PG_FUNCTION_ARGS) {
         }
     }
 
-    temp_addition_function(state_);
+    // temp_addition_function(state_);
 
     if (memory_manager.output_type == 0) {
         Datum* elems;       // 存放数据的 Datum 数组
