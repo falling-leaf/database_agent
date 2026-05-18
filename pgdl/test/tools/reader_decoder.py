@@ -5,7 +5,7 @@ import re
 from transformers import AutoTokenizer
 import time
 
-MODEL_PATH = "/home/why/reasoning_model/deberta-v3-large-squad2"
+MODEL_PATH = "/home/why/dbagent/pgdl/test/morphingdb_test/models/deberta-v3-large-squad2"
 
 def clean_control_chars(text):
     """

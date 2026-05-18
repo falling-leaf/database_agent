@@ -5,7 +5,7 @@ import argparse
 # =========================
 # 模型路径
 # =========================
-MODEL_PATH = "/home/why/reasoning_model/flan-t5-large"
+MODEL_PATH = "/home/why/dbagent/pgdl/test/morphingdb_test/models/flan-t5-large"
 
 # =========================
 # 命令行参数解析
