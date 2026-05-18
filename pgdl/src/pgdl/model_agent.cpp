@@ -1251,11 +1251,11 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
             // Try to load the model from .pt file if not already loaded
             static bool model_tried_loading = false;
             if (!model_tried_loading) {
-                if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !cpu_load_predictor.LoadModel("/home/why/cpu_load_model.pt"))) {
+                if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !cpu_load_predictor.LoadModel("/home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/cpu_load_model.pt"))) {
                     elog(INFO, "Model file not found, attempting to train new model from database data");
                     if (cpu_load_predictor.TrainModel()) {
-                        cpu_load_predictor.SaveModel("/home/why/cpu_load_model.pt");
-                        elog(INFO, "New model trained and saved to /home/why/cpu_load_model.pt");
+                        cpu_load_predictor.SaveModel("/home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/cpu_load_model.pt");
+                        elog(INFO, "New model trained and saved to /home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/cpu_load_model.pt");
                     } else {
                         elog(WARNING, "Failed to train model, will use fallback logic");
                     }
@@ -1331,11 +1331,10 @@ AgentAction OptimizationAgent::Execute(std::shared_ptr<AgentState> state) {
                         (double)analysis_result.param_size_bytes
                     };
                     
-                    if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !gpu_load_predictor.LoadModel("/home/why/gpu_load_model.pt"))) {
-                        elog(INFO, "GPU Model file not found, attempting to train new model from database data");
+                    if (ALWAYS_TRAINING || (!ALWAYS_TRAINING && !gpu_load_predictor.LoadModel("/home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/gpu_load_model.pt"))) {
                         if (gpu_load_predictor.TrainModel()) {
-                            gpu_load_predictor.SaveModel("/home/why/gpu_load_model.pt");
-                            elog(INFO, "New GPU model trained and saved to /home/why/gpu_load_model.pt");
+                            gpu_load_predictor.SaveModel("/home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/gpu_load_model.pt");
+                            elog(INFO, "New GPU model trained and saved to /home/why/dbagent/pgdl/test/morphingdb_test/models/load_predictors/gpu_load_model.pt");
                         } else {
                             elog(WARNING, "Failed to train GPU model, will use fallback logic");
                         }

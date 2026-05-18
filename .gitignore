@@ -12,6 +12,8 @@ pgdl/test/morphingdb_test/data/
 # === ML MODEL WEIGHTS (23 GB) ===
 # .pt files, HuggingFace model dirs, SentencePiece models
 pgdl/test/morphingdb_test/models/
+# Small load predictor models are tracked
+!pgdl/test/morphingdb_test/models/load_predictors/
 
 # === TEST OUTPUT / RUNTIME CACHE ===
 pgdl/test/results/
