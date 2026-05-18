@@ -1,0 +1,36 @@
+# === BUILD ARTIFACTS ===
+pg_base/
+pgdl/build/
+
+# === THIRD-PARTY DEPENDENCIES (7+ GB) ===
+pgdl/third_party/
+
+# === DATASETS (7.9 GB) ===
+# All raw data: images (JPEG/PNG), CSVs, text corpora
+pgdl/test/morphingdb_test/data/
+
+# === ML MODEL WEIGHTS (23 GB) ===
+# .pt files, HuggingFace model dirs, SentencePiece models
+pgdl/test/morphingdb_test/models/
+
+# === TEST OUTPUT / RUNTIME CACHE ===
+pgdl/test/results/
+pgdl/test/evadb_data/
+# Timestamped test result files in test/ root
+pgdl/test/*_results_*.csv
+pgdl/test/*_results_*.json
+
+# === PYTHON CACHE ===
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# === EVA DB HASH-NAMED CACHE DIRS (32-char hex) ===
+# Created by evadb LOAD IMAGE, accumulate thousands of files
+**/results/cache/
+
+# === OS / EDITOR FILES ===
+.DS_Store
+*.swp
+*.swo
+*~

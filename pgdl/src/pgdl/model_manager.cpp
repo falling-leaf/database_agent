@@ -1,0 +1,809 @@
+#include "model_manager.h"
+#include "model_utils.h"
+#include "spi_connection.h"
+#include "md5.h"
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <unistd.h>
+
+
+extern "C" {
+#include "catalog/pg_type_d.h"
+#include "access/htup.h"
+#include "access/tupdesc.h"
+#include "utils/builtins.h"
+#include "miscadmin.h"
+}
+
+//内置的模型注册回调函数可以在构造函数中
+ModelManager::ModelManager()
+{
+    
+}
+
+ModelManager::~ModelManager()
+{
+    
+}
+
+// Helper function to estimate MACs for a single layer based on its weight tensor and type
+long long EstimateMACsForLayer(const torch::Tensor& weight_tensor) {
+    long long macs = 0;
+    
+    if (weight_tensor.dim() == 4) { // Convolutional layer: [out_channels, in_channels, kernel_h, kernel_w]
+        long long out_channels = weight_tensor.size(0);
+        long long in_channels = weight_tensor.size(1);
+        long long kernel_h = weight_tensor.size(2);
+        long long kernel_w = weight_tensor.size(3);
+        
+        // Typical input shape assumptions for estimation (we'll use a standard size)
+        long long input_h = 224; // Standard ImageNet input height
+        long long input_w = 224; // Standard ImageNet input width
+        
+        // For convolution: MACs ≈ out_channels * in_channels * kernel_h * kernel_w * output_h * output_w
+        // Assuming stride=1 and padding that preserves spatial dimensions for simplicity
+        long long output_h = input_h;  // Simplified assumption
+        long long output_w = input_w;  // Simplified assumption
+        
+        macs = out_channels * in_channels * kernel_h * kernel_w * output_h * output_w;
+    }
+    else if (weight_tensor.dim() == 2) { // Linear/FC layer: [out_features, in_features]
+        long long out_features = weight_tensor.size(0);
+        long long in_features = weight_tensor.size(1);
+        
+        // For linear layer: MACs ≈ in_features * out_features (assuming batch size of 1)
+        macs = in_features * out_features;
+    }
+    else if (weight_tensor.dim() == 1) { // 1D tensors may represent various operations
+        // For 1D tensors, this could be BatchNorm parameters (weight/bias), LayerNorm, etc.
+        // These typically don't contribute significant MACs in the traditional sense,
+        // but if they're used in element-wise multiplication/addition operations,
+        // they could contribute to MACs based on the input size they're applied to.
+        // For now, we'll treat them as having MACs equal to their size
+        // (assuming each parameter is applied to each input element)
+        macs = weight_tensor.size(0);
+    }
+    else if (weight_tensor.dim() == 3) { // 3D tensors (e.g., 1x1 convolutions, some specialized layers)
+        long long size_0 = weight_tensor.size(0);
+        long long size_1 = weight_tensor.size(1);
+        long long size_2 = weight_tensor.size(2);
+        // For 3D convolutions or other operations
+        macs = size_0 * size_1 * size_2;
+    }
+    else {
+        elog(INFO, "EstimateMACsForLayer: unsupported layer type with dim %d", weight_tensor.dim());
+    }
+    
+    return macs;
+}
+
+bool ModelManager::AnalyzeModel(const std::string& model_name, 
+                                const std::string& model_path,
+                                long long& mac_count,
+                                long long& param_count,
+                                size_t& param_size_bytes) {
+    mac_count = 0;
+    param_count = 0;
+    param_size_bytes = 0;
+    
+    // Load the model if not already loaded
+    std::string actual_model_path;
+    if (!GetModelPath(model_name, actual_model_path)) {
+        actual_model_path = model_path;  // Use provided path if model name not found in registry
+    }
+    
+    // Check if model is already loaded
+    if (module_handle_.find(actual_model_path) == module_handle_.end()) {
+        if (!LoadModel(model_name, actual_model_path)) {
+            return false;
+        }
+    }
+    
+    // Get the loaded model module
+    torch::jit::script::Module& module = module_handle_[actual_model_path].first;
+    
+    // Count total parameters and calculate parameter size
+    auto named_params = module.named_parameters();
+    for (const auto& param : named_params) {
+        long long numel = param.value.numel();
+        param_count += numel;
+        param_size_bytes += numel * param.value.element_size();
+    }
+    
+    // Calculate MACs based on the model's layers
+    for (const auto& param : named_params) {
+        std::string param_name = param.name;
+        
+        // Only count MACs for weight parameters (not bias)
+        if (param_name.find(".weight") != std::string::npos) {
+            mac_count += EstimateMACsForLayer(param.value);
+        }
+    }
+    
+    return true;
+}
+
+bool ModelManager::InitBaseModel() {
+    std::vector<std::pair<std::string, std::string>> base_model_list;
+    GetBaseModelPaths(base_model_list);
+    ereport(INFO, (errmsg("base_model_list:%s.", base_model_list[0].second.c_str())));
+    for(auto &base_model : base_model_list){
+        try{
+            torch::jit::script::Module cur_module = torch::jit::load(base_model.second.c_str());
+            base_module_handle_[base_model.second.c_str()] = cur_module;
+            base_module_handle_[base_model.second.c_str()].to(at::kCPU);
+            cur_module.eval();
+        }
+        catch(const c10::Error& e){
+            ereport(ERROR, (errmsg("Load model error: %s.", e.msg().c_str())));
+            return false;
+        }
+    }
+    ereport(INFO, (errmsg("base_module_handle_:%d.", base_module_handle_.size())));
+    return true;
+}
+
+bool ModelManager::CreateModel(const std::string model_name, 
+                               const std::string model_path, 
+                               const std::string base_model, 
+                               const std::string discription)
+{
+
+    Oid userId = GetUserId(); 
+    char *userName = GetUserNameFromId(userId, false);
+
+    if(base_model == ""){
+        std::string md5_value;
+        MD5 md5;
+        md5_value = md5.ComputeFileMD5(model_path); 
+
+        SPIConnector spi_connector;
+
+        std::string prepare_str = "INSERT INTO model_info \
+            (model_name, model_path, create_time, update_time, md5, discription, upload_by) \
+            VALUES ($1, $2, now(), now(), $3, $4, $5)";
+        
+        SPISqlWrapper sql(spi_connector, prepare_str, 5);
+
+        if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) &&
+        sql.Bind(2, TEXTOID, CStringGetTextDatum(model_path.c_str())) &&
+        sql.Bind(3, TEXTOID, CStringGetTextDatum(md5_value.c_str())) && 
+        sql.Bind(4, TEXTOID, CStringGetTextDatum(discription.c_str())) &&
+        sql.Bind(5, TEXTOID, CStringGetTextDatum(userName)) &&
+        sql.Execute()){
+            if(SPI_processed != 1){
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }else{
+        SPIConnector spi_connector;
+
+        std::string prepare_str = "INSERT INTO model_info \
+            (model_name, model_path, create_time, update_time, discription, upload_by, base_model) \
+            VALUES ($1, $2, now(), now(), $3, $4, $5)";
+        
+        SPISqlWrapper sql(spi_connector, prepare_str, 5);
+
+        if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) &&
+        sql.Bind(2, TEXTOID, CStringGetTextDatum(model_path.c_str())) &&
+        sql.Bind(3, TEXTOID, CStringGetTextDatum(discription.c_str())) && 
+        sql.Bind(4, TEXTOID, CStringGetTextDatum(userName)) &&
+        sql.Bind(5, TEXTOID, CStringGetTextDatum(base_model.c_str())) &&
+        sql.Execute()){
+            if(SPI_processed != 1){
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+bool ModelManager::UpdateModel(const std::string model_name, 
+                               const std::string model_path)
+{
+    std::string md5_value;
+    MD5 md5;
+    md5_value = md5.ComputeFileMD5(model_path);
+
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "UPDATE model_info \
+        SET model_path=$2, md5=$3, update_time=now() \
+        WHERE model_name=$1";
+    
+    SPISqlWrapper sql(spi_connector, prepare_str, 3);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) && 
+       sql.Bind(2, TEXTOID, CStringGetTextDatum(model_path.c_str())) &&
+       sql.Bind(3, TEXTOID, CStringGetTextDatum(md5_value.c_str())) &&
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }else{
+        return false;
+    }
+
+    return true;
+}
+
+bool ModelManager::DropModel(const std::string model_name)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "DELETE FROM model_info \
+                               WHERE model_name=$1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }else{
+        return false;
+    }
+
+    return true;
+}
+
+bool ModelManager::GetModelPath(const std::string model_name, 
+                                std::string& model_path)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "SELECT model_path FROM model_info \
+                               WHERE model_name=$1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    // get result
+    HeapTuple tuple = SPI_tuptable->vals[0];
+    model_path = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1);
+    
+    return true;
+}
+
+bool ModelManager::GetModelMd5(const std::string model_path, 
+                               const std::string model_name,
+                               std::string& md5)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "SELECT md5 FROM model_info \
+                               WHERE model_path=$1 \
+                               AND model_name=$2";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 2);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_path.c_str())) && 
+       sql.Bind(2, TEXTOID, CStringGetTextDatum(model_name.c_str())) &&
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    
+    // 获取select 语句结果
+    HeapTuple tuple = SPI_tuptable->vals[0];
+    md5 = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1);
+    
+
+    return true;
+}
+
+bool ModelManager::GetModelDeviceType(const std::string model_name,
+                            torch::DeviceType& device_type)
+{
+    std::string model_path;
+    if(GetModelPath(model_name, model_path)){
+        if(module_handle_.find(model_name) != module_handle_.end()){
+            device_type = module_handle_[model_name].second;
+            return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+
+bool ModelManager::LoadModel(std::string model_name, std::string model_path)
+{
+    std::string table_md5, file_md5, base_model_path;
+    int32_t layer_size=0;
+    MD5 md5;
+    torch::jit::script::Module cur_module;
+    if(module_handle_.find(model_path) != module_handle_.end()){
+        return true;
+    }
+    // not base on base model
+    if(!HaveBaseModel(model_name)){
+        // Verify the md5 of the model in the file system and the md5 of the database
+        file_md5 = md5.ComputeFileMD5(model_path);
+        GetModelMd5(model_path, model_name, table_md5);
+        if(file_md5 != table_md5){
+            return false;
+        }
+
+        try {
+            cur_module = torch::jit::load(model_path.c_str());
+            module_handle_[model_path].first = cur_module;
+            // cpu default
+            module_handle_[model_path].second = at::kCPU;
+            module_handle_[model_path].first.to(at::kCPU);
+            cur_module.eval();
+            //return true;
+        }
+        catch (const std::exception& e) {
+            ereport(INFO, (errmsg("error message:%s.", e.what())));
+            return false;
+        }
+    // base on base model
+    }else{
+        GetBaseModelPathFromModel(model_name, base_model_path);
+        
+        // base_module_handle_ 里面还没有预先加载，则加载base model
+        if (base_module_handle_.find(base_model_path) == base_module_handle_.end()){
+            try {
+
+                cur_module = torch::jit::load(base_model_path.c_str());
+            }
+            catch (const std::exception& e) {
+                ereport(INFO, (errmsg("error message:%s.", e.what())));
+                return false;
+            }
+        // base_module_handle_ 里面已经预先加载了，则直接使用base model
+        }else{
+            cur_module = base_module_handle_[base_model_path];
+        }
+        module_handle_[model_path].first = cur_module;
+        // cpu default
+        module_handle_[model_path].second = at::kCPU;
+        module_handle_[model_path].first.to(at::kCPU);
+        cur_module.eval();
+
+        auto layer_tensor_parms = module_handle_[model_path].first.named_parameters();
+        auto layer_tensor_bufs = module_handle_[model_path].first.named_buffers();
+
+        if(!get_model_layer_size(model_name.c_str(), layer_size)){
+            return false;
+        }
+
+        // if(layer_size != (layer_tensor_parms.size() + layer_tensor_bufs.size())){
+        //     ereport(ERROR,
+        //             errmsg("model \"%s\" layer num not equal to base model", model_name.c_str()));
+        // }
+
+
+        for(const auto& parm : layer_tensor_parms){
+            torch::Tensor base_model_layer_tensor = parm.value.detach_();
+            torch::Tensor layer_tensor;
+            if(get_model_layer_parameter(model_name.c_str(), parm.name.c_str(), layer_tensor)){
+                // resize fc layer
+                if(parm.name.find("fc") != std::string::npos || parm.name.find("classifier") != std::string::npos) {
+                    try{
+                        base_model_layer_tensor.resize_(layer_tensor.sizes());
+                    }
+                    catch (const std::exception& e) {
+                        ereport(INFO, (errmsg("error message:%s.", e.what())));
+                        return false;
+                    }   
+                }
+                base_model_layer_tensor.copy_(layer_tensor);
+            // model_layer_info 中不存在这一层的记录，则跳过
+            }else{
+                //ereport(INFO, (errmsg("skip layer:%s", parm.name.c_str())));
+                continue;
+            }
+            ereport(INFO, (errmsg("layer_name:%s,%d", parm.name.c_str(), parm.value.numel())));
+        }
+
+        for(const auto& parm : layer_tensor_bufs){
+            torch::Tensor base_model_layer_tensor = parm.value.detach_();
+            torch::Tensor layer_tensor;
+            
+            if(get_model_layer_parameter(model_name.c_str(), parm.name.c_str(), layer_tensor)){
+                base_model_layer_tensor.copy_(layer_tensor);
+            }else{
+                //ereport(INFO, (errmsg("skip layer:%s", parm.name.c_str())));
+                continue;
+            }
+            ereport(INFO, (errmsg("layer_name:%s,%d", parm.name.c_str(), parm.value.numel())));
+        }
+        //module_handle_[model_path].first.save("/home/lhh/test.pt");
+    }
+
+    return true;
+}
+
+bool ModelManager::SetCuda(const std::string& model_path, const std::string& cuda)
+{
+    if(module_handle_.find(model_path) != module_handle_.end()){
+        if(module_handle_[model_path].second == at::kCUDA){
+            // elog(INFO, "model %s already use gpu!", model_path.c_str());
+            return true;
+        } else {
+            // elog(INFO, "model %s not use gpu!", model_path.c_str());
+            if(torch::cuda::is_available()){
+                std::string valid_cuda_str = cuda;
+                if (cuda.find("gpu") == 0) {
+                    // 将gpu替换为cuda（比如gpu:0 → cuda:0）
+                    valid_cuda_str.replace(0, 3, "cuda");
+                }
+                elog(INFO, "valid_cuda_str: %s", valid_cuda_str.c_str());
+                valid_cuda_str = valid_cuda_str + ":0";
+                torch::Device target_device(valid_cuda_str);
+                if (target_device.is_cuda()) {
+                    module_handle_[model_path].first.to(target_device);
+                    module_handle_[model_path].second = at::kCUDA;
+                    module_handle_[model_path].first.eval();
+                } else {
+                    module_handle_[model_path].second = at::kCUDA;
+                    module_handle_[model_path].first.to(at::kCUDA);
+                    module_handle_[model_path].first.eval();
+                    // ereport(INFO, (errmsg("libtorch use gpu!")));
+                }
+                return true;
+            }
+            // elog(INFO, "model %s not use gpu, but gpu is not available!", model_path.c_str());
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+bool ModelManager::IsCuda(const std::string& model_path)
+{
+    if(module_handle_.find(model_path) == module_handle_.end()){
+        return false;
+    }
+    return module_handle_[model_path].second == at::kCUDA;
+}
+
+bool ModelManager::PreProcess(const std::string model_path, 
+                              std::vector<torch::jit::IValue>& img_tensor, 
+                              Args* args)
+{
+    if(module_preprocess_functions_.find(model_path) != module_preprocess_functions_.end()){
+        // ereport(INFO, (errmsg("user preprocess function")));
+        return module_preprocess_functions_[model_path](img_tensor, args);
+    }else{
+        if(module_preprocess_functions_.find("common") != module_preprocess_functions_.end()){
+            return module_preprocess_functions_["common"](img_tensor, args);
+        }else{
+            ereport(ERROR, (errmsg("please resigter process first!")));
+            return false;
+        }
+    }
+    //img_tensor = torch::ones({1,3,224,224});
+    return false;
+}
+
+bool ModelManager::OutputProcessText(const std::string model_path, 
+                                     torch::jit::IValue& output_tensor,
+                                     Args* args, 
+                                     std::string& result)
+{
+    if(module_outputprocess_functions_text_.find(model_path) != module_outputprocess_functions_text_.end()){
+        return module_outputprocess_functions_text_[model_path](output_tensor, args, result);
+    }else{
+        if(module_outputprocess_functions_text_.find("common") != module_outputprocess_functions_text_.end()){
+            return module_outputprocess_functions_text_["common"](output_tensor, args, result);
+        }else{
+            ereport(ERROR, (errmsg("please resigter process first!")));
+            return false;
+        }
+    }
+    return false;
+}
+
+bool ModelManager::OutputProcessFloat(const std::string model_path, 
+                                      torch::jit::IValue& output_tensor, 
+                                      Args* args,
+                                      float8& result)
+{
+    if(module_outputprocess_functions_float_.find(model_path) != module_outputprocess_functions_float_.end()){
+        return module_outputprocess_functions_float_[model_path](output_tensor, args, result);
+    }else{
+        if(module_outputprocess_functions_float_.find("common") != module_outputprocess_functions_float_.end()){
+            return module_outputprocess_functions_float_["common"](output_tensor, args, result);
+        }else{
+            ereport(ERROR, (errmsg("please resigter process first!")));
+            return false;
+        }
+    }
+
+    return false;
+}
+
+
+void ModelManager::RegisterPreProcess(const std::string& model_name, 
+                                      PreProcessCallback func)
+{
+    std::string model_path;
+    if(GetModelPath(model_name, model_path)){
+        module_preprocess_functions_[model_path] = func;
+        return;
+    }else{
+        module_preprocess_functions_[model_name] = func;
+        //ereport(ERROR, (errmsg("model:%s not exist!", model_name.c_str())));
+    }
+}
+
+void ModelManager::RegisterOutoutProcessFloat(const std::string& model_name, 
+                                              OutputProcessFloatCallback func)
+{
+    std::string model_path;
+    if(GetModelPath(model_name, model_path)){
+        module_outputprocess_functions_float_[model_path] = func;
+        return;
+    }else{
+        module_outputprocess_functions_float_[model_name] = func;
+        //ereport(ERROR, (errmsg("model:%s not exist!", model_name.c_str())));
+    }
+}
+
+void ModelManager::RegisterOutoutProcessText(const std::string& model_name, 
+                                             OutputProcessTextCallback func)
+{
+    std::string model_path;
+    if(GetModelPath(model_name, model_path)){
+        module_outputprocess_functions_text_[model_path] = func;
+        return;
+    }else{
+        module_outputprocess_functions_text_[model_name] = func;
+        //ereport(ERROR, (errmsg("model:%s not exist!", model_name.c_str())));
+    }
+}
+
+bool ModelManager::GetBaseModelPathFromModel(const std::string model_name, 
+                                    std::string& base_model_path)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "SELECT \
+                                    bmi.base_model_path \
+                                FROM \
+                                    model_info mi \
+                                JOIN \
+                                    base_model_info bmi \
+                                ON \
+                                    mi.base_model = bmi.base_model_name \
+                                WHERE \
+                                    mi.model_name = $1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    
+    // 获取select 语句结果
+    HeapTuple tuple = SPI_tuptable->vals[0];
+    base_model_path = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1);
+
+    return true;
+}
+bool ModelManager::GetBaseModelPathFromBaseModel(const std::string base_model_name, 
+                          std::string& base_model_path)
+{
+    SPIConnector spi_connector;
+    std::string prepare_str = "SELECT base_model_path FROM base_model_info \
+                               WHERE base_model_name=$1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(base_model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    
+    // get result
+    HeapTuple tuple = SPI_tuptable->vals[0];
+    base_model_path = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1);
+
+    return true;
+}
+
+bool ModelManager::GetBaseModelPaths(std::vector<std::pair<std::string, std::string>>& base_model_paths)
+{
+    SPIConnector spi_connector;
+    std::string prepare_str = "SELECT base_model_name, base_model_path FROM base_model_info";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 0);
+
+    if(!sql.Execute()){
+        return false;
+    }
+    
+    for(int i = 0; i < SPI_processed; ++i)
+    {
+        HeapTuple tuple = SPI_tuptable->vals[i];
+        std::string base_model_name = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1);
+        std::string base_model_path = SPI_getvalue(tuple, SPI_tuptable->tupdesc, 2);
+        base_model_paths.emplace_back(base_model_name, base_model_path);
+    }
+    return true;
+}
+
+bool ModelManager::HaveBaseModel(const std::string model_name)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "SELECT base_model FROM model_info \
+                               WHERE model_name=$1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    
+
+    HeapTuple tuple = SPI_tuptable->vals[0];
+
+    if(SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1) == NULL){
+        return false;
+    }
+
+    return true;
+}
+
+bool ModelManager::IsBaseModelExist(const std::string base_model_name)
+{
+    SPIConnector spi_connector;
+
+    std::string prepare_str = "SELECT count(*) FROM base_model_info \
+                               WHERE base_model_name=$1";
+
+    SPISqlWrapper sql(spi_connector, prepare_str, 1);
+
+    if(sql.Bind(1, TEXTOID, CStringGetTextDatum(base_model_name.c_str())) && 
+       sql.Execute()){
+        if(SPI_processed != 1){
+            return false;
+        }
+    }
+    
+    HeapTuple tuple = SPI_tuptable->vals[0];
+    if(atoi(SPI_getvalue(tuple, SPI_tuptable->tupdesc, 1)) == 0){
+        return false;
+    }
+
+    return true;
+}
+
+// bool ModelManager::Predict(const std::string& model_path, 
+//                            at::Tensor& input, 
+//                            at::Tensor& output)
+// {
+//     if(module_handle_.find(model_path) == module_handle_.end()){
+//         return false;
+//     }
+//     try {
+//         output = module_handle_[model_path].first.forward({input}).toTensor();
+//         return true;
+//     }
+//     catch (const std::exception& e) {
+//         return false;
+//     }
+// }
+
+// bool ModelManager::Predict(const std::string& model_path, 
+//                            std::vector<at::Tensor>& input, 
+//                            at::Tensor& output)
+// {
+//     if(module_handle_.find(model_path) == module_handle_.end()){
+//         return false;
+//     }
+//     // try {
+//         std::vector<torch::jit::IValue> ivals; 
+//         ivals.reserve(input.size());
+
+//         for (const auto& tensor : input) 
+//         { 
+//             ivals.push_back(tensor); 
+//         }
+
+
+//         output = module_handle_[model_path].first.forward(ivals).toTuple()->elements()[0].toTensor();
+//         return true;
+//     // }
+//     // catch (const std::exception& e) {
+//     //     return false;
+//     // }
+// }
+
+bool ModelManager::Predict(const std::string& model_path,
+                 std::vector<torch::jit::IValue>& input, 
+                 torch::jit::IValue& output)
+{
+    if(module_handle_.find(model_path) == module_handle_.end()){
+        return false;
+    }
+    try {
+        if(module_handle_[model_path].second == at::kCUDA){
+            for(auto& tensor : input){
+                tensor = tensor.toTensor().to(at::kCUDA);
+            }
+        }
+        // std::cout << "Input size: " << input.size() << std::endl;
+
+        auto t = input[0].toTensor();
+
+        torch::jit::IValue raw_output = module_handle_[model_path].first.forward(input);
+
+        if(raw_output.isTuple()){
+            // elog(INFO, "output is tuple");
+            auto tuple = raw_output.toTuple();
+            // elog(INFO, "tuple size: %d", tuple->elements().size());
+            // // 打印每个元素的类型
+            // elog(INFO, "element type: %s", tuple->elements()[0].type()->str().c_str());
+            // auto tensor1 = tuple->elements()[0].toTensor();
+            // elog(INFO, "element[0] shape: %s",
+            // c10::str(tensor1.sizes()).c_str());
+            // elog(INFO, "element type: %s", tuple->elements()[1].type()->str().c_str());
+            // auto tensor2 = tuple->elements()[1].toTensor();
+            // elog(INFO, "element[1] shape: %s",
+            // c10::str(tensor2.sizes()).c_str());
+            if(tuple->elements().size() > 0){
+                if (tuple->elements().size() == 2) {
+                    // output = torch::jit::IValue(tuple->elements()[0].toTensor());
+                    auto tensor1 = tuple->elements()[0].toTensor();
+                    auto tensor2 = tuple->elements()[1].toTensor();
+                    // elog(INFO, "output shape: %s",
+                    // c10::str(tensor1.sizes()).c_str());
+                    // elog(INFO, "element[0] shape: %s",
+                    // c10::str(tensor1.sizes()).c_str());
+                    // elog(INFO, "element[1] shape: %s",
+                    // c10::str(tensor2.sizes()).c_str());
+                    torch::Tensor result = torch::stack({tensor1, tensor2}, 1);
+                    // elog(INFO, "stack shape: %s",
+                    // c10::str(result.sizes()).c_str());
+                    output = torch::jit::IValue(result);
+                    // // stack -> [batch, 2, seq_len]
+                    // auto merged = torch::stack({tensor1, tensor2}, 1);
+
+                    // // 封装为 IValue 返回
+                    // output = torch::jit::IValue(merged);
+                }
+                // 只取第一个输出，封装回 IValue
+                else output = torch::jit::IValue(tuple->elements()[0].toTensor());
+            } else {
+                // tuple 为空，直接返回整个输出
+                // elog(INFO, "tuple is empty");
+                output = raw_output;
+            }
+        } else {
+            // elog(INFO, "output is not tuple");
+            output = raw_output;
+        }
+        return true;
+    }
+    catch (const std::exception& e) {
+        ereport(INFO, (errmsg("error message:%s.", e.what())));
+        return false;
+    }
+}
