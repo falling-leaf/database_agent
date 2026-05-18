@@ -18,7 +18,7 @@
 #include <sstream>
 #include <algorithm>
 
-#define ONLY_FOR_IMAGE_PREDICT false
+#define ONLY_FOR_IMAGE_PREDICT true
 
 #define ADD_OPTIMIZATION_LOGIC false
 

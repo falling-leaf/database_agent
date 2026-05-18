@@ -13,6 +13,7 @@ Usage:
 
 import json
 import csv
+import os
 import time
 import sys
 from datetime import datetime
@@ -49,7 +50,6 @@ def run_single_task_worker(task_id, row_count, query_times=10, symbol='cpu', sql
     except Exception as e:
         print(f"  Error in task {task_id}: {e}")
         return {"task_id": task_id, "status": "failed", "error": str(e)}
-
 
 # =============================================================================
 # Query definitions: 9 test cases across 3 data types
@@ -244,13 +244,17 @@ def run_single_slice_test(use_new_queries=False):
             else:
                 print(f"    rows={r['row_count']}, qt={r['query_times']}, FAILED: {r.get('error', '')}")
 
-    # Save results
+    # Save results to results/ directory, overwriting previous run
+    results_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
+    os.makedirs(results_dir, exist_ok=True)
     suffix = "new" if use_new_queries else "original"
-    filename = f"single_test_results_{suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(filename, 'w', encoding='utf-8') as f:
+    filename = f"single_test_results_{suffix}.json"
+    filepath = os.path.join(results_dir, filename)
+    with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(all_results, f, indent=2, ensure_ascii=False)
-    json_to_csv(filename, filename.replace('.json', '.csv'))
-    print(f"\nResults saved to: {filename}")
+    csvpath = filepath.replace('.json', '.csv')
+    json_to_csv(filepath, csvpath)
+    print(f"\nResults saved to: {filepath}")
 
 
 def run_both_tests():
