@@ -18,6 +18,8 @@ pgdl/test/morphingdb_test/models/
 # === TEST OUTPUT / RUNTIME CACHE ===
 pgdl/test/results/
 pgdl/test/evadb_data/
+pgdl/test/benchmark_results.json
+pgdl/test/musique_benchmark_results.json
 # Timestamped test result files in test/ root
 pgdl/test/*_results_*.csv
 pgdl/test/*_results_*.json
