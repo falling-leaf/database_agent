@@ -258,12 +258,9 @@ infer_batch_internal(VecAggState *state, bool ret_float8)
         CLOCK_START();
         try{
             for (int i = 0; i < prcsd_batch_n; i++) {
-                //pool.emplace_back([&, i](){
-                    Args* in = (Args*)list_nth(state->ins, i);
-                    res[i] = model_manager.PreProcess(model_path, input_tensors[i], in);
-                //});
+                Args* in = (Args*)list_nth(state->ins, i);
+                res[i] = model_manager.PreProcess(model_path, input_tensors[i], in);
             }
-            //WAIT_AND_CHECK_ERROR("preprocess");
         }catch (const std::exception& e) {
             elog(INFO, "error message:%s", e.what());
         }
@@ -284,13 +281,27 @@ infer_batch_internal(VecAggState *state, bool ret_float8)
                     one_dim_vecs.push_back(vecs[i].toTensor());
                 }
                 // 使用 torch::cat 替代 torch::concat
-                input_batch_tensor.push_back(torch::cat(one_dim_vecs, 0));
+                torch::Tensor cat_result = torch::cat(one_dim_vecs, 0);
+                // Pad odd batch sizes to even to avoid crash in cross_encoder JIT
+                // The TorchScript model has a bug that crashes with odd batch dimensions
+                if (cat_result.size(0) % 2 != 0) {
+                    torch::Tensor pad = torch::zeros_like(cat_result[0]).unsqueeze(0);
+                    cat_result = torch::cat({cat_result, pad}, 0);
+                }
+                input_batch_tensor.push_back(cat_result);
             }
                 
             // infer model
             if(!model_manager.Predict(model_path, input_batch_tensor, output)) {
                 CLEAN_UP_CPP_OBJS();
                 ereport(ERROR, (errmsg("%s:predict error!", model_path)));
+            }
+            // If we padded, trim the extra output row
+            if (prcsd_batch_n % 2 != 0 && output.isTensor()) {
+                auto out_tensor = output.toTensor();
+                if (out_tensor.size(0) > prcsd_batch_n) {
+                    output = torch::jit::IValue(out_tensor.slice(0, 0, prcsd_batch_n));
+                }
             }
         }catch (const std::exception& e) {
             elog(INFO, "error message:%s", e.what());

@@ -223,6 +223,7 @@ enum class TaskType {
     SERIES, ///< 序列任务
     NLP, ///< 自然语言处理任务
     REASONING, ///< 推理任务
+    MUSIQUE, ///< 多跳问答任务 (musique 数据集)
     REASONING_STEP2, ///< 推理第二步
     REASONING_STEP3, ///< 推理第三步
     STEP1, ///< 第一步任务

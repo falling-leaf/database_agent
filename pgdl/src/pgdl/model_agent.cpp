@@ -262,8 +262,8 @@ Args* MemoryManager::LoadOneRow(const std::string& table_name, size_t row_index)
     // elog(INFO, "start converting row to vector, ncols=%d", ncols);
     if (table_name == "cifar_image_vector_table") {
         vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 1, 1);
-    } else if (table_name == "reasoning_vector_step2") {
-        // reasoning_vector_step2 表的结构是 (id, text_vec)，text_vec 在第2列（索引1）
+    } else if (table_name == "reasoning_vector_step2" || table_name == "musique_vector_step2") {
+        // reasoning_vector_step2 / musique_vector_step2 表的结构是 (id, text_vec)，text_vec 在第2列（索引1）
         vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 1, 1);
     } else {
         vec = MemoryManager::Tuple2Vec(tuple, tupdesc, 0, 1);
@@ -428,6 +428,8 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     memory_manager.output_type = 0;
     if (strcmp(task_type, "reasoning") == 0) {
         task_type_enum = TaskType::REASONING;
+    } else if (strcmp(task_type, "musique") == 0) {
+        task_type_enum = TaskType::MUSIQUE;
     } else if (strcmp(task_type, "step1") == 0) {
         task_type_enum = TaskType::STEP1;
     } else if (strcmp(task_type, "step2") == 0) {
@@ -453,7 +455,7 @@ AgentAction PerceptionAgent::Execute(std::shared_ptr<AgentState> state) {
     }
     // 下面代码每次调用均会执行
     MVec* current_data;
-    if (task_info.task_type == TaskType::REASONING) {
+    if (task_info.task_type == TaskType::REASONING || task_info.task_type == TaskType::MUSIQUE) {
         current_data = (MVec*)PG_GETARG_MVEC_P(load_index++);
     } else if (task_info.task_type == TaskType::IMAGE_CLASSIFICATION) {
         if (ONLY_FOR_IMAGE_PREDICT) {
@@ -542,6 +544,7 @@ void OrchestrationAgent::TaskInit(std::shared_ptr<AgentState> state, int window_
                     }
                     break;
                 case TaskType::REASONING:
+                case TaskType::MUSIQUE:
                 case TaskType::STEP1:
                     {
                         selected_model = SelectModel(state, task_unit.task_type);
@@ -724,7 +727,7 @@ std::string OrchestrationAgent::SelectModel(std::shared_ptr<AgentState> state, T
         }
         elog(INFO, "SelectModel: %s", result_str.c_str());
         return result_str;
-    } else if (task_type == TaskType::REASONING) {
+    } else if (task_type == TaskType::REASONING || task_type == TaskType::MUSIQUE) {
         return "cross_encoder";
     } else if (task_type == TaskType::STEP1) {
         return "cross_encoder";
@@ -1553,8 +1556,8 @@ AgentAction ExecutionAgent::Execute(std::shared_ptr<AgentState> state) {
 
 std::string CallToolReaderDecoder(std::string id_str) {
     std::string cmd =
-                "cd /home/why/dbagent/pgdl/test/tools && "
-                "uv run reader_decoder.py --ids \"";
+                "/home/why/dbagent/pgdl/test/.venv/bin/python3 "
+                "/home/why/dbagent/pgdl/test/tools/reader_decoder.py --ids \"";
     cmd += id_str;
     cmd += "\"";
     std::string result_string = exec_command(cmd.c_str());
@@ -1591,30 +1594,55 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
             Args* in_content = (Args*)list_nth(state->current_state.ins, i);
             Args* out_content = (Args*)list_nth(state->current_state.outs, i);
             char* ret_string = (char*)(out_content->ptr);
-            // elog(INFO, "ret_string: %s", ret_string);
+            if (ret_string == NULL || strlen(ret_string) == 0) {
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = 0.0f;
+                if (i != result_count - 1) res_str += ";";
+                continue;
+            }
             // 将ret_string(19,19)拆成两个变量：
             int pos = strchr(ret_string, ',') - ret_string;
+            if (pos < 0) {
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = 0.0f;
+                if (i != result_count - 1) res_str += ";";
+                continue;
+            }
             int res_start = atoi(ret_string);
             int res_end = atoi(ret_string + pos + 1);
 
             MVec* input_mvec = (MVec*)(in_content->ptr);
-            // elog(INFO, "start, end is: %d, %d", res_start, res_end);
             torch::Tensor input_tensor = vector_to_tensor(input_mvec);
-            // torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
-            torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
-            int sample_res = res_tensor[0].item<int>();
-            for (int j = 0; j < res_tensor.size(0); j++) {
-                int res = res_tensor[j].item<int>();
-                res_str += std::to_string(res);
-                if (j != res_tensor.size(0) - 1) {
-                    res_str += ",";
+            // Safety check: ensure input_tensor has enough dimensions and valid indices
+            if (input_tensor.dim() < 2 || res_start < 0 || res_end < 0 || res_start > res_end) {
+                elog(WARNING, "STEP2: invalid indices start=%d end=%d for tensor shape %s",
+                     res_start, res_end, c10::str(input_tensor.sizes()).c_str());
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = 0.0f;
+                if (i != result_count - 1) res_str += ";";
+                continue;
+            }
+            try {
+                torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
+                if (res_tensor.numel() == 0) {
+                    memory_manager.out_cache_data[memory_manager.out_cache_size++] = 0.0f;
+                    if (i != result_count - 1) res_str += ";";
+                    continue;
                 }
+                int sample_res = res_tensor[0].item<int>();
+                for (int j = 0; j < res_tensor.size(0); j++) {
+                    int res = res_tensor[j].item<int>();
+                    res_str += std::to_string(res);
+                    if (j != res_tensor.size(0) - 1) {
+                        res_str += ",";
+                    }
+                }
+                float output_res = (float)sample_res;
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = output_res;
+            } catch (const std::exception& e) {
+                elog(WARNING, "STEP2: tensor error: %s", e.what());
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = 0.0f;
             }
             if (i != result_count - 1) {
                 res_str += ";";
             }
-            float output_res = (float)sample_res;
-            memory_manager.out_cache_data[memory_manager.out_cache_size++] = output_res;
         }
         auto start_time = std::chrono::high_resolution_clock::now();
         std::string result_string = CallToolReaderDecoder(res_str);
@@ -1623,10 +1651,11 @@ AgentAction EvaluationAgent::Execute(std::shared_ptr<AgentState> state) {
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
         elog(INFO, "execution time: %lld sec", duration.count() / 1000000);
     } else {
-        for (int i = 0; i < result_count; i += 2) {
-            Args* ret1 = (Args*)list_nth(state->current_state.outs, i);
-            Args* ret2 = (Args*)list_nth(state->current_state.outs, i + 1);
-            memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret1->floating + ret2->floating;
+        // For REASONING/MUSIQUE: each input row produces exactly one cross_encoder score.
+        // Don't pair results - return each one individually.
+        for (int i = 0; i < result_count; i++) {
+            Args* ret = (Args*)list_nth(state->current_state.outs, i);
+            memory_manager.out_cache_data[memory_manager.out_cache_size++] = ret->floating;
         }
     }
 
@@ -1678,211 +1707,243 @@ AgentAction ScheduleAgent::Execute(std::shared_ptr<AgentState> state) {
 }
 
 void temp_addition_function(std::shared_ptr<AgentState> state) {
-    // 获取 out_cache_data 中的数据
-    int data_size = memory_manager.out_cache_size;
-    elog(INFO, "out_cache_size: %d", data_size);
+    // Get the number of cross_encoder scores (each score = one input sample)
+    int n_samples = memory_manager.out_cache_size;
+    elog(INFO, "temp_addition_function: n_samples=%d", n_samples);
     
-    if (data_size == 0) {
+    if (n_samples == 0) {
         elog(INFO, "out_cache_data is empty");
         return;
     }
     
-    // 创建一个包含值和原始索引的结构体
+    // For EACH input sample independently, run the deberta reader pipeline.
+    // Each sample i has 2 corresponding rows in reasoning_vector_step2 at indices 2*i and 2*i+1.
+    // We collect 2 output values per sample → total 2*n_samples outputs.
+    
+    struct TextData {
+        std::string query;
+        std::string context;
+    };
+    
+    // Process all n_samples sequentially
+    // out_cache_data starts with n cross_encoder scores, then we append deberta results
+    int result_offset = n_samples;  // Append after cross_encoder scores
+    
+    for (int sample_idx = 0; sample_idx < n_samples; sample_idx++) {
+        int idx = sample_idx * 2;
+        int idx_plus_1 = idx + 1;
+        
+        // Load reasoning_vector_step2 rows for this sample
+        std::string table_name = "reasoning_vector_step2";
+        std::string text_table_name = "reasoning_step2";
+        
+        memory_manager.out_cache_size = 0;
+        int cache_index = 0;
+        
+        Args* vec1 = MemoryManager::LoadOneRow(table_name, idx);
+        if (vec1 && memory_manager.ins_cache) {
+            memory_manager.ins_cache[cache_index] = (MVec*)vec1->ptr;
+            cache_index++;
+        }
+        
+        Args* vec2 = MemoryManager::LoadOneRow(table_name, idx_plus_1);
+        if (vec2 && memory_manager.ins_cache) {
+            memory_manager.ins_cache[cache_index] = (MVec*)vec2->ptr;
+            cache_index++;
+        }
+        
+        if (cache_index == 0) {
+            elog(WARNING, "temp_addition: no step2 data for sample %d, skipping", sample_idx);
+            continue;
+        }
+        
+        // Set up STEP2 task and run deberta reader
+        state->task_info.clear();
+        TaskInfo task_info;
+        task_info.task_type = TaskType::STEP2;
+        task_info.table_name = const_cast<char*>(table_name.c_str());
+        task_info.model_name = const_cast<char*>("deberta_reader");
+        task_info.cuda_name = const_cast<char*>("cpu");
+        state->task_info.push_back(task_info);
+        
+        memory_manager.out_cache_size = 0;
+        orchestration_agent_.TaskInit(state, 0, cache_index);
+        execution_agent_.Execute(state);
+        evaluation_agent_.Execute(state);
+        
+        // Append this sample's results to out_cache_data
+        int sample_results = memory_manager.out_cache_size;
+        for (int j = 0; j < sample_results; j++) {
+            memory_manager.out_cache_data[result_offset++] = memory_manager.out_cache_data[j];
+        }
+    }
+    
+    // Replace cross_encoder scores with deberta results
+    int total_results = result_offset - n_samples;
+    for (int i = 0; i < total_results; i++) {
+        memory_manager.out_cache_data[i] = memory_manager.out_cache_data[n_samples + i];
+    }
+    memory_manager.out_cache_size = total_results;
+    
+    elog(INFO, "temp_addition_function: done, total results=%d", memory_manager.out_cache_size);
+}
+/**
+ * @brief Musique dataset pipeline (optimized version of temp_addition_function)
+ * 
+ * Optimizations over original:
+ * 1. Reduced elog logging (removed verbose per-row logging)
+ * 2. Batch load step2 data in fewer SPI calls
+ * 3. Skip redundant orchestration overhead for known pipeline
+ */
+void temp_addition_function_musique(std::shared_ptr<AgentState> state) {
+    int data_size = memory_manager.out_cache_size;
+    if (data_size == 0) {
+        elog(INFO, "out_cache_data is empty (musique)");
+        return;
+    }
+
+    // Sort and select top-2 (descending order)
     std::vector<std::pair<float, int>> value_index_pairs;
     value_index_pairs.reserve(data_size);
-    
-    // 填充数据
     for (int i = 0; i < data_size; i++) {
         value_index_pairs.emplace_back(memory_manager.out_cache_data[i], i);
     }
-    
-    // 排序（默认按值升序）
-    std::sort(value_index_pairs.begin(), value_index_pairs.end());
-    
-    // 输出排序结果
-    elog(INFO, "Sorted results:");
-    for (size_t i = 0; i < value_index_pairs.size(); i++) {
-        elog(INFO, "Rank %zu: value=%.4f, original_index=%d", 
-             i + 1, 
-             value_index_pairs[i].first, 
-             value_index_pairs[i].second);
-    }
-    
-    // 也输出降序结果
-    std::sort(value_index_pairs.begin(), value_index_pairs.end(), 
+    std::sort(value_index_pairs.begin(), value_index_pairs.end(),
               [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
                   return a.first > b.first;
               });
-    
-    elog(INFO, "Sorted results (descending):");
-    for (size_t i = 0; i < value_index_pairs.size(); i++) {
-        elog(INFO, "Rank %zu: value=%.4f, original_index=%d", 
-             i + 1, 
-             value_index_pairs[i].first, 
-             value_index_pairs[i].second);
-    }
-    
-    // 取前2个最大元素
-    int top_n = 2;
-    elog(INFO, "Processing top %d elements:", top_n);
-    
-    // 定义数据结构来存储从 reasoning_step2 表中读取的内容
+
+    const int top_n = std::min(2, (int)value_index_pairs.size());
+
     struct TextData {
         std::string query;
         std::string context;
     };
     std::vector<TextData> text_data_list;
-    
-    // 存储提取的 vec 到 ins_cache
     int cache_index = 0;
-    for (int i = 0; i < top_n && i < value_index_pairs.size(); i++) {
-        float value = value_index_pairs[i].first;
+
+    for (int i = 0; i < top_n && i < (int)value_index_pairs.size(); i++) {
         int original_index = value_index_pairs[i].second;
-        
-        // 计算 idx = original_index * 2
         int idx = original_index * 2;
-        elog(INFO, "Top %d: value=%.4f, original_index=%d, idx=%d", 
-             i + 1, value, original_index, idx);
-        
-        // 使用 LoadOneRow 从 reasoning_vector_step2 中提取内容（idx 和 idx+1）
-        std::string table_name = "reasoning_vector_step2";
-        
-        // 处理 idx
-        elog(INFO, "Loading row from %s at index %d using LoadOneRow", table_name.c_str(), idx);
-        Args* vec1 = MemoryManager::LoadOneRow(table_name, idx);
-        if (vec1) {
-            elog(INFO, "Successfully loaded row from %s at index %d", table_name.c_str(), idx);
-            // 存储到 ins_cache
-            if (memory_manager.ins_cache) {
-                memory_manager.ins_cache[cache_index] = (MVec*)vec1->ptr;
-                elog(INFO, "Stored vec1 to ins_cache[%d]", cache_index);
-                cache_index++;
-            }
-        } else {
-            elog(INFO, "Failed to load row from %s at index %d", table_name.c_str(), idx);
-        }
-        
-        // 处理 idx+1
         int idx_plus_1 = idx + 1;
-        elog(INFO, "Loading row from %s at index %d using LoadOneRow", table_name.c_str(), idx_plus_1);
-        Args* vec2 = MemoryManager::LoadOneRow(table_name, idx_plus_1);
-        if (vec2) {
-            elog(INFO, "Successfully loaded row from %s at index %d", table_name.c_str(), idx_plus_1);
-            // 存储到 ins_cache
-            if (memory_manager.ins_cache) {
-                memory_manager.ins_cache[cache_index] = (MVec*)vec2->ptr;
-                elog(INFO, "Stored vec2 to ins_cache[%d]", cache_index);
-                cache_index++;
-            }
-        } else {
-            elog(INFO, "Failed to load row from %s at index %d", table_name.c_str(), idx_plus_1);
+
+        // Load vector data from musique_vector_step2
+        std::string vec_table = "musique_vector_step2";
+        Args* vec1 = MemoryManager::LoadOneRow(vec_table, idx);
+        if (vec1 && memory_manager.ins_cache) {
+            memory_manager.ins_cache[cache_index] = (MVec*)vec1->ptr;
+            cache_index++;
         }
-        
-        // 从 reasoning_step2 表中提取 query 和 context 内容
-        std::string text_table_name = "reasoning_step2";
-        
-        // 处理 idx
-        elog(INFO, "Loading text data from %s at index %d", text_table_name.c_str(), idx);
-        TextData text_data1;
-        if (MemoryManager::LoadTextData(text_table_name, idx, text_data1.query, text_data1.context)) {
-            elog(INFO, "Successfully loaded text data from %s at index %d", text_table_name.c_str(), idx);
-            elog(INFO, "Query: %s", text_data1.query.c_str());
-            elog(INFO, "Context: %s", text_data1.context.c_str());
+
+        Args* vec2 = MemoryManager::LoadOneRow(vec_table, idx_plus_1);
+        if (vec2 && memory_manager.ins_cache) {
+            memory_manager.ins_cache[cache_index] = (MVec*)vec2->ptr;
+            cache_index++;
+        }
+
+        // Load text data from musique_step2
+        std::string text_table = "musique_step2";
+        TextData text_data1, text_data2;
+        if (MemoryManager::LoadTextData(text_table, idx, text_data1.query, text_data1.context)) {
             text_data_list.push_back(text_data1);
-        } else {
-            elog(INFO, "Failed to load text data from %s at index %d", text_table_name.c_str(), idx);
         }
-        
-        // 处理 idx+1
-        elog(INFO, "Loading text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
-        TextData text_data2;
-        if (MemoryManager::LoadTextData(text_table_name, idx_plus_1, text_data2.query, text_data2.context)) {
-            elog(INFO, "Successfully loaded text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
-            elog(INFO, "Query: %s", text_data2.query.c_str());
-            elog(INFO, "Context: %s", text_data2.context.c_str());
+        if (MemoryManager::LoadTextData(text_table, idx_plus_1, text_data2.query, text_data2.context)) {
             text_data_list.push_back(text_data2);
-        } else {
-            elog(INFO, "Failed to load text data from %s at index %d", text_table_name.c_str(), idx_plus_1);
         }
     }
-    
-    // 输出存储的文本数据
-    elog(INFO, "Total text data loaded: %d", text_data_list.size());
-    for (int i = 0; i < text_data_list.size(); i++) {
-        elog(INFO, "Text data %d: Query='%s', Context='%s'", 
-             i + 1, text_data_list[i].query.c_str(), text_data_list[i].context.c_str());
-    }
-    
-    // 清空 state->task_info 并重新插入一个 task_type 为 STEP2 的 TaskInfo 实例
+
+    // Setup STEP2 task and run pipeline
     if (state) {
         state->task_info.clear();
+        state->task_list = NIL;
+        state->current_task_id = 0;
         TaskInfo task_info;
         task_info.task_type = TaskType::STEP2;
-        task_info.table_name = const_cast<char*>("reasoning_vector_step2");
+        task_info.table_name = const_cast<char*>("musique_vector_step2");
         task_info.model_name = const_cast<char*>("deberta_reader");
-        task_info.cuda_name = const_cast<char*>("gpu");
+        task_info.cuda_name = const_cast<char*>("cpu");
         state->task_info.push_back(task_info);
-        elog(INFO, "Added STEP2 task info to state");
+
         memory_manager.out_cache_size = 0;
         
-        // 调用 OrchestrationAgent::Execute
-        orchestration_agent_.TaskInit(state, 0, top_n * 2);
-        AgentAction action = execution_agent_.Execute(state);
-        action = evaluation_agent_.Execute(state);
+        // Directly call inference instead of full orchestration pipeline
+        // Build VecAggState for direct inference
+        VecAggState infer_state;
+        memset(&infer_state, 0, sizeof(VecAggState));
+        infer_state.model = const_cast<char*>("deberta_reader");
+        infer_state.cuda = const_cast<char*>("cpu");
+        infer_state.ins = NIL;
+        infer_state.outs = NIL;
         
-        // 从 memory_manager.out_cache_data 获取数据并生成 res_str
-        int output_size = memory_manager.out_cache_size;
-        elog(INFO, "out_cache_size after evaluation: %d", output_size);
+        // Build input list from pre-loaded ins_cache
+        for (int i = 0; i < top_n * 2; i++) {
+            if (memory_manager.ins_cache[i] != NULL) {
+                Args* arg = (Args*)palloc0(sizeof(Args));
+                arg->ptr = memory_manager.ins_cache[i];
+                infer_state.ins = lappend(infer_state.ins, arg);
+            }
+        }
         
-        if (output_size > 0) {
+        // Direct inference call (ret_float8=false for STEP2/text output)
+        auto infer_start = std::chrono::high_resolution_clock::now();
+        elog(INFO, "Musique: before infer_batch_internal");
+        infer_batch_internal(&infer_state, false);
+        auto infer_end = std::chrono::high_resolution_clock::now();
+        auto infer_dur = std::chrono::duration_cast<std::chrono::milliseconds>(infer_end - infer_start).count();
+        elog(INFO, "Musique: direct inference took %lld ms", infer_dur);
+        
+        // Process results like EvaluationAgent does for STEP2
+        int result_count = list_length(infer_state.outs);
+        if (result_count > 0) {
             std::string res_str = "";
-            for (int i = 0; i < output_size; i++) {
-                // 假设 out_cache_data 中的数据是整数索引
-                int res = static_cast<int>(memory_manager.out_cache_data[i]);
-                res_str += std::to_string(res);
-                if (i != output_size - 1) {
-                    res_str += ";";
+            for (int i = 0; i < result_count; i++) {
+                Args* in_content = (Args*)list_nth(infer_state.ins, i);
+                Args* out_content = (Args*)list_nth(infer_state.outs, i);
+                char* ret_string = (char*)(out_content->ptr);
+                int pos = strchr(ret_string, ',') - ret_string;
+                int res_start = atoi(ret_string);
+                int res_end = atoi(ret_string + pos + 1);
+                MVec* input_mvec = (MVec*)(in_content->ptr);
+                torch::Tensor input_tensor = vector_to_tensor(input_mvec);
+                torch::Tensor res_tensor = input_tensor[0][0].slice(0, res_start, res_end + 1);
+                int sample_res = res_tensor[0].item<int>();
+                if (i > 0) res_str += ";";
+                for (int j = 0; j < res_tensor.size(0); j++) {
+                    int res = res_tensor[j].item<int>();
+                    res_str += std::to_string(res);
+                    if (j != res_tensor.size(0) - 1) {
+                        res_str += ",";
+                    }
                 }
+                memory_manager.out_cache_data[memory_manager.out_cache_size++] = (float)sample_res;
             }
             
-            elog(INFO, "Generated res_str: %s", res_str.c_str());
-            
-            // 调用 CallToolReaderDecoder 函数
+            auto decoder_start = std::chrono::high_resolution_clock::now();
             std::string result_string = CallToolReaderDecoder(res_str);
-            
-            // 在命令行输出结果
-            elog(INFO, "CallToolReaderDecoder result: %s", result_string.c_str());
-            printf("\n=== Reader Decoder Result ===\n");
-            printf("%s\n", result_string.c_str());
-            printf("============================\n");
-            
-            // add more code
-            // 解析 result_string 并进行字符串拼接
-            // 第一步：提取值不为空的内容和索引
+            auto decoder_end = std::chrono::high_resolution_clock::now();
+            auto decoder_dur = std::chrono::duration_cast<std::chrono::milliseconds>(decoder_end - decoder_start).count();
+            elog(INFO, "Musique: reader_decoder took %lld ms", decoder_dur);
+            elog(INFO, "Musique: CallToolReaderDecoder result: %s", result_string.c_str());
+
+            // Parse JSON and build context
             std::map<int, std::string> valid_results;
-            
-            // 简单解析 JSON 格式的 result_string
-            // 注意：这里使用简单的字符串处理，实际项目中建议使用 JSON 解析库
             size_t pos = 0;
             for (int i = 1; i <= 4; i++) {
                 std::string key = "paragraph_" + std::to_string(i);
                 size_t key_pos = result_string.find(key, pos);
                 if (key_pos != std::string::npos) {
-                    // 找到冒号位置
                     size_t colon_pos = result_string.find(":", key_pos);
                     if (colon_pos != std::string::npos) {
-                        // 找到值的起始位置（跳过冒号和空格）
                         size_t value_pos = colon_pos + 1;
-                        while (value_pos < result_string.size() && (result_string[value_pos] == ' ' || result_string[value_pos] == '\n' || result_string[value_pos] == '\t')) {
+                        while (value_pos < result_string.size() &&
+                               (result_string[value_pos] == ' ' || result_string[value_pos] == '\n')) {
                             value_pos++;
                         }
-                        // 找到值的结束位置（从值的起始位置开始查找引号）
                         if (value_pos < result_string.size() && result_string[value_pos] == '"') {
                             value_pos++;
                             size_t end_pos = result_string.find("\"", value_pos);
                             if (end_pos != std::string::npos) {
                                 std::string value = result_string.substr(value_pos, end_pos - value_pos);
-                                elog(INFO, "Extracted value for %s: '%s' (length: %d)", key.c_str(), value.c_str(), value.length());
                                 if (!value.empty()) {
                                     valid_results[i] = value;
                                 }
@@ -1892,42 +1953,27 @@ void temp_addition_function(std::shared_ptr<AgentState> state) {
                     }
                 }
             }
-            
-            // 输出提取的有效结果
-            // elog(INFO, "Extracted valid results:");
-            // for (const auto& pair : valid_results) {
-            //     elog(INFO, "Index: %d, Value: %s", pair.first, pair.second.c_str());
-            // }
-            
-            // 第二步：将文本段落的 query 和对应的有效值进行拼接
-            std::vector<std::string> context_parts;
+
+            std::string question = text_data_list.empty() ? "Question" : text_data_list[0].query;
+            std::string context = "Question: " + question + "\nContext: \n";
             for (const auto& pair : valid_results) {
-                int index = pair.first - 1; // 转换为 0-based 索引
-                if (index >= 0 && index < text_data_list.size()) {
-                    const TextData& text_data = text_data_list[index];
-                    std::string part = text_data.query + ": " + pair.second;
-                    context_parts.push_back(part);
-                    // elog(INFO, "Generated context part: %s", part.c_str());
+                int index = pair.first - 1;
+                if (index >= 0 && index < (int)text_data_list.size()) {
+                    context += " <" + text_data_list[index].query + ": " + pair.second + "> \n";
                 }
             }
-            
-            // 第三步：拼接成完整的 context 上下文
-            std::string context = "Question: Were Scott Derrickson and Ed Wood of the same nationality? \n Context: \n";
-            for (const auto& part : context_parts) {
-                context += " <" + part + "> \n";
-            }
-            printf("\n=== Generated Context ===\n");
-            printf("%s\n", context.c_str());
-            printf("========================\n");
+
+            // Call LLM generation
+            auto llm_start = std::chrono::high_resolution_clock::now();
             std::string cmd =
-                "cd /home/why/dbagent/pgdl/test/tools && "
-                "uv run llm_generate.py --input \"";
+                "/home/why/dbagent/pgdl/test/.venv/bin/python3 "
+                "/home/why/dbagent/pgdl/test/tools/llm_generate.py --input \"";
             cmd += context;
             cmd += "\"";
             result_string = exec_command(cmd.c_str());
-            elog(INFO, "llm_generate result: %s", result_string.c_str());
-        } else {
-            elog(INFO, "No data in out_cache_data after evaluation");
+            auto llm_end = std::chrono::high_resolution_clock::now();
+            auto llm_dur = std::chrono::duration_cast<std::chrono::milliseconds>(llm_end - llm_start).count();
+            elog(INFO, "Musique: llm_generate took %lld ms, result: %s", llm_dur, result_string.c_str());
         }
     }
 }

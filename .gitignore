@@ -22,6 +22,12 @@ pgdl/test/evadb_data/
 pgdl/test/*_results_*.csv
 pgdl/test/*_results_*.json
 
+# === PYTHON VIRTUAL ENVIRONMENTS ===
+.venv/
+venv/
+**/.venv/
+**/venv/
+
 # === PYTHON CACHE ===
 **/__pycache__/
 **/*.pyc

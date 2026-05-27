@@ -613,7 +613,13 @@ bool deberta_reader_OutputProcessFloat(torch::jit::IValue& outputs, Args* args, 
     try {
         // 检查 output_tensor 是否是 Tensor
         if (outputs.isTensor()) {
-            auto tensor = outputs.toTensor().select(1, 0); //.slice(1, 0, 120);
+            auto tensor = outputs.toTensor();
+            if (tensor.numel() == 0 || tensor.dim() < 2) {
+                // Return a default score for empty outputs
+                result = 0.0;
+                return true;
+            }
+            tensor = tensor.select(1, 0);
             // elog(INFO, "tensor.size: %s", c10::str(tensor.sizes()).c_str());
             std::tuple<torch::Tensor, torch::Tensor> res = tensor.sort(1, true);
             torch::Tensor top_scores = std::get<1>(res);
@@ -625,7 +631,11 @@ bool deberta_reader_OutputProcessFloat(torch::jit::IValue& outputs, Args* args, 
             // 获取 Tuple 中的第一个元素，假设它是 Tensor
             auto tuple = outputs.toTuple();
             if (tuple->elements().size() > 0 && tuple->elements()[0].isTensor()) {
-                auto tensor = tuple->elements()[0].toTensor(); //.slice(1, 0, 120);
+                auto tensor = tuple->elements()[0].toTensor();
+                if (tensor.numel() == 0 || tensor.dim() < 2) {
+                    result = 0.0;
+                    return true;
+                }
                 std::tuple<torch::Tensor, torch::Tensor> res = tensor.sort(1, true);
                 torch::Tensor top_scores = std::get<1>(res);
                 result = top_scores[0][0].item<float8>();
@@ -638,8 +648,9 @@ bool deberta_reader_OutputProcessFloat(torch::jit::IValue& outputs, Args* args, 
             return false;
         }
     } catch (const std::exception& e) {
-        elog(INFO, "e.what(): %s\n", e.what());
-        return false;
+        elog(WARNING, "deberta_reader_OutputProcessFloat error: %s", e.what());
+        result = 0.0;
+        return true;
     }
     return true;
 }

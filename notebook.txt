@@ -1,0 +1,176 @@
+uv run main.py
+select predict_batch_float8('googlenet_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 100;
+select predict_batch_float8('alexnet_stanford_dogs', 'cpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_table limit 100;
+select predict_batch_float8('slice', 'cpu', data) over (rows between current row and 31 following) from slice_test limit 10000;
+select predict_batch_float8('swarm', 'cpu', data) over (rows between current row and 31 following) from swarm_test limit 100;
+select predict_batch_float8('{model}', '{symbol}', {column}) over (rows between current row and 31 following) from {table} limit {row_count};
+select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 100;
+
+select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following ) from nlp_vector_test limit 100;
+select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 15 following ) from imdb_vector_test limit 100;
+select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 15 following ) from financial_phrasebank_vector_test limit 70;
+
+    // 单个db_agent做series 含义：对slice_test表的前70条数据做predict任务
+select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test) AS sub_table;
+select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM swarm_test limit 1000) AS sub_table;
+select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM year_predict_test limit 5000) AS sub_table;
+
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test) AS sub_table;
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 70) AS sub_table;
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 70) AS sub_table;
+
+    // 单个db_agent做image 含义：对cifar_image_table的前100条数据做image_classification任务
+select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM cifar_image_table limit 100) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM stanford_dogs_image_table limit 100) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_path)) AS score FROM (SELECT * FROM imagenet_image_table limit 100) AS sub_table;
+
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 10000) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 100) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 100) AS sub_table;
+
+    // db_agent结果进行filter（自定义算子与传统算子的结合） 含义：对slice_test表的前70条数据做predict任务，返回任务结果中值大于30的条目
+    // 对slice_test表的前70条数据做predict任务，返回任务结果中值大于30的条目
+    select * from (select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 70) AS sub_table) as target where target.score > 30;
+
+    // 两个db_agent结果进行join（自定义算子之间进行join方法） 含义：对slice_test表的前70条数据做predict任务并做self join，筛选其中一张表中值大于30的条目
+    select * from 
+        (select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 70) AS sub_table) as target1,
+        (select unnest(db_agent_single('series', sub_table.data)) AS score FROM (SELECT * FROM slice_test limit 70) AS sub_table) as target2 where target1.score > 30;
+
+
+CREATE TABLE IF NOT EXISTS cpu_load_training_data (
+id SERIAL PRIMARY KEY,
+timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+cpu_load DOUBLE PRECISION,
+cpu_cores INTEGER,
+
+execution_runtime_us BIGINT,
+data_shape_1 BIGINT,
+data_shape_2 BIGINT,
+data_shape_3 BIGINT,
+data_shape_4 BIGINT,
+model_mac_count BIGINT,
+model_param_count BIGINT,
+model_param_size BIGINT
+)
+
+CREATE TABLE IF NOT EXISTS gpu_load_training_data (
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    cuda_cores DOUBLE PRECISION,
+    gpu_freq DOUBLE PRECISION,
+    util DOUBLE PRECISION,
+    mem_used DOUBLE PRECISION,
+    mem_total DOUBLE PRECISION,
+    
+    execution_runtime_us BIGINT,
+    data_shape_1 BIGINT,
+    data_shape_2 BIGINT,
+    data_shape_3 BIGINT,
+    data_shape_4 BIGINT,
+    model_mac_count BIGINT,
+    model_param_count BIGINT,
+    model_param_size BIGINT·
+);
+
+
+select image_classification('cifar_image_table', 'image_path', 'cifar_image_table', 10, '/home/why/save/vit_l14_gpu_fixed.pt', '/home/why/pgdl/model/models/select_model/regression_model.onnx');
+select image_classification('stanford_dogs_image_table', 'image_path', 'stanford_dogs_image_table', 10, '/home/why/save/vit_l14_gpu_fixed.pt', '/home/why/pgdl/model/models/select_model/regression_model.onnx');
+select image_classification('imagenet_image_table', 'image_path', 'imagenet_image_table', 10, '/home/why/save/vit_l14_gpu_fixed.pt', '/home/why/pgdl/model/models/select_model/regression_model.onnx');
+
+resnet50_resnet50_cifar10_from_nabird
+resnet50_resnet50_stanford_dogs_from_cifar10
+resnet18_resnet18_imagenet
+
+select predict_batch_float8('resnet50_resnet50_cifar10_from_nabird', 'gpu', image_vector) over (rows between current row and 31 following) from cifar_image_vector_table limit 1000;
+select predict_batch_float8('resnet50_resnet50_stanford_dogs_from_cifar10', 'gpu', image_vector) over (rows between current row and 31 following) from stanford_dogs_image_vector_table limit 1000;
+select predict_batch_float8('resnet18_resnet18_imagenet', 'gpu', image_vector) over (rows between current row and 31 following) from imagenet_image_vector_table limit 1000;
+
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM cifar_image_vector_table limit 100) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 100) AS sub_table;
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM imagenet_image_vector_table limit 100) AS sub_table;
+
+select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from nlp_vector_test limit 100;
+select predict_batch_float8('sst2_vec', 'gpu', comment_vec) over (rows between current row and 31 following ) from imdb_vector_test limit 1000;
+select predict_batch_float8('finance', 'gpu', comment_vec) over (rows between current row and 31 following ) from financial_phrasebank_vector_test limit 70;
+
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM imdb_vector_test limit 1000) AS sub_table;
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM financial_phrasebank_vector_test limit 70) AS sub_table;
+select unnest(db_agent_single('nlp', sub_table.comment_vec)) AS score FROM (SELECT * FROM nlp_vector_test limit 70) AS sub_table;
+
+TODO: limit 30时有问题
+
+CREATE TABLE IF NOT EXISTS slice_cpu_load_training_data (
+id SERIAL PRIMARY KEY,
+timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+cpu_load DOUBLE PRECISION,
+cpu_cores INTEGER,
+execution_runtime_us BIGINT,
+data_shape_1 BIGINT,
+data_shape_2 BIGINT,
+data_shape_3 BIGINT,
+data_shape_4 BIGINT,
+model_mac_count BIGINT,
+model_param_count BIGINT,
+model_param_size BIGINT
+)
+
+CREATE TABLE IF NOT EXISTS slice_gpu_load_training_data (
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    cuda_cores DOUBLE PRECISION,
+    gpu_freq DOUBLE PRECISION,
+    util DOUBLE PRECISION,
+    mem_used DOUBLE PRECISION,
+    mem_total DOUBLE PRECISION,
+    execution_runtime_us BIGINT,
+    data_shape_1 BIGINT,
+    data_shape_2 BIGINT,
+    data_shape_3 BIGINT,
+    data_shape_4 BIGINT,
+    model_mac_count BIGINT,
+    model_param_count BIGINT,
+    model_param_size BIGINT
+);
+
+CREATE TABLE IF NOT EXISTS stanford_dogs_cpu_load_training_data (
+id SERIAL PRIMARY KEY,
+timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+cpu_load DOUBLE PRECISION,
+cpu_cores INTEGER,
+execution_runtime_us BIGINT,
+data_shape_1 BIGINT,
+data_shape_2 BIGINT,
+data_shape_3 BIGINT,
+data_shape_4 BIGINT,
+model_mac_count BIGINT,
+model_param_count BIGINT,
+model_param_size BIGINT
+)
+
+CREATE TABLE IF NOT EXISTS stanford_dogs_gpu_load_training_data (
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    cuda_cores DOUBLE PRECISION,
+    gpu_freq DOUBLE PRECISION,
+    util DOUBLE PRECISION,
+    mem_used DOUBLE PRECISION,
+    mem_total DOUBLE PRECISION,
+    execution_runtime_us BIGINT,
+    data_shape_1 BIGINT,
+    data_shape_2 BIGINT,
+    data_shape_3 BIGINT,
+    data_shape_4 BIGINT,
+    model_mac_count BIGINT,
+    model_param_count BIGINT,
+    model_param_size BIGINT
+);
+select unnest(db_agent_single('image_classification', sub_table.image_vector)) AS score FROM (SELECT * FROM stanford_dogs_image_vector_table limit 32) AS sub_table;
+
+select unnest(db_agent_single('reasoning', sub_table.reasoning_vec)) AS score FROM (SELECT * FROM reasoning_vector_test limit 32) AS sub_table;
+
+select unnest(db_agent_single('step1', sub_table.text_vec)) AS score FROM (SELECT * FROM reasoning_vector_step1 ORDER BY id) AS sub_table;
+
+select unnest(db_agent_single('step2', sub_table.text_vec)) AS score FROM (SELECT * FROM reasoning_vector_step2 ORDER BY id) AS sub_table;

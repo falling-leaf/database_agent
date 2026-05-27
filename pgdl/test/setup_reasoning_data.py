@@ -84,6 +84,56 @@ SAMPLE_DATA = [
         "question": "How high is Mount Everest?",
         "answer": "8,849 meters"
     },
+    {
+        "context": "Jupiter is the largest planet in our solar system with a diameter of about 143,000 kilometers.",
+        "question": "Which planet is the largest in our solar system?",
+        "answer": "Jupiter"
+    },
+    {
+        "context": "The periodic table was created by Dmitri Mendeleev in 1869.",
+        "question": "Who created the periodic table?",
+        "answer": "Dmitri Mendeleev"
+    },
+    {
+        "context": "The Amazon River is the second longest river in the world after the Nile.",
+        "question": "What is the second longest river in the world?",
+        "answer": "Amazon River"
+    },
+    {
+        "context": "Albert Einstein developed the theory of relativity.",
+        "question": "Who developed the theory of relativity?",
+        "answer": "Albert Einstein"
+    },
+    {
+        "context": "The Pacific Ocean is the largest ocean on Earth covering about 165 million square kilometers.",
+        "question": "Which ocean is the largest on Earth?",
+        "answer": "Pacific Ocean"
+    },
+    {
+        "context": "The human brain weighs approximately 1.4 kilograms.",
+        "question": "How much does the human brain weigh?",
+        "answer": "1.4 kilograms"
+    },
+    {
+        "context": "The atomic number of carbon is 6.",
+        "question": "What is the atomic number of carbon?",
+        "answer": "6"
+    },
+    {
+        "context": "The Moon orbits Earth at an average distance of 384,400 kilometers.",
+        "question": "How far is the Moon from Earth?",
+        "answer": "384,400 kilometers"
+    },
+    {
+        "context": "Leonardo da Vinci painted the Mona Lisa in the early 16th century.",
+        "question": "Who painted the Mona Lisa?",
+        "answer": "Leonardo da Vinci"
+    },
+    {
+        "context": "Sound travels at approximately 343 meters per second in air at room temperature.",
+        "question": "How fast does sound travel in air?",
+        "answer": "343 meters per second"
+    },
 ]
 
 
