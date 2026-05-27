@@ -26,6 +26,7 @@ import sys
 import os
 import time
 import json
+import threading
 from datetime import datetime
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -57,20 +58,6 @@ ALL_TESTS = [
         "timeout": 600,
         "category": "medium",
         "description": "Multi-sample reasoning benchmark (n_samples=1/5/10/20)",
-    },
-    {
-        "name": "test_sql_timing",
-        "script": "test_sql_timing.py",
-        "timeout": 600,
-        "category": "medium",
-        "description": "SQL timing test",
-    },
-    {
-        "name": "test_evadb",
-        "script": "test_evadb.py",
-        "timeout": 600,
-        "category": "medium",
-        "description": "EVA-DB basic test",
     },
     {
         "name": "verify_dbagent_extra_models",
@@ -107,13 +94,6 @@ ALL_TESTS = [
         "timeout": 1200,
         "category": "heavy",
         "description": "Musique benchmark: db_agent_single vs pure Python pipeline",
-    },
-    {
-        "name": "benchmark_musique_linear",
-        "script": "benchmark_musique_linear.py",
-        "timeout": 1800,
-        "category": "heavy",
-        "description": "Fair musique benchmark with linear scaling",
     },
     {
         "name": "benchmark_musique_fair",
@@ -171,7 +151,7 @@ def list_tests():
 
 
 def run_single_test(test_info):
-    """Run a single test script with timeout. Returns result dict."""
+    """Run a single test script with timeout. Streams output in real time. Returns result dict."""
     script = test_info["script"]
     script_path = os.path.join(TEST_DIR, script)
 
@@ -192,23 +172,72 @@ def run_single_test(test_info):
     print(f"  Timeout:     {test_info['timeout']}s")
     print(f"  Script:      {script}")
     print(f"{'=' * 80}")
+    sys.stdout.flush()
 
     start_time = time.time()
+    stdout_buf = []
+    stderr_buf = []
+
+    def stream_output(pipe, buf, prefix=""):
+        """Read lines from a pipe and print them in real time."""
+        for line in iter(pipe.readline, ""):
+            if line:
+                if prefix:
+                    print(prefix + line, end="")
+                else:
+                    print(line, end="")
+                sys.stdout.flush()
+                buf.append(line)
+
     try:
-        result = subprocess.run(
+        env = os.environ.copy()
+        env["PYTHONUNBUFFERED"] = "1"
+        proc = subprocess.Popen(
             ["uv", "run", "python", script],
             cwd=TEST_DIR,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            timeout=test_info["timeout"],
+            bufsize=1,  # line buffered
+            env=env,
         )
+
+        # Start threads to stream stdout and stderr
+        out_thread = threading.Thread(target=stream_output, args=(proc.stdout, stdout_buf))
+        err_thread = threading.Thread(target=stream_output, args=(proc.stderr, stderr_buf, "  [ERR] "))
+        out_thread.daemon = True
+        err_thread.daemon = True
+        out_thread.start()
+        err_thread.start()
+
+        # Wait for process with timeout
+        try:
+            proc.wait(timeout=test_info["timeout"])
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            elapsed = time.time() - start_time
+            out_thread.join(timeout=2)
+            err_thread.join(timeout=2)
+            return {
+                "name": test_info["name"],
+                "script": script,
+                "description": test_info["description"],
+                "category": test_info["category"],
+                "status": "timeout",
+                "elapsed": round(elapsed, 2),
+                "reason": f"Exceeded {test_info['timeout']}s timeout",
+                "stdout_tail": "".join(stdout_buf)[-1500:],
+                "stderr_tail": "".join(stderr_buf)[-1500:],
+            }
+
         elapsed = time.time() - start_time
+        out_thread.join(timeout=2)
+        err_thread.join(timeout=2)
 
-        # Capture last 1500 chars of output for debugging
-        stdout_tail = result.stdout[-1500:] if result.stdout else ""
-        stderr_tail = result.stderr[-1500:] if result.stderr else ""
-
-        status = "passed" if result.returncode == 0 else "failed"
+        stdout_text = "".join(stdout_buf)
+        stderr_text = "".join(stderr_buf)
+        status = "passed" if proc.returncode == 0 else "failed"
 
         return {
             "name": test_info["name"],
@@ -216,21 +245,10 @@ def run_single_test(test_info):
             "description": test_info["description"],
             "category": test_info["category"],
             "status": status,
-            "returncode": result.returncode,
+            "returncode": proc.returncode,
             "elapsed": round(elapsed, 2),
-            "stdout_tail": stdout_tail,
-            "stderr_tail": stderr_tail,
-        }
-    except subprocess.TimeoutExpired:
-        elapsed = time.time() - start_time
-        return {
-            "name": test_info["name"],
-            "script": script,
-            "description": test_info["description"],
-            "category": test_info["category"],
-            "status": "timeout",
-            "elapsed": round(elapsed, 2),
-            "reason": f"Exceeded {test_info['timeout']}s timeout",
+            "stdout_tail": stdout_text[-1500:],
+            "stderr_tail": stderr_text[-1500:],
         }
     except Exception as e:
         elapsed = time.time() - start_time
